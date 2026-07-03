@@ -1,0 +1,26 @@
+# 问玄东方文档项目 .gitignore
+
+# 操作系统
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+!.vscode/settings.json
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# 文档生成产物
+_site/
+.docusaurus/
+.cache-loader/
+
+# 日志
+*.log
