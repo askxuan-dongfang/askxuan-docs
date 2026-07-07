@@ -1134,7 +1134,7 @@ go-zero sqlx 适合 90% 场景。以下情况可考虑 GORM：
 
 网关独立成一个服务（`askXuan-backend/services/platform/gateway-service`），职责：
 
-1. **路由聚合**：把 17 个前缀路由到对应后端服务。
+1. **路由聚合**：把 40 条路由（20 C端 + 20 管理台）到对应后端服务。
 2. **鉴权前置**：JWT 校验 + 用户信息注入 context。
 3. **限流**：tokenlimit。
 4. **CORS**：跨域。
@@ -1214,7 +1214,7 @@ func Cors(next http.Handler) http.Handler {
 }
 ```
 
-### 7.6 gateway.yaml 完整配置（17 个路由前缀）
+### 7.6 gateway.yaml 完整配置（40 条路由前缀（20 C端 + 20 管理台））
 
 ```yaml
 Name: gateway
@@ -1272,10 +1272,24 @@ Upstreams:
   - Name: file-service
     Prefix: /api/v1/file
 
-# 不需要鉴权的白名单路径（如 login）
+# 不需要鉴权的白名单路径（共 16 条，与 gateway.yaml:NoAuthPaths 一致）
 NoAuthPaths:
   - /api/v1/auth/login
   - /api/v1/auth/refresh
+  - /api/v1/auth/admin/login
+  - /api/v1/user/register
+  - /api/v1/payments/callback/wechat
+  - /api/v1/payments/callback/alipay
+  - /api/v1/temples
+  - /api/v1/masters
+  - /api/v1/products
+  - /api/v1/marketing/banners
+  - /api/v1/announcements
+  - /api/v1/diy/designs
+  - /api/v1/diy/materials
+  - /api/v1/health
+  - /api/v1/im
+  - /openim/webhook
 ```
 
 > 对应路由前缀与服务的完整映射见 spec.md 网关路由约定章节。
@@ -1758,12 +1772,13 @@ func LoginHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 | 区间 | 含义 |
 | --- | --- |
 | 0 | 成功 |
-| 1001-1999 | 通用错误（参数/鉴权/限流） |
-| 2001-2999 | 用户域错误 |
-| 3001-3999 | 寺院/法师域错误 |
-| 4001-4999 | 预约/DIY 域错误 |
-| 5001-5999 | 商城/订单域错误 |
-| 9000+ | 系统错误 |
+| 40001-40099 | 参数错误 |
+| 40101-40199 | 认证错误 |
+| 40301-40399 | 权限错误 |
+| 40401-40499 | 资源不存在 |
+| 40901-40999 | 冲突错误 |
+| 50001-50099 | 系统错误 |
+| 50201-50299 | 第三方服务错误 |
 
 ### 11.4 JWT 前端携带
 
