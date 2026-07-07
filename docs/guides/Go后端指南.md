@@ -4,7 +4,7 @@
 >
 > 项目「问玄东方」后端从 Java/Spring Boot 迁移到 **Go 1.22 + go-zero 微服务框架**，注册中心使用 **etcd**，共规划 **16 个业务微服务 + 1 网关 + 1 认证服务 = 18 个服务**。前端联调阶段可使用 Mock Server（Node Express，地址 `http://localhost:3001/api/v1`）作为占位。
 >
-> 本指南配套数据字典：6 寺院 / 6 法师 / 7 服务类型 / 4 项加持服务 / 14 种 DIY 手串材料。
+> 本指南配套数据字典：6 寺院 / 6 法师 / 13 种用户端服务类型 / 4 项加持服务 / 14 种 DIY 手串材料。
 
 ---
 
@@ -1134,7 +1134,7 @@ go-zero sqlx 适合 90% 场景。以下情况可考虑 GORM：
 
 网关独立成一个服务（`askXuan-backend/services/platform/gateway-service`），职责：
 
-1. **路由聚合**：把 40 条路由（20 C端 + 20 管理台）到对应后端服务。
+1. **路由聚合**：把 19 条 C 端业务路由、1 条 OpenIM 透传路由和 21 条管理台路由转发到对应后端服务。
 2. **鉴权前置**：JWT 校验 + 用户信息注入 context。
 3. **限流**：tokenlimit。
 4. **CORS**：跨域。
@@ -1214,7 +1214,7 @@ func Cors(next http.Handler) http.Handler {
 }
 ```
 
-### 7.6 gateway.yaml 完整配置（40 条路由前缀（20 C端 + 20 管理台））
+### 7.6 gateway.yaml 完整配置（19 条 C 端业务路由 + 1 条 OpenIM 透传 + 21 条管理台路由）
 
 ```yaml
 Name: gateway
