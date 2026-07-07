@@ -41,7 +41,7 @@
 | `/api/v1/users/*` | C端用户（需JWT） |
 | `/api/v1/temples/*` | 寺院（C端只读 + 管理台CRUD） |
 | `/api/v1/masters/*` | 法师（C端只读 + 工作台） |
-| `/api/v1/booking/*` | 预约（C端 + 寺院台 + 法师台） |
+| `/api/v1/bookings/*` | 预约（C端 + 寺院台 + 法师台） |
 | `/api/v1/products/*` | 商品（C端只读 + 商城台CRUD） |
 | `/api/v1/diy/*` | DIY（C端 + 商城台） |
 | `/api/v1/orders/*` | 商城订单（C端 + 商城台） |

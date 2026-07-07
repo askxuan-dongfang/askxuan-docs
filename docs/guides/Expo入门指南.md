@@ -2403,7 +2403,7 @@ export default function RootLayout() {
 | 首页 | marketing-service / temple-service | 7 / 5 | `/api/v1/marketing/banners`、`/api/v1/temples` |
 | 寺院 | temple-service | 5 | `/api/v1/temples`、`/api/v1/temples/:id` |
 | 师傅 | master-service | 6 | `/api/v1/masters`、`/api/v1/masters/:id` |
-| 预约 | booking-service / auth-service / payment-service | 6 / 4 / 7 | `/api/v1/booking`、`/api/v1/auth/login` |
+| 预约 | booking-service / auth-service / payment-service | 6 / 4 / 7 | `/api/v1/bookings`、`/api/v1/auth/login` |
 | 导航整合 | user-service / auth-service | 4 | `/api/v1/users/profile` |
 | EAS 构建 | — | — | 用生产环境 BaseURL |
 
