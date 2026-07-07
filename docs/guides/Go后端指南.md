@@ -1240,7 +1240,7 @@ Upstreams:
   - Name: auth
     Prefix: /api/v1/auth
   - Name: user-service
-    Prefix: /api/v1/user
+    Prefix: /api/v1/users
   - Name: temple-service
     Prefix: /api/v1/temples
   - Name: master-service
@@ -1264,20 +1264,20 @@ Upstreams:
   - Name: finance-service
     Prefix: /api/v1/finance
   - Name: message-service
-    Prefix: /api/v1/message
+    Prefix: /api/v1/messages
   - Name: marketing-service
     Prefix: /api/v1/marketing
   - Name: ai-service
     Prefix: /api/v1/ai
   - Name: file-service
-    Prefix: /api/v1/file
+    Prefix: /api/v1/files
 
 # 不需要鉴权的白名单路径（共 16 条，与 gateway.yaml:NoAuthPaths 一致）
 NoAuthPaths:
   - /api/v1/auth/login
   - /api/v1/auth/refresh
   - /api/v1/auth/admin/login
-  - /api/v1/user/register
+  - /api/v1/users/register
   - /api/v1/payments/callback/wechat
   - /api/v1/payments/callback/alipay
   - /api/v1/temples
@@ -2005,7 +2005,7 @@ etcdctl --endpoints=http://localhost:2379 get /zero/ --prefix
 
 验证：
 1. 注册用户 → 登录拿 token
-2. 带 token 访问 `/api/v1/user/profile` 返回用户信息
+2. 带 token 访问 `/api/v1/users/profile` 返回用户信息
 3. 无 token 访问受保护接口返回 401
 
 ### 第二步：预约闭环（Task 6 后半）

@@ -38,7 +38,7 @@
 | 前缀 | 说明 |
 |------|------|
 | `/api/v1/auth/*` | 认证（公开） |
-| `/api/v1/user/*` | C端用户（需JWT） |
+| `/api/v1/users/*` | C端用户（需JWT） |
 | `/api/v1/temples/*` | 寺院（C端只读 + 管理台CRUD） |
 | `/api/v1/masters/*` | 法师（C端只读 + 工作台） |
 | `/api/v1/booking/*` | 预约（C端 + 寺院台 + 法师台） |
@@ -53,7 +53,7 @@
 | `/api/v1/marketing/*` | 营销（管理台） |
 | `/api/v1/ai/*` | AI问事（C端） |
 | `/api/v1/messages/*` | 消息（全端） |
-| `/api/v1/file/*` | 文件（全端） |
+| `/api/v1/files/*` | 文件（全端） |
 
 ## 2. 统一响应格式
 
@@ -130,7 +130,7 @@ X-Client-Version: 1.0.0
 - `POST /api/v1/auth/login`（C 端登录）
 - `POST /api/v1/auth/refresh`（Token 续期）
 - `POST /api/v1/auth/admin/login`（管理台登录，含 temple_admin / master / shop_admin / platform_admin）
-- `POST /api/v1/user/register`（用户注册）
+- `POST /api/v1/users/register`（用户注册）
 - `POST /api/v1/payments/callback/wechat`（微信支付回调）
 - `POST /api/v1/payments/callback/alipay`（支付宝支付回调）
 - `GET /api/v1/temples*`（C 端浏览寺院列表/详情）
