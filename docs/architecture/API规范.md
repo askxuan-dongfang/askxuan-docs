@@ -124,16 +124,25 @@ X-Client-Version: 1.0.0
 
 ### 3.3 白名单路径（无需鉴权）
 
-- `POST /api/v1/auth/login`
-- `POST /api/v1/auth/refresh`
-- `POST /api/v1/user/register`
-- `GET /api/v1/temples`（C端浏览）
-- `GET /api/v1/temples/:id`
-- `GET /api/v1/masters`
-- `GET /api/v1/masters/:id`
-- `GET /api/v1/products`
-- `GET /api/v1/products/:id`
-- `POST /api/v1/payments/callback/*`（支付回调）
+> 与 `gateway-service/etc/gateway.yaml` 的 `NoAuthPaths` 一致，共 16 条。
+> **匹配规则**：GET 请求前缀匹配（`path == prefix` 或 `path 以 prefix+"/" 开头`，支持 `/temples/T001` 等详情页）；非 GET 请求精确匹配。
+
+- `POST /api/v1/auth/login`（C 端登录）
+- `POST /api/v1/auth/refresh`（Token 续期）
+- `POST /api/v1/auth/admin/login`（管理台登录，含 temple_admin / master / shop_admin / platform_admin）
+- `POST /api/v1/user/register`（用户注册）
+- `POST /api/v1/payments/callback/wechat`（微信支付回调）
+- `POST /api/v1/payments/callback/alipay`（支付宝支付回调）
+- `GET /api/v1/temples*`（C 端浏览寺院列表/详情）
+- `GET /api/v1/masters*`（C 端浏览法师列表/详情）
+- `GET /api/v1/products*`（C 端浏览商品列表/详情/分类）
+- `GET /api/v1/marketing/banners*`（Banner 列表）
+- `GET /api/v1/announcements*`（公告列表）
+- `GET /api/v1/diy/designs*`（DIY 设计广场）
+- `GET /api/v1/diy/materials*`（DIY 材料库）
+- `GET /api/v1/health`（网关健康检查）
+- `/api/v1/im*`（OpenIM REST 透传，由 OpenIM 自身鉴权，多方法）
+- `POST /openim/webhook`（OpenIM webhook 回调，无 JWT）
 
 ## 4. 角色权限
 
