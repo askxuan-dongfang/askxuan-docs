@@ -62,7 +62,7 @@ askXuan-docs/
 - 错误码范围：40001-50299
 
 ### 微服务架构
-- 18 个业务服务 + 1 个网关，按 5 大业务域分组（platform / content / commerce / infrastructure / operation）
+- 19 个下游微服务 + 1 个网关，按 5 大业务域分组（platform / content / commerce / infrastructure / operation）
 - 通信方式：HTTP REST（客户端-网关）、go-zero zrpc/gRPC（服务间）、RabbitMQ（异步）、MySQL 每服务独库
 - 注册中心：etcd
 

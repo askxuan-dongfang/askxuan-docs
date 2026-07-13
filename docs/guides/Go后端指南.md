@@ -2,7 +2,7 @@
 
 > 面向有其他语言编程基础、首次接触 Go 与 go-zero 的开发者。
 >
-> 项目「问玄东方」后端从 Java/Spring Boot 迁移到 **Go 1.22 + go-zero 微服务框架**，注册中心使用 **etcd**，共规划 **16 个业务微服务 + 1 网关 + 1 认证服务 = 18 个服务**。前端联调阶段可使用 Mock Server（Node Express，地址 `http://localhost:3001/api/v1`）作为占位。
+> 项目「问玄东方」后端采用 **Go 1.22 + go-zero 微服务框架**，注册中心使用 **etcd**，当前包含 **19 个下游微服务 + 1 个网关**。前端联调阶段可使用 Mock Server（Node Express，地址 `http://localhost:3001/api/v1`）。
 >
 > 本指南配套数据字典：6 寺院 / 6 法师 / 13 种用户端服务类型 / 4 项加持服务 / 14 种 DIY 手串材料。
 

@@ -221,14 +221,18 @@
 
 > 默认 `LIVE_ENABLED=false` 且 Provider 为 `disabled`。此状态下法师端不展示开播控件，`start` 返回 `50320`，不会生成伪造推流或观看地址。
 
-### 1.14 社区内容 / 大师广场原型契约（content-service 待落地）
+### 1.14 社区内容 / 大师广场（community-service @ 8099）
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
-| GET | `/api/v1/community/feed` | ios-customer ✓ | `type`(opt), `sect`(opt), `page`, `size` | 无 | 大师广场内容流，支持短视频/图文与宗派筛选 |
+| GET | `/api/v1/community/feed` | ios-customer ✓ | `type`(opt), `beliefCode`(opt), `page`, `size` | 无 | 仅返回审核通过的图文/视频混合内容流 |
 | GET | `/api/v1/community/posts/:id` | ios-customer ✓ | — | 无 | 内容详情 |
-| POST | `/api/v1/community/posts/:id/like` | ios-customer ✓ | — | Bearer | 点赞/取消点赞 |
+| POST | `/api/v1/community/posts/:id/like` | ios-customer ✓ | — | Bearer | 幂等点赞 |
+| DELETE | `/api/v1/community/posts/:id/like` | ios-customer ✓ | — | Bearer | 取消点赞 |
 | GET | `/api/v1/community/posts/:id/comments` | ios-customer ✓ | `page`, `size` | 无 | 评论列表 |
+| POST | `/api/v1/community/posts/:id/comments` | ios-customer ✓ | `content` | Bearer | 提交评论，状态为 pending，审核通过前不可见 |
+| POST | `/api/v1/community/masters/:id/follow` | ios-customer ✓ | — | Bearer | 幂等关注大师 |
+| DELETE | `/api/v1/community/masters/:id/follow` | ios-customer ✓ | — | Bearer | 取消关注大师 |
 
 ### 1.15 诉求聚合（product-service @ 8086）
 
@@ -348,16 +352,27 @@
 | GET | `/api/v1/admin/masters/profile` | ✓ | — | Bearer | 法师资料 |
 | PUT | `/api/v1/admin/masters/profile` | ✓ | `bio`(opt), `specialties`(opt), `avatar`(opt), `pricing`(opt) | Bearer | 更新资料 |
 
-### 2.7 法师社区内容 / 大师广场原型契约（content-service 待落地）
+### 2.7 法师社区内容 / 大师广场（community-service @ 8099）
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
 | GET | `/api/v1/admin/masters/community/posts` | ✓ | `status`(opt), `page`, `size` | Bearer | 法师本人发布内容列表 |
-| POST | `/api/v1/admin/masters/community/posts` | ✓ | `type`, `title`, `content`(opt), `coverUrl`(opt), `videoUrl`(opt), `tags`(opt) | Bearer | 发布图文/短视频，提交后进入平台审核 |
-| PUT | `/api/v1/admin/masters/community/posts/:id` | ✓ | `type`, `title`, `content`(opt), `coverUrl`(opt), `videoUrl`(opt), `tags`(opt) | Bearer | 编辑未发布或被驳回内容 |
+| POST | `/api/v1/admin/masters/community/posts` | ✓ | `type`, `title`, `content`(opt), `coverMediaId`(opt), `beliefCode`(opt), `assets[]`, `submit` | Master | 保存草稿或提交审核；素材只引用 mediaId |
+| PUT | `/api/v1/admin/masters/community/posts/:id` | ✓ | 同创建接口 | Master | 仅编辑草稿或被驳回内容，并重新校验媒体归属与 ready 状态 |
 | PUT | `/api/v1/admin/masters/community/posts/:id/status` | ✓ | `status` | Bearer | 草稿/提交审核/下架 |
 
-### 2.8 法师消息（message-service @ 8094）
+### 2.8 平台社区审核（community-service @ 8099）
+
+| 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
+|------|------|-----------|---------|------|------|
+| GET | `/api/v1/admin/platform/community/posts` | web-platform-admin ✓ | `status`(opt), `page`, `size` | Platform | 帖子审核列表 |
+| PUT | `/api/v1/admin/platform/community/posts/:id/approve` | web-platform-admin ✓ | `remark`(opt) | Platform | 帖子通过；与 Audit 队列/日志同事务 |
+| PUT | `/api/v1/admin/platform/community/posts/:id/reject` | web-platform-admin ✓ | `remark` | Platform | 帖子驳回 |
+| GET | `/api/v1/admin/platform/community/comments` | web-platform-admin ✓ | `status`(opt), `page`, `size` | Platform | 评论审核列表 |
+| PUT | `/api/v1/admin/platform/community/comments/:id/approve` | web-platform-admin ✓ | `remark`(opt) | Platform | 评论通过后才计入并公开显示 |
+| PUT | `/api/v1/admin/platform/community/comments/:id/reject` | web-platform-admin ✓ | `remark` | Platform | 评论驳回 |
+
+### 2.9 法师消息（message-service @ 8094）
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
@@ -365,7 +380,7 @@
 | PUT | `/api/v1/admin/messages/master/:id/read` | ✓ | — | Bearer | 标记已读 |
 | POST | `/api/v1/messages/device-token` | ✓ | `userId`, `clientType`, `platform`, `deviceToken`, `bundleId`(opt) | Bearer | 注册 APNs token（**路径无 admin 前缀**，与 C 端共用） |
 
-### 2.9 法师评价（review-service @ 8092）
+### 2.10 法师评价（review-service @ 8092）
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
@@ -1286,6 +1301,13 @@
 
 ---
 
+## 第二十四章：community-service（端口 8099）
+
+**路径前缀**：`/api/v1/community`、`/api/v1/admin/masters/community`、`/api/v1/admin/platform/community`
+**职责**：大师图文/视频内容、媒体引用、幂等点赞、关注、评论先审后显，以及与 Audit Service 同事务的帖子/评论审核。接口明细见 1.14、2.7 和 2.8。
+
+---
+
 ## 下篇总结：后端服务接口统计
 
 | 序号 | 服务名 | 端口 | C 端 | 管理台 | 总计 | 鉴权情况 |
@@ -1308,7 +1330,8 @@
 | 21 | file-service | 8097 | 2 | 0 | 2 | — |
 | 22 | ai-service | 8098 | 8 | 0 | 8 | ✅ 会话所有权校验 |
 | 23 | media-service | 8100 | 3 | 7 | 12 | ✅ 所有权/角色/回调令牌 |
-| **合计** | — | — | **73** | **153** | **228** | — |
+| 24 | community-service | 8099 | 8 | 10 | 18 | ✅ 所有权/角色/审核事务 |
+| **合计** | — | — | **81** | **163** | **246** | — |
 
 > media-service 另有 2 个 Provider 回调接口，因此总计比 C 端与管理端之和多 2。
 
@@ -1345,18 +1368,20 @@
 
 ---
 
-## 附录 B：网关路由表（43 条 Prefix）
+## 附录 B：网关路由表（49 条 Prefix）
 
-### C 端业务路由（21 条）+ OpenIM 透传（1 条）
+### C 端与透传路由（25 条）
 
 | 前缀 | 目标服务 | 端口 |
 |------|---------|------|
 | `/api/v1/auth` | auth-service | 8081 |
 | `/api/v1/users` | user-service | 8082 |
 | `/api/v1/temples` | temple-service | 8083 |
+| `/api/v1/beliefs` | temple-service | 8083 |
 | `/api/v1/masters` | master-service | 8084 |
 | `/api/v1/bookings` | booking-service | 8085 |
 | `/api/v1/products` | product-service | 8086 |
+| `/api/v1/intentions` | product-service | 8086 |
 | `/api/v1/diy` | diy-service | 8088 |
 | `/api/v1/orders` | order-service | 8089 |
 | `/api/v1/payments` | payment-service | 8090 |
@@ -1368,24 +1393,28 @@
 | `/api/v1/announcements` | message-service | 8094 |
 | `/api/v1/files` | file-service | 8097 |
 | `/api/v1/ai` | ai-service | 8098 |
+| `/api/v1/community` | community-service | 8099 |
 | `/api/v1/media` | media-service | 8100 |
 | `/api/v1/live` | media-service | 8100 |
 | `/api/v1/logistics` | logistics-service | 8095 |
 | `/api/v1/im` | OpenIM | 10002 |
 | `/openim` | message-service | 8094 |
 
-### 管理台路由（21 条，最长前缀匹配）
+### 管理台路由（24 条，最长前缀匹配）
 
 | 前缀 | 目标服务 | 端口 |
 |------|---------|------|
+| `/api/v1/admin/platform/beliefs` | temple-service | 8083 |
 | `/api/v1/admin/auth` | auth-service | 8081 |
 | `/api/v1/admin/users` | user-service | 8082 |
 | `/api/v1/admin/temples/masters` | master-service | 8084 |
 | `/api/v1/admin/temples` | temple-service | 8083 |
 | `/api/v1/admin/platform/temples` | temple-service | 8083 |
 | `/api/v1/admin/masters/bookings` | booking-service | 8085 |
+| `/api/v1/admin/masters/community` | community-service | 8099 |
 | `/api/v1/admin/masters` | master-service | 8084 |
 | `/api/v1/admin/platform/masters` | master-service | 8084 |
+| `/api/v1/admin/platform/community` | community-service | 8099 |
 | `/api/v1/admin/bookings` | booking-service | 8085 |
 | `/api/v1/admin/messages` | message-service | 8094 |
 | `/api/v1/admin/announcements` | message-service | 8094 |
@@ -1425,6 +1454,7 @@
 | 8096 | marketing | services/operation/marketing-service |
 | 8097 | file | services/infrastructure/file-service |
 | 8098 | ai | services/infrastructure/ai-service |
+| 8099 | community | services/content/community-service |
 | 8100 | media | services/infrastructure/media-service |
 | 10002 | OpenIM | 外部依赖 |
 
@@ -1452,8 +1482,9 @@
 | 16 | file-service | 8097 | 2 | 0 | 2 |
 | 17 | ai-service | 8098 | 8 | 0 | 8 |
 | 18 | media-service | 8100 | 3 | 7 | 12 |
-| **合计** | — | — | **73** | **153** | **228** |
+| 19 | community-service | 8099 | 8 | 10 | 18 |
+| **合计** | — | — | **81** | **163** | **246** |
 
 ---
 
-**文档完成。本接口文档基于 2026-07-13 项目代码状态整理，覆盖 5 个正式客户端、备用 mobile-customer 与 Provider 回调涉及的 228 个后端接口。**
+**文档完成。本接口文档基于 2026-07-13 项目代码状态整理，覆盖 5 个正式客户端、备用 mobile-customer 与 Provider 回调涉及的 246 个后端接口。**
