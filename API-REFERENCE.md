@@ -210,11 +210,11 @@
 | POST | `/api/v1/community/posts/:id/like` | ios-customer ✓ | — | Bearer | 点赞/取消点赞 |
 | GET | `/api/v1/community/posts/:id/comments` | ios-customer ✓ | `page`, `size` | 无 | 评论列表 |
 
-### 1.14 意图聚合原型契约（gateway 聚合 / content-service 待落地）
+### 1.14 诉求聚合（product-service @ 8086）
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
-| GET | `/api/v1/intentions` | ios-customer ✓ | `code`(opt), `page`, `size` | 无 | 按“求平安/求财运/求姻缘/化太岁”等意图聚合寺院服务、商品标签、内容入口 |
+| GET | `/api/v1/intentions` | ios-customer ✓ | `code`(opt), `page`, `size` | 无 | 混合返回商品与寺院服务；含 `resourceType/sourceId/price/image/orderTarget/templeCode/serviceCode` |
 
 ### 1.15 营销模块（marketing-service @ 8096）
 
@@ -403,8 +403,8 @@
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
 | GET | `/api/v1/admin/temples/services` | ✓ | — | Bearer | 服务列表 |
-| POST | `/api/v1/admin/temples/services` | ✓ | `serviceCode`, `serviceName`, `price`, `timeSlots` | Bearer | 新增服务 |
-| PUT | `/api/v1/admin/temples/services/:id` | ✓ | `serviceName`(opt), `price`(opt), `timeSlots`(opt) | Bearer | 更新服务 |
+| POST | `/api/v1/admin/temples/services` | ✓ | `serviceCode`, `serviceName`, `price`, `timeSlots`, `intentTags`(opt) | Bearer | 新增服务 |
+| PUT | `/api/v1/admin/temples/services/:id` | ✓ | `serviceName`(opt), `price`(opt), `timeSlots`(opt), `intentTags`(opt) | Bearer | 更新服务 |
 | PUT | `/api/v1/admin/temples/services/:id/status` | ✓ | `status` | Bearer | 服务上下架 |
 
 > **注**：`service.ts` 与 `temple.ts` 都实现了此组接口，存在重复定义。
@@ -488,9 +488,9 @@
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
 | GET | `/api/v1/admin/products` | ✓ | `categoryId`(opt), `keyword`(opt), `status`(opt), `page`, `size` | Bearer | 商品列表 |
-| POST | `/api/v1/admin/products` | ✓ | `name`, `categoryId`, `description`(opt), `mainImage`, `price` | Bearer | 创建商品 |
+| POST | `/api/v1/admin/products` | ✓ | `name`, `categoryId`, `description`(opt), `mainImage`, `price`, `intentTags`(opt) | Bearer | 创建商品 |
 | GET | `/api/v1/admin/products/:id` | ✓ | — | Bearer | 商品详情 |
-| PUT | `/api/v1/admin/products/:id` | ✓ | `name`, `categoryId`, `description`(opt), `mainImage` | Bearer | 更新商品 |
+| PUT | `/api/v1/admin/products/:id` | ✓ | `name`, `categoryId`, `description`(opt), `mainImage`, `intentTags`(opt) | Bearer | 更新商品 |
 | DELETE | `/api/v1/admin/products/:id` | ✓ | — | Bearer | 删除商品 |
 | PUT | `/api/v1/admin/products/:id/status` | ✓ | `status` | Bearer | 上下架 |
 
@@ -799,8 +799,8 @@
 | POST | `/api/v1/admin/temples/images` | adminImageCreate | `url`, `type`, `sort`(opt) | jwt:Auth | 🏛️ | 新增寺院图片 |
 | DELETE | `/api/v1/admin/temples/images/:id` | adminImageDelete | — | jwt:Auth | 🏛️ | 删除寺院图片 |
 | GET | `/api/v1/admin/temples/services` | adminServiceList | — | jwt:Auth | 🏛️ | 寺院服务列表 |
-| POST | `/api/v1/admin/temples/services` | adminServiceCreate | `serviceCode`, `serviceName`, `price`, `timeSlots` | jwt:Auth | 🏛️ | 新增服务 |
-| PUT | `/api/v1/admin/temples/services/:id` | adminServiceUpdate | `serviceName`(opt), `price`(opt), `timeSlots`(opt) | jwt:Auth | 🏛️ | 更新服务 |
+| POST | `/api/v1/admin/temples/services` | adminServiceCreate | `serviceCode`, `serviceName`, `price`, `timeSlots`, `intentTags`(opt) | jwt:Auth | 🏛️ | 新增服务 |
+| PUT | `/api/v1/admin/temples/services/:id` | adminServiceUpdate | `serviceName`(opt), `price`(opt), `timeSlots`(opt), `intentTags`(opt) | jwt:Auth | 🏛️ | 更新服务 |
 | PUT | `/api/v1/admin/temples/services/:id/status` | adminServiceStatus | `status` | jwt:Auth | 🏛️ | 服务上下架 |
 | GET | `/api/v1/admin/temples/blessing-tasks` | adminBlessingTaskList | `status`(opt), `page`, `size` | jwt:Auth | 🏛️ | 加持任务列表 |
 | GET | `/api/v1/admin/temples/blessing-tasks/:id` | adminBlessingTaskDetail | — | jwt:Auth | 🏛️ | 加持任务详情 |
@@ -935,9 +935,9 @@
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
 | GET | `/api/v1/admin/products` | adminProductList | `categoryId`(opt), `keyword`(opt), `status`(opt), `page`, `size` | jwt:Auth | 🛒 | 商品列表 |
-| POST | `/api/v1/admin/products` | adminProductCreate | `name`, `categoryId`, `description`(opt), `mainImage`, `price` | jwt:Auth | 🛒 | 创建商品 |
+| POST | `/api/v1/admin/products` | adminProductCreate | `name`, `categoryId`, `description`(opt), `mainImage`, `price`, `intentTags`(opt) | jwt:Auth | 🛒 | 创建商品 |
 | GET | `/api/v1/admin/products/:id` | adminProductDetail | — | jwt:Auth | 🛒 | 商品详情 |
-| PUT | `/api/v1/admin/products/:id` | adminProductUpdate | `name`, `categoryId`, `description`(opt), `mainImage` | jwt:Auth | 🛒 | 更新商品 |
+| PUT | `/api/v1/admin/products/:id` | adminProductUpdate | `name`, `categoryId`, `description`(opt), `mainImage`, `intentTags`(opt) | jwt:Auth | 🛒 | 更新商品 |
 | DELETE | `/api/v1/admin/products/:id` | adminProductDelete | — | jwt:Auth | 🛒 | 删除商品 |
 | PUT | `/api/v1/admin/products/:id/status` | adminProductStatus | `status` | jwt:Auth | 🛒 | 上下架 |
 | POST | `/api/v1/admin/products/:id/skus` | adminSkuCreate | `specName`, `specValue`, `price`, `stock` | jwt:Auth | — | 新增 SKU |
