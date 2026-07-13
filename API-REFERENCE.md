@@ -202,7 +202,26 @@
 | POST | `/api/v1/ai/sessions/:id/messages/:messageId/retry` | ios-customer ✓ | `userId` | Bearer | 重试失败的助手消息 |
 | DELETE | `/api/v1/ai/sessions/:id` | ios-customer ✓ | — | Bearer | 删除会话 |
 
-### 1.13 社区内容 / 大师广场原型契约（content-service 待落地）
+### 1.13 媒体与直播（media-service @ 8100）
+
+| 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
+|------|------|-----------|---------|------|------|
+| POST | `/api/v1/media/uploads/credentials` | ios-master ✓ | `fileName`, `mediaType`, `contentType`, `fileSize`(opt) | Bearer | 获取 Provider 上传凭证 |
+| POST | `/api/v1/media/:id/complete` | ios-master ✓ | `coverMediaId`(opt), `ETag`(opt) | Bearer | 校验对象并完成上传 |
+| GET | `/api/v1/media/:id` | ios-customer / ios-master ✓ | — | Bearer | 所有者可查处理状态；其他用户仅可查 ready + approved |
+| POST | `/api/v1/media/callback/transcode` | Provider | `mediaId`, `status`, Provider 结果字段 | 回调令牌 | 幂等转码回调，省略字段不覆盖原值 |
+| POST | `/api/v1/media/callback/audit` | Provider | `mediaId`, `auditStatus`, `reason`(opt) | 回调令牌 | 幂等审核回调 |
+| GET | `/api/v1/live/capabilities` | ios-master ✓ | — | 无 | 返回启用、Provider 配置和可开播状态 |
+| GET | `/api/v1/live/rooms` | ios-customer ✓ | `masterId`(opt), `limit`(opt) | Bearer | 仅返回直播中房间，不返回推流地址 |
+| POST | `/api/v1/live/rooms` | ios-master ✓ | `title`, `coverMediaId`(opt), `openimGroupId`(opt) | Master | 创建直播房间 |
+| GET | `/api/v1/live/rooms/:id` | ios-customer / ios-master ✓ | — | Bearer | 非房主仅可读 live 房间；推流地址仅房主可见 |
+| PUT | `/api/v1/live/rooms/:id/openim` | ios-master ✓ | `openimGroupId` | Master | 绑定 OpenIM 群聊 |
+| POST | `/api/v1/live/rooms/:id/start` | ios-master ✓ | — | Master | 调用已配置直播 Provider 开播 |
+| POST | `/api/v1/live/rooms/:id/close` | ios-master ✓ | — | Master | 关闭 Provider 会话和房间 |
+
+> 默认 `LIVE_ENABLED=false` 且 Provider 为 `disabled`。此状态下法师端不展示开播控件，`start` 返回 `50320`，不会生成伪造推流或观看地址。
+
+### 1.14 社区内容 / 大师广场原型契约（content-service 待落地）
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
@@ -211,13 +230,13 @@
 | POST | `/api/v1/community/posts/:id/like` | ios-customer ✓ | — | Bearer | 点赞/取消点赞 |
 | GET | `/api/v1/community/posts/:id/comments` | ios-customer ✓ | `page`, `size` | 无 | 评论列表 |
 
-### 1.14 诉求聚合（product-service @ 8086）
+### 1.15 诉求聚合（product-service @ 8086）
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
 | GET | `/api/v1/intentions` | ios-customer ✓ | `code`(opt), `page`, `size` | 无 | 混合返回商品与寺院服务；含 `resourceType/sourceId/price/image/orderTarget/templeCode/serviceCode` |
 
-### 1.15 营销模块（marketing-service @ 8096）
+### 1.16 营销模块（marketing-service @ 8096）
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
@@ -1258,6 +1277,15 @@
 
 ---
 
+## 第二十三章：media-service（端口 8100）
+
+**路径前缀**：`/api/v1/media`、`/api/v1/live`
+**职责**：媒体凭证上传、对象完成校验、转码/审核回调、直播房间和 OpenIM 群聊绑定。接口明细见 1.13。
+
+本地开发使用 MinIO Provider；直播 Provider 未配置时能力接口明确返回关闭状态，开播接口失败且不产生推流会话。
+
+---
+
 ## 下篇总结：后端服务接口统计
 
 | 序号 | 服务名 | 端口 | C 端 | 管理台 | 总计 | 鉴权情况 |
@@ -1279,7 +1307,10 @@
 | 20 | marketing-service | 8096 | 6 | 11 | 17 | ⚠️ 管理台未声明 jwt |
 | 21 | file-service | 8097 | 2 | 0 | 2 | — |
 | 22 | ai-service | 8098 | 8 | 0 | 8 | ✅ 会话所有权校验 |
-| **合计** | — | — | **70** | **146** | **216** | — |
+| 23 | media-service | 8100 | 3 | 7 | 12 | ✅ 所有权/角色/回调令牌 |
+| **合计** | — | — | **73** | **153** | **228** | — |
+
+> media-service 另有 2 个 Provider 回调接口，因此总计比 C 端与管理端之和多 2。
 
 > ⚠️ **鉴权缺口**：review / finance / audit / message(部分) / logistics / marketing 共 6 个服务的管理台接口在 .api 文件中未声明 `jwt: Auth`，完全依赖网关鉴权。绕过网关直连服务端口即可无鉴权访问。
 
@@ -1314,9 +1345,9 @@
 
 ---
 
-## 附录 B：网关路由表（41 条 Prefix）
+## 附录 B：网关路由表（43 条 Prefix）
 
-### C 端业务路由（19 条）+ OpenIM 透传（1 条）
+### C 端业务路由（21 条）+ OpenIM 透传（1 条）
 
 | 前缀 | 目标服务 | 端口 |
 |------|---------|------|
@@ -1337,6 +1368,8 @@
 | `/api/v1/announcements` | message-service | 8094 |
 | `/api/v1/files` | file-service | 8097 |
 | `/api/v1/ai` | ai-service | 8098 |
+| `/api/v1/media` | media-service | 8100 |
+| `/api/v1/live` | media-service | 8100 |
 | `/api/v1/logistics` | logistics-service | 8095 |
 | `/api/v1/im` | OpenIM | 10002 |
 | `/openim` | message-service | 8094 |
@@ -1392,6 +1425,7 @@
 | 8096 | marketing | services/operation/marketing-service |
 | 8097 | file | services/infrastructure/file-service |
 | 8098 | ai | services/infrastructure/ai-service |
+| 8100 | media | services/infrastructure/media-service |
 | 10002 | OpenIM | 外部依赖 |
 
 ---
@@ -1417,8 +1451,9 @@
 | 15 | marketing-service | 8096 | 6 | 11 | 17 |
 | 16 | file-service | 8097 | 2 | 0 | 2 |
 | 17 | ai-service | 8098 | 8 | 0 | 8 |
-| **合计** | — | — | **70** | **146** | **216** |
+| 18 | media-service | 8100 | 3 | 7 | 12 |
+| **合计** | — | — | **73** | **153** | **228** |
 
 ---
 
-**文档完成。本接口文档基于 2026-07-13 项目代码状态整理，覆盖 6 个端侧客户端调用的全部 216 个后端接口。**
+**文档完成。本接口文档基于 2026-07-13 项目代码状态整理，覆盖 5 个正式客户端、备用 mobile-customer 与 Provider 回调涉及的 228 个后端接口。**
