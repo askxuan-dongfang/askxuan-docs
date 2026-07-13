@@ -193,12 +193,13 @@
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
-| GET | `/api/v1/ai/skills` | — | `status`(opt) | 无 | AI 技能列表（7 技能） |
-| POST | `/api/v1/ai/sessions` | ios-customer ✓ | `userId`, `skillCode`, `question`(opt) | Bearer | 创建会话 |
+| GET | `/api/v1/ai/skills` | — | `status`(opt) | 无 | AI 入口列表（general + 7 个兼容技能） |
+| POST | `/api/v1/ai/sessions` | ios-customer ✓ | `userId`, `skillCode`(opt), `question`(opt) | Bearer | 创建会话，默认 general |
 | GET | `/api/v1/ai/sessions` | ios-customer ✓ | `userId`, `status`(opt), `page`, `size` | Bearer | 会话列表 |
 | GET | `/api/v1/ai/sessions/:id` | ios-customer ✓ | — | Bearer | 会话详情 |
-| GET | `/api/v1/ai/sessions/:id/messages` | ios-customer ✓ | `page`, `size` | Bearer | 会话消息列表 |
+| GET | `/api/v1/ai/sessions/:id/messages` | ios-customer ✓ | `userId`, `page`, `size` | Bearer | 会话消息列表 |
 | POST | `/api/v1/ai/sessions/:id/messages` | ios-customer ✓ | `userId`, `content` | Bearer | 发送消息 |
+| POST | `/api/v1/ai/sessions/:id/messages/:messageId/retry` | ios-customer ✓ | `userId` | Bearer | 重试失败的助手消息 |
 | DELETE | `/api/v1/ai/sessions/:id` | ios-customer ✓ | — | Bearer | 删除会话 |
 
 ### 1.13 社区内容 / 大师广场原型契约（content-service 待落地）
@@ -1242,16 +1243,17 @@
 **路径前缀**：`/api/v1/ai`（C 端）
 **职责**：AI 技能、会话管理、消息发送
 
-### 22.1 C 端接口（6 个，Bearer 鉴权）
+### 22.1 C 端接口（8 个，其中技能列表无需鉴权）
 
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
-| GET | `/api/v1/ai/skills` | skillList | `status`(opt) | 无 | — | AI 技能列表（7 技能） |
-| POST | `/api/v1/ai/sessions` | sessionCreate | `userId`, `skillCode`, `question`(opt) | Bearer | 📱 | 创建会话 |
+| GET | `/api/v1/ai/skills` | skillList | `status`(opt) | 无 | 📱 | AI 入口列表（general + 7 个兼容技能） |
+| POST | `/api/v1/ai/sessions` | sessionCreate | `userId`, `skillCode`(opt), `question`(opt) | Bearer | 📱 | 创建会话，默认 general |
 | GET | `/api/v1/ai/sessions` | sessionList | `userId`, `status`(opt), `page`, `size` | Bearer | 📱 | 会话列表 |
 | GET | `/api/v1/ai/sessions/:id` | sessionDetail | — | Bearer | 📱 | 会话详情 |
-| GET | `/api/v1/ai/sessions/:id/messages` | messageList | `page`, `size` | Bearer | 📱 | 会话消息列表 |
+| GET | `/api/v1/ai/sessions/:id/messages` | messageList | `userId`, `page`, `size` | Bearer | 📱 | 会话消息列表 |
 | POST | `/api/v1/ai/sessions/:id/messages` | messageSend | `userId`, `content` | Bearer | 📱 | 发送消息 |
+| POST | `/api/v1/ai/sessions/:id/messages/:messageId/retry` | messageRetry | `userId` | Bearer | 📱 | 重试失败的助手消息 |
 | DELETE | `/api/v1/ai/sessions/:id` | sessionDelete | — | Bearer | 📱 | 删除会话 |
 
 ---
@@ -1276,8 +1278,8 @@
 | 19 | logistics-service | 8095 | 0 | 8 | 8 | ⚠️ 管理台未声明 jwt |
 | 20 | marketing-service | 8096 | 6 | 11 | 17 | ⚠️ 管理台未声明 jwt |
 | 21 | file-service | 8097 | 2 | 0 | 2 | — |
-| 22 | ai-service | 8098 | 6 | 0 | 6 | — |
-| **合计** | — | — | **68** | **146** | **214** | — |
+| 22 | ai-service | 8098 | 8 | 0 | 8 | ✅ 会话所有权校验 |
+| **合计** | — | — | **70** | **146** | **216** | — |
 
 > ⚠️ **鉴权缺口**：review / finance / audit / message(部分) / logistics / marketing 共 6 个服务的管理台接口在 .api 文件中未声明 `jwt: Auth`，完全依赖网关鉴权。绕过网关直连服务端口即可无鉴权访问。
 
@@ -1414,9 +1416,9 @@
 | 14 | logistics-service | 8095 | 0 | 8 | 8 |
 | 15 | marketing-service | 8096 | 6 | 11 | 17 |
 | 16 | file-service | 8097 | 2 | 0 | 2 |
-| 17 | ai-service | 8098 | 6 | 0 | 6 |
-| **合计** | — | — | **68** | **146** | **214** |
+| 17 | ai-service | 8098 | 8 | 0 | 8 |
+| **合计** | — | — | **70** | **146** | **216** |
 
 ---
 
-**文档完成。本接口文档基于 2026-07-07 项目最新代码状态整理，覆盖 6 个端侧客户端调用的全部 214 个后端接口。**
+**文档完成。本接口文档基于 2026-07-13 项目代码状态整理，覆盖 6 个端侧客户端调用的全部 216 个后端接口。**
