@@ -1,6 +1,6 @@
 # diy-service DIY手串服务设计文档
 
-> **文档版本**: v1.0
+> **文档版本**: v1.1
 > **创建日期**: 2026-07-01
 > **服务端口**: 8088
 > **业务域**: 商城业务域
@@ -14,6 +14,7 @@ diy-service 负责DIY手串全流程管理，包括：
 - DIY设计（保存/广场展示/详情）
 - 材料库管理（材料CRUD/分类筛选）
 - DIY订单（创建/列表/详情/状态流转）
+- 设计广场作品直接下单（复用公开设计的材料配置）
 - 加持任务派发（MQ通知寺院/法师）
 - 加持服务管理（4项加持服务，对应 extra_service 表）
 - 与 temple-service / master-service 通过 MQ 协同完成加持
@@ -149,6 +150,7 @@ graph TB
 | GET | /api/v1/diy/designs | 设计广场列表 | customer |
 | POST | /api/v1/diy/designs | 保存设计 | customer |
 | GET | /api/v1/diy/designs/:id | 设计详情 | customer |
+| POST | /api/v1/diy/designs/:id/order | 从设计广场作品直接下单 | customer |
 | GET | /api/v1/diy/materials | 材料库列表 | customer |
 | POST | /api/v1/diy/orders | 创建DIY订单 | customer |
 | GET | /api/v1/diy/orders | 我的DIY订单列表 | customer |
@@ -216,6 +218,8 @@ stateDiagram-v2
 2. **材料分类**：7类（主珠/隔片/佛头/吊坠/流苏/三通/绳线），参照统一数据字典
 3. **加持服务**：4项固定服务（E001-E004），价格必须精确匹配统一数据字典
 4. **订单创建**：用户提交设计 → status=pending_review → 等待商城审核
+   - 自主设计下单走 `POST /api/v1/diy/orders`，请求体必须带 `items`
+   - 设计广场直接下单走 `POST /api/v1/diy/designs/:id/order`，后端从 `diy_design.design_data` 解析 `items`，仅允许 `public` / `approved` 设计
 5. **审核流程**：approve → in_making；reject → cancelled（触发退款）
 6. **制作完成**：含加持 → awaiting_blessing（创建 blessing_task + MQ派单）；无加持 → awaiting_shipment
 7. **加持协同**：发 MQ `blessing.dispatch` 到 temple-service；接收 `blessing.complete` 回传更新状态
@@ -243,4 +247,5 @@ stateDiagram-v2
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
+| v1.1 | 2026-07-09 | 对齐 App 改进原型：新增设计广场作品直接下单接口 |
 | v1.0 | 2026-07-01 | 初始版本：DIY设计/材料/订单/加持任务 骨架设计 |

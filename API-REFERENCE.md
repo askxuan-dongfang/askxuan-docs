@@ -140,6 +140,7 @@
 | GET | `/api/v1/diy/designs` | ios-customer ✓ | `page`, `size` | 无 | 设计列表 |
 | POST | `/api/v1/diy/designs` | ios-customer ✓ | `userId`, `name`, `designData`, `totalPrice`, `status` | Bearer | 保存设计 |
 | GET | `/api/v1/diy/designs/:id` | ios-customer ✓ | — | 无 | 设计详情 |
+| POST | `/api/v1/diy/designs/:id/order` | ios-customer ✓ | `userId`, `blessServiceCode`(opt), `addressId` | Bearer | 从设计广场作品直接创建 DIY 订单 |
 | GET | `/api/v1/diy/materials` | ios-customer ✓ | `category`(opt), `page`, `size` | 无 | 材料库列表 |
 | POST | `/api/v1/diy/orders` | ios-customer ✓ | `userId`, `designId`, `items`, `blessServiceCode`(opt), `addressId` | Bearer | 创建 DIY 订单 |
 | GET | `/api/v1/diy/orders` | ios-customer ✓ | `userId`, `status`(opt), `page`, `size` | Bearer | DIY 订单列表 |
@@ -192,13 +193,29 @@
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
 | GET | `/api/v1/ai/skills` | — | `status`(opt) | 无 | AI 技能列表（7 技能） |
-| POST | `/api/v1/ai/sessions` | — | `userId`, `skillCode` | Bearer | 创建会话 |
-| GET | `/api/v1/ai/sessions` | — | `userId`, `status`(opt), `page`, `size` | Bearer | 会话列表 |
-| GET | `/api/v1/ai/sessions/:id` | — | — | Bearer | 会话详情 |
-| POST | `/api/v1/ai/sessions/:id/messages` | — | `userId`, `content` | Bearer | 发送消息 |
-| DELETE | `/api/v1/ai/sessions/:id` | — | — | Bearer | 删除会话 |
+| POST | `/api/v1/ai/sessions` | ios-customer ✓ | `userId`, `skillCode`, `question`(opt) | Bearer | 创建会话 |
+| GET | `/api/v1/ai/sessions` | ios-customer ✓ | `userId`, `status`(opt), `page`, `size` | Bearer | 会话列表 |
+| GET | `/api/v1/ai/sessions/:id` | ios-customer ✓ | — | Bearer | 会话详情 |
+| GET | `/api/v1/ai/sessions/:id/messages` | ios-customer ✓ | `page`, `size` | Bearer | 会话消息列表 |
+| POST | `/api/v1/ai/sessions/:id/messages` | ios-customer ✓ | `userId`, `content` | Bearer | 发送消息 |
+| DELETE | `/api/v1/ai/sessions/:id` | ios-customer ✓ | — | Bearer | 删除会话 |
 
-### 1.13 营销模块（marketing-service @ 8096）
+### 1.13 社区内容 / 大师广场原型契约（content-service 待落地）
+
+| 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
+|------|------|-----------|---------|------|------|
+| GET | `/api/v1/community/feed` | ios-customer ✓ | `type`(opt), `sect`(opt), `page`, `size` | 无 | 大师广场内容流，支持短视频/图文与宗派筛选 |
+| GET | `/api/v1/community/posts/:id` | ios-customer ✓ | — | 无 | 内容详情 |
+| POST | `/api/v1/community/posts/:id/like` | ios-customer ✓ | — | Bearer | 点赞/取消点赞 |
+| GET | `/api/v1/community/posts/:id/comments` | ios-customer ✓ | `page`, `size` | 无 | 评论列表 |
+
+### 1.14 意图聚合原型契约（gateway 聚合 / content-service 待落地）
+
+| 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
+|------|------|-----------|---------|------|------|
+| GET | `/api/v1/intentions` | ios-customer ✓ | `code`(opt), `page`, `size` | 无 | 按“求平安/求财运/求姻缘/化太岁”等意图聚合寺院服务、商品标签、内容入口 |
+
+### 1.15 营销模块（marketing-service @ 8096）
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
@@ -209,7 +226,7 @@
 | POST | `/api/v1/marketing/coupons/:id/receive` | — | `userId` | Bearer | 领取优惠券 |
 | GET | `/api/v1/marketing/my-coupons` | — | `userId`, `status`(opt), `page`, `size` | Bearer | 我的优惠券 |
 
-### 1.14 文件模块（file-service @ 8097）
+### 1.16 文件模块（file-service @ 8097）
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
@@ -310,7 +327,16 @@
 | GET | `/api/v1/admin/masters/profile` | ✓ | — | Bearer | 法师资料 |
 | PUT | `/api/v1/admin/masters/profile` | ✓ | `bio`(opt), `specialties`(opt), `avatar`(opt), `pricing`(opt) | Bearer | 更新资料 |
 
-### 2.7 法师消息（message-service @ 8094）
+### 2.7 法师社区内容 / 大师广场原型契约（content-service 待落地）
+
+| 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
+|------|------|-----------|---------|------|------|
+| GET | `/api/v1/admin/masters/community/posts` | ✓ | `status`(opt), `page`, `size` | Bearer | 法师本人发布内容列表 |
+| POST | `/api/v1/admin/masters/community/posts` | ✓ | `type`, `title`, `content`(opt), `coverUrl`(opt), `videoUrl`(opt), `tags`(opt) | Bearer | 发布图文/短视频，提交后进入平台审核 |
+| PUT | `/api/v1/admin/masters/community/posts/:id` | ✓ | `type`, `title`, `content`(opt), `coverUrl`(opt), `videoUrl`(opt), `tags`(opt) | Bearer | 编辑未发布或被驳回内容 |
+| PUT | `/api/v1/admin/masters/community/posts/:id/status` | ✓ | `status` | Bearer | 草稿/提交审核/下架 |
+
+### 2.8 法师消息（message-service @ 8094）
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
@@ -318,19 +344,19 @@
 | PUT | `/api/v1/admin/messages/master/:id/read` | ✓ | — | Bearer | 标记已读 |
 | POST | `/api/v1/messages/device-token` | ✓ | `userId`, `clientType`, `platform`, `deviceToken`, `bundleId`(opt) | Bearer | 注册 APNs token（**路径无 admin 前缀**，与 C 端共用） |
 
-### 2.8 法师评价（review-service @ 8092）
+### 2.9 法师评价（review-service @ 8092）
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
 | GET | `/api/v1/admin/reviews` | ✓ | `targetType`(opt), `targetId`(opt), `status`(opt), `rating`(opt), `page` | Bearer | 评价列表（按 targetType=master 过滤） |
 
-### 2.9 法师提现（finance-service @ 8091）
+### 2.10 法师提现（finance-service @ 8091）
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
 | POST | `/api/v1/admin/finance/withdrawals/apply` | ✓ | `amount`, `bankCard` | Bearer | 提现申请 |
 
-### 2.10 法师端已知不对齐问题
+### 2.11 法师端已知不对齐问题
 
 | # | 位置 | 问题 |
 |---|------|------|
@@ -926,13 +952,14 @@
 **路径前缀**：`/api/v1/diy`（C 端）、`/api/v1/admin/diy`（管理台）
 **职责**：DIY 设计、材料库、DIY 订单、加持服务
 
-### 12.1 C 端接口（7 个，Bearer 鉴权）
+### 12.1 C 端接口（8 个，Bearer 鉴权）
 
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
 | GET | `/api/v1/diy/designs` | designList | `page`, `size` | 无 | 📱 | 设计列表 |
 | POST | `/api/v1/diy/designs` | designSave | `userId`, `name`, `designData`, `totalPrice`, `status` | Bearer | 📱 | 保存设计 |
 | GET | `/api/v1/diy/designs/:id` | designDetail | — | 无 | 📱 | 设计详情 |
+| POST | `/api/v1/diy/designs/:id/order` | diyDesignOrderCreate | `userId`, `blessServiceCode`(opt), `addressId` | Bearer | 📱 | 从设计广场作品直接创建 DIY 订单 |
 | GET | `/api/v1/diy/materials` | materialList | `category`(opt), `page`, `size` | 无 | 📱 | 材料库列表 |
 | POST | `/api/v1/diy/orders` | diyOrderCreate | `userId`, `designId`, `items`, `blessServiceCode`(opt), `addressId` | Bearer | 📱 | 创建 DIY 订单 |
 | GET | `/api/v1/diy/orders` | diyOrderList | `userId`, `status`(opt), `page`, `size` | Bearer | 📱 | DIY 订单列表 |
@@ -1218,11 +1245,12 @@
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
 | GET | `/api/v1/ai/skills` | skillList | `status`(opt) | 无 | — | AI 技能列表（7 技能） |
-| POST | `/api/v1/ai/sessions` | sessionCreate | `userId`, `skillCode` | Bearer | — | 创建会话 |
-| GET | `/api/v1/ai/sessions` | sessionList | `userId`, `status`(opt), `page`, `size` | Bearer | — | 会话列表 |
-| GET | `/api/v1/ai/sessions/:id` | sessionDetail | — | Bearer | — | 会话详情 |
-| POST | `/api/v1/ai/sessions/:id/messages` | messageSend | `userId`, `content` | Bearer | — | 发送消息 |
-| DELETE | `/api/v1/ai/sessions/:id` | sessionDelete | — | Bearer | — | 删除会话 |
+| POST | `/api/v1/ai/sessions` | sessionCreate | `userId`, `skillCode`, `question`(opt) | Bearer | 📱 | 创建会话 |
+| GET | `/api/v1/ai/sessions` | sessionList | `userId`, `status`(opt), `page`, `size` | Bearer | 📱 | 会话列表 |
+| GET | `/api/v1/ai/sessions/:id` | sessionDetail | — | Bearer | 📱 | 会话详情 |
+| GET | `/api/v1/ai/sessions/:id/messages` | messageList | `page`, `size` | Bearer | 📱 | 会话消息列表 |
+| POST | `/api/v1/ai/sessions/:id/messages` | messageSend | `userId`, `content` | Bearer | 📱 | 发送消息 |
+| DELETE | `/api/v1/ai/sessions/:id` | sessionDelete | — | Bearer | 📱 | 删除会话 |
 
 ---
 

@@ -1,6 +1,6 @@
 # ai-service AI 问事服务设计文档
 
-> **文档版本**: v1.0
+> **文档版本**: v1.2
 > **创建日期**: 2026-07-01
 > **服务端口**: 8098
 > **业务域**: 营销 + AI 域
@@ -26,7 +26,7 @@ ai-service 提供问玄东方 C 端 AI 问事对话能力，覆盖 **7 个玄学
 - 技能列表查询（C 端展示）
 - 创建对话会话（用户选定技能）
 - 会话列表 / 详情 / 删除（用户管理自己的会话）
-- 发送消息（同步返回接收确认，异步通过 RabbitMQ 触发模型推理）
+- 发送消息（C 端直接问事，同步返回接收确认，异步通过 RabbitMQ 触发模型推理）
 - RabbitMQ 事件 `ai.events` 异步驱动大模型推理（解耦模型调用与请求响应）
 
 ---
@@ -40,11 +40,11 @@ graph TB
     end
 
     subgraph ai-service
-        HANDLER[handler<br/>6 路由]
+        HANDLER[handler<br/>7 路由]
         LOGIC[logic<br/>skill/session/message]
         MODEL[model<br/>内存存储<br/>3 实体+CRUD]
         MQ[mq.Producer<br/>RabbitMQ 懒连接]
-        CONSUMER[mq.Consumer<br/>消费 ai.divination<br/>调大模型/写回复]
+    CONSUMER[mq.Consumer<br/>消费 ai.divination<br/>正式推理待接入]
     end
 
     GW[gateway<br/>/api/v1/ai 转发]
@@ -115,26 +115,27 @@ graph TB
 | 方法 | 路径 | 说明 | 角色 |
 |------|------|------|------|
 | GET | /skills | 技能列表（按 status=enabled 过滤） | customer |
-| POST | /sessions | 创建会话（指定 userId + skillCode） | customer |
+| POST | /sessions | 创建会话（指定 userId + skillCode，可携带首问 question） | customer |
 | GET | /sessions | 会话列表（按 userId 过滤，分页） | customer |
 | GET | /sessions/:id | 会话详情（含消息列表，按时间正序） | customer |
+| GET | /sessions/:id/messages | 会话消息列表（分页，按时间正序） | customer |
 | POST | /sessions/:id/messages | 发送用户消息（同步返回 accepted，异步触发推理） | customer |
 | DELETE | /sessions/:id | 删除会话（软删除，置 status=closed） | customer |
 
-> 共 **6 个路由**，全部 C 端，无管理台接口。
+> 共 **7 个路由**，全部 C 端，无管理台接口。
 
 ---
 
 ## 5. 业务逻辑要点
 
 1. **会话号生成**：格式 `AI` + `yyyyMMdd` + 3 位序号，例如 `AI20260701001`
-2. **技能校验**：创建会话时按 `skillCode` 查询 `ai_skill`，不存在或 `disabled` 返回错误
+2. **技能校验**：创建会话时按 `skillCode` 查询 `ai_skill`，不存在或 `disabled` 返回错误；原型首页/AI页的“开始AI问事”必须先创建 session，再向 `/sessions/:id/messages` 发送用户问题
 3. **消息角色**：`user`（用户提问）/ `assistant`（模型回复），按时间正序展示
-4. **异步推理**：`POST /sessions/:id/messages` 同步落库 user 消息并返回 `accepted`，同时通过 RabbitMQ 发送 `AIDivination` 事件，消费者异步调大模型并将 assistant 回复写入 `ai_message`
+4. **原型推理闭环**：`POST /sessions/:id/messages` 同步落库 user 消息、尝试发布 `AIDivination` 事件并返回 `accepted`；当前同时写入占位 assistant 回复，正式大模型推理接入后由消费者补全真实解读
 5. **会话状态**：`active`（活跃） / `closed`（已关闭，删除即置为 closed），便于软删除与历史追溯
 6. **RabbitMQ 容错**：生产者懒连接，RabbitMQ 不可用时 `Publish` 返回 nil 不阻断主流程（与 booking-service 一致）
 7. **Token 统计**：消费者写入 assistant 消息时填入实际 token 消耗，便于未来计费
-8. **空实现约定**：当前 logic 全部返回 `common.ErrNotImplemented`（Code 50002），后续逐步落地
+8. **实现状态**：技能列表、会话创建/列表/详情/删除、消息列表/发送已形成内存版闭环；MySQL 持久化、真实模型推理与 token 统计为后续增强
 9. **MQ 拓扑**：交换机 `ai.events`（fanout），队列 `ai.divination`（ai-service 自身消费），未来可被 message-service 等订阅扩展
 
 ---
@@ -171,4 +172,6 @@ AI 服务使用 `common/errorcode.go` 中的统一错误码（范围 40001-50299
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
+| v1.2 | 2026-07-09 | 补齐内存版技能、会话、消息闭环，新增消息列表接口，明确真实推理待接入 |
+| v1.1 | 2026-07-09 | 对齐 App 改进原型：明确 C 端直接问事会话与首问字段 |
 | v1.0 | 2026-07-01 | 初始版本：7 技能 + 会话/消息 3 实体 + 6 路由 + RabbitMQ producer 骨架 |
