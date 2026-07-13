@@ -1,6 +1,6 @@
 # diy-service DIY手串服务设计文档
 
-> **文档版本**: v1.1
+> **文档版本**: v1.2
 > **创建日期**: 2026-07-01
 > **服务端口**: 8088
 > **业务域**: 商城业务域
@@ -14,7 +14,8 @@ diy-service 负责DIY手串全流程管理，包括：
 - DIY设计（保存/广场展示/详情）
 - 材料库管理（材料CRUD/分类筛选）
 - DIY订单（创建/列表/详情/状态流转）
-- 设计广场作品直接下单（复用公开设计的材料配置）
+- 设计广场作品直接下单（服务端按材料 ID/SKU 重定价并保存快照）
+- 设计作者收益记录（默认分成 0%，支付成功后进入待结算）
 - 加持任务派发（MQ通知寺院/法师）
 - 加持服务管理（4项加持服务，对应 extra_service 表）
 - 与 temple-service / master-service 通过 MQ 协同完成加持
@@ -84,7 +85,15 @@ graph TB
 | bless_fee | DECIMAL(10,2) | 加持费 |
 | total_fee | DECIMAL(10,2) | 总金额 |
 | status | VARCHAR(32) | 见状态机 |
+| payment_status | VARCHAR(16) | pending/success/refunded，与审核制作状态独立 |
 | address_id | BIGINT | 收货地址ID |
+| source | VARCHAR(16) | custom/design_square |
+| creator_id | VARCHAR(64) | 设计作者ID |
+| creator_share_rate | DECIMAL(7,6) | 下单时作者分成比例快照，默认0 |
+| original_material_fee | DECIMAL(10,2) | 设计展示材料费 |
+| price_changed | TINYINT | 最终价是否变化 |
+| design_snapshot | LONGTEXT | 不可变设计快照JSON |
+| pricing_snapshot | LONGTEXT | 不可变最终计价快照JSON |
 | create_time | DATETIME | 创建时间 |
 
 ### 3.3 diy_order_item（DIY订单明细表）
@@ -94,6 +103,7 @@ graph TB
 | id | BIGINT AUTO_INCREMENT | 主键 |
 | order_id | BIGINT | 订单ID |
 | material_id | BIGINT | 材料ID |
+| sku_id | BIGINT | 最终采用的材料SKU ID，无SKU时为0 |
 | material_name | VARCHAR(64) | 材料名称 |
 | spec | VARCHAR(64) | 规格 |
 | unit_price | DECIMAL(10,2) | 单价 |
@@ -139,6 +149,10 @@ graph TB
 | assign_time | DATETIME | 分配时间 |
 | complete_time | DATETIME | 完成时间 |
 
+### 3.7 diy_config / diy_creator_earning
+
+`diy_config` 保存可运营配置，`diy_design_creator_share` 取值范围为 0-1，默认 `0`。`diy_creator_earning` 在设计广场订单支付成功后幂等生成，保存订单、设计、作者、支付单、计提基数、比例、收益金额与 `pending` 待结算状态；自主设计订单不生成作者收益。
+
 ---
 
 ## 4. 接口清单
@@ -150,7 +164,7 @@ graph TB
 | GET | /api/v1/diy/designs | 设计广场列表 | customer |
 | POST | /api/v1/diy/designs | 保存设计 | customer |
 | GET | /api/v1/diy/designs/:id | 设计详情 | customer |
-| POST | /api/v1/diy/designs/:id/order | 从设计广场作品直接下单 | customer |
+| POST | /api/v1/diy/designs/:id/order | 从设计广场作品直接下单，返回最终计价与快照 | customer |
 | GET | /api/v1/diy/materials | 材料库列表 | customer |
 | POST | /api/v1/diy/orders | 创建DIY订单 | customer |
 | GET | /api/v1/diy/orders | 我的DIY订单列表 | customer |
@@ -219,13 +233,16 @@ stateDiagram-v2
 3. **加持服务**：4项固定服务（E001-E004），价格必须精确匹配统一数据字典
 4. **订单创建**：用户提交设计 → status=pending_review → 等待商城审核
    - 自主设计下单走 `POST /api/v1/diy/orders`，请求体必须带 `items`
-   - 设计广场直接下单走 `POST /api/v1/diy/designs/:id/order`，后端从 `diy_design.design_data` 解析 `items`，仅允许 `public` / `approved` 设计
-5. **审核流程**：approve → in_making；reject → cancelled（触发退款）
-6. **制作完成**：含加持 → awaiting_blessing（创建 blessing_task + MQ派单）；无加持 → awaiting_shipment
-7. **加持协同**：发 MQ `blessing.dispatch` 到 temple-service；接收 `blessing.complete` 回传更新状态
-8. **发货**：填物流单号 → shipped → MQ通知用户
-9. **自动收货**：shipped 超过7天自动 completed
-10. **退换货期限**：completed 后7天内可申请退换货
+   - 设计广场直接下单走 `POST /api/v1/diy/designs/:id/order`，后端从 `diy_design.design_data` 解析材料 ID/规格/数量，仅允许 `public` / `approved` 设计
+   - 服务端在同一数据库事务中锁定材料与 SKU，重新查询价格、上下架状态和库存；客户端 `unitPrice` 与设计展示价不参与最终计费
+   - 订单、明细、库存扣减和不可变设计/计价快照同事务提交，任一失败完整回滚
+5. **支付与作者收益**：payment-service 按订单号校验所属用户、`pending_review` 状态和最终金额；支付成功事件为设计广场订单幂等生成待结算作者收益，默认比例 `0%`，不越过商城审核改变订单状态
+6. **审核流程**：支付成功后订单仍为 `pending_review`；商城 approve → `in_making`，reject → `cancelled`，订单状态变更与材料/SKU库存归还同事务完成；已支付订单另走退款流程
+7. **制作完成**：含加持 → awaiting_blessing（创建 blessing_task + MQ派单）；无加持 → awaiting_shipment
+8. **加持协同**：发 MQ `blessing.dispatch` 到 temple-service；接收 `blessing.complete` 回传更新状态
+9. **发货**：填物流单号 → shipped → MQ通知用户
+10. **自动收货**：shipped 超过7天自动 completed
+11. **退换货期限**：completed 后7天内可申请退换货
 
 ---
 
@@ -237,7 +254,7 @@ stateDiagram-v2
 | MQ ← | master-service | blessing.complete 回传 |
 | MQ → | message-service | diy.notify 状态通知 |
 | RPC | product-service | 查关联商品（如材料共享） |
-| MySQL | askxuan_diy 库 | diy_design/diy_order/diy_order_item/material/material_sku/blessing_task |
+| MySQL | askxuan_diy 库 | diy_design/diy_order/diy_order_item/material/material_sku/blessing_task/diy_config/diy_creator_earning |
 | Redis | 本地 | 材料库缓存 |
 | etcd | 服务注册 | 服务发现 |
 
@@ -247,5 +264,6 @@ stateDiagram-v2
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
+| v1.2 | 2026-07-13 | 设计广场下单服务端重定价、事务快照、支付校验与作者收益 |
 | v1.1 | 2026-07-09 | 对齐 App 改进原型：新增设计广场作品直接下单接口 |
 | v1.0 | 2026-07-01 | 初始版本：DIY设计/材料/订单/加持任务 骨架设计 |

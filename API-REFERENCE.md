@@ -141,7 +141,7 @@
 | GET | `/api/v1/diy/designs` | ios-customer ✓ | `page`, `size` | 无 | 设计列表 |
 | POST | `/api/v1/diy/designs` | ios-customer ✓ | `userId`, `name`, `designData`, `totalPrice`, `status` | Bearer | 保存设计 |
 | GET | `/api/v1/diy/designs/:id` | ios-customer ✓ | — | 无 | 设计详情 |
-| POST | `/api/v1/diy/designs/:id/order` | ios-customer ✓ | `userId`, `blessServiceCode`(opt), `addressId` | Bearer | 从设计广场作品直接创建 DIY 订单 |
+| POST | `/api/v1/diy/designs/:id/order` | ios-customer ✓ | `userId`, `blessServiceCode`(opt), `addressId` | Bearer | 服务端按材料/SKU重定价并创建订单，返回最终金额、明细、`paymentStatus`和快照 |
 | GET | `/api/v1/diy/materials` | ios-customer ✓ | `category`(opt), `page`, `size` | 无 | 材料库列表 |
 | POST | `/api/v1/diy/orders` | ios-customer ✓ | `userId`, `designId`, `items`, `blessServiceCode`(opt), `addressId` | Bearer | 创建 DIY 订单 |
 | GET | `/api/v1/diy/orders` | ios-customer ✓ | `userId`, `status`(opt), `page`, `size` | Bearer | DIY 订单列表 |
@@ -163,8 +163,8 @@
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
-| POST | `/api/v1/payments` | — | `orderType`, `orderNo`, `amount`, `channel`, `userId` | Bearer | 发起支付 |
-| GET | `/api/v1/payments/:id` | — | — | Bearer | 查询支付状态 |
+| POST | `/api/v1/payments` | ios-customer ✓ | `orderType`, `orderNo`, `amount`, `channel`, `userId` | Bearer | 发起支付；DIY订单校验所属、状态和服务端最终金额 |
+| GET | `/api/v1/payments/:id` | ios-customer ✓ | — | Bearer | 查询支付状态 |
 | POST | `/api/v1/payments/callback/wechat` | — | 第三方回调体 | 无 | 微信回调 |
 | POST | `/api/v1/payments/callback/alipay` | — | 第三方回调体 | 无 | 支付宝回调 |
 
@@ -962,7 +962,7 @@
 | GET | `/api/v1/diy/designs` | designList | `page`, `size` | 无 | 📱 | 设计列表 |
 | POST | `/api/v1/diy/designs` | designSave | `userId`, `name`, `designData`, `totalPrice`, `status` | Bearer | 📱 | 保存设计 |
 | GET | `/api/v1/diy/designs/:id` | designDetail | — | 无 | 📱 | 设计详情 |
-| POST | `/api/v1/diy/designs/:id/order` | diyDesignOrderCreate | `userId`, `blessServiceCode`(opt), `addressId` | Bearer | 📱 | 从设计广场作品直接创建 DIY 订单 |
+| POST | `/api/v1/diy/designs/:id/order` | diyDesignOrderCreate | `userId`, `blessServiceCode`(opt), `addressId` | Bearer | 📱 | 服务端重定价，返回最终金额、材料明细、设计与计价快照 |
 | GET | `/api/v1/diy/materials` | materialList | `category`(opt), `page`, `size` | 无 | 📱 | 材料库列表 |
 | POST | `/api/v1/diy/orders` | diyOrderCreate | `userId`, `designId`, `items`, `blessServiceCode`(opt), `addressId` | Bearer | 📱 | 创建 DIY 订单 |
 | GET | `/api/v1/diy/orders` | diyOrderList | `userId`, `status`(opt), `page`, `size` | Bearer | 📱 | DIY 订单列表 |
