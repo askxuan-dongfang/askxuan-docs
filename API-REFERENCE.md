@@ -23,7 +23,7 @@
 | Header | `Authorization: Bearer <accessToken>` |
 | 网关注入 Header | `X-User-Id` / `X-User-Roles` / `X-Client-Id` / `X-Temple-Id` / `X-Master-Id` / `X-User-Type` / `X-Client-Type` |
 | JWT Claims | UserId / Mobile / UserType / Roles / ClientID / TempleID / MasterID / Type（8 字段） |
-| 不鉴权白名单 | `/api/v1/auth/login`、`/api/v1/auth/refresh`、`/api/v1/auth/admin/login`、`/api/v1/users/register`、`/api/v1/payments/callback/wechat`、`/api/v1/payments/callback/alipay`、`/api/v1/temples`、`/api/v1/masters`、`/api/v1/products`、`/api/v1/marketing/banners`、`/api/v1/announcements`、`/api/v1/diy/designs`、`/api/v1/diy/materials`、`/api/v1/health`、`/api/v1/im`（OpenIM REST 透传，由 OpenIM 自身鉴权）、`/openim/webhook`（OpenIM 事件回调，无 JWT） |
+| 不鉴权白名单 | `/api/v1/auth/login`、`/api/v1/auth/refresh`、`/api/v1/auth/admin/login`、`/api/v1/users/register`、`/api/v1/payments/callback/wechat`、`/api/v1/payments/callback/alipay`、`/api/v1/beliefs`、`/api/v1/temples`、`/api/v1/masters`、`/api/v1/products`、`/api/v1/marketing/banners`、`/api/v1/announcements`、`/api/v1/diy/designs`、`/api/v1/diy/materials`、`/api/v1/health`、`/api/v1/im`（OpenIM REST 透传，由 OpenIM 自身鉴权）、`/openim/webhook`（OpenIM 事件回调，无 JWT） |
 | 白名单匹配规则 | GET 请求：前缀匹配（`path == prefix` 或 `path 以 prefix+"/" 开头`，支持 `/temples/T001` 等详情页）；非 GET 请求：精确匹配 |
 
 ### 2. 响应格式
@@ -103,7 +103,8 @@
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
-| GET | `/api/v1/temples` | ios-customer ✓ / mobile-customer ✓ | `sect`(opt), `type`(opt), `region`(opt), `page`, `size` | 无 | 寺院列表 |
+| GET | `/api/v1/beliefs/:code` | ios-customer ✓ | — | 无 | 一级流派资料；code 为 `han_buddhism`/`tibetan_buddhism`/`daoism`/`folk` |
+| GET | `/api/v1/temples` | ios-customer ✓ / mobile-customer ✓ | `beliefCode`(opt), `sect`(opt), `type`(opt), `region`(opt), `page`, `size` | 无 | 寺院列表 |
 | GET | `/api/v1/temples/:id` | ios-customer ✓ / mobile-customer ✓ | — | 无 | 寺院详情 |
 | GET | `/api/v1/temples/:id/services` | ios-customer ✓ | — | 无 | 寺院服务列表 |
 
@@ -111,7 +112,7 @@
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
-| GET | `/api/v1/masters` | ios-customer ✓ / mobile-customer ✓ | `sect`(opt), `type`(opt), `templeId`(opt), `page`, `size` | 无 | 法师列表 |
+| GET | `/api/v1/masters` | ios-customer ✓ / mobile-customer ✓ | `beliefCode`(opt), `sect`(opt), `type`(opt), `templeId`(opt), `page`, `size` | 无 | 法师列表 |
 | GET | `/api/v1/masters/:id` | ios-customer ✓ / mobile-customer ✓ | — | 无 | 法师详情 |
 
 ### 1.5 预约模块（booking-service @ 8085）
@@ -392,7 +393,7 @@
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
 | GET | `/api/v1/admin/temples/info` | ✓ | — | Bearer | 寺院信息（JWT 推导 templeId） |
-| PUT | `/api/v1/admin/temples/info` | ✓ | `name`(opt), `region`(opt), `address`(opt), `coverImage`(opt) | Bearer | 更新寺院信息 |
+| PUT | `/api/v1/admin/temples/info` | ✓ | `name`(opt), `region`(opt), `type`(opt), `beliefCode`(opt), `sect`(opt), `address`(opt), `coverImage`(opt) | Bearer | 更新寺院信息 |
 | POST | `/api/v1/admin/temples/images` | ✓ | `url`, `type`, `sort`(opt) | Bearer | 新增寺院图片 |
 | DELETE | `/api/v1/admin/temples/images/:id` | ✓ | — | Bearer | 删除寺院图片 |
 | GET | `/api/v1/admin/temples/images` | ✓ | — | Bearer | 寺院图片列表 |
@@ -413,8 +414,8 @@
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
 | GET | `/api/v1/admin/temples/masters` | ✓ | `templeId`, `status`(opt), `page`, `size` | Bearer | 法师列表 |
-| POST | `/api/v1/admin/temples/masters` | ✓ | `dharmaName`, `layName`, `templeId`, `templeName`(opt), `position` | Bearer | 新增法师 |
-| PUT | `/api/v1/admin/temples/masters/:id` | ✓ | `dharmaName`(opt), `layName`(opt), `position`(opt), `specialties`(opt) | Bearer | 更新法师 |
+| POST | `/api/v1/admin/temples/masters` | ✓ | `dharmaName`, `layName`, `templeId`, `position`, `beliefCode`, `sect`, `type` | Bearer | 新增法师 |
+| PUT | `/api/v1/admin/temples/masters/:id` | ✓ | `dharmaName`(opt), `layName`(opt), `position`(opt), `beliefCode`(opt), `sect`(opt), `specialties`(opt) | Bearer | 更新法师 |
 | PUT | `/api/v1/admin/temples/masters/:id/status` | ✓ | `status` | Bearer | 法师上下架 |
 
 ### 3.5 预约管理（booking-service @ 8085）
@@ -617,6 +618,7 @@
 | PUT | `/api/v1/admin/platform/temples/audits/:id/final-pass` | ✓ | `auditRemark`(opt) | Bearer | 终审通过 |
 | PUT | `/api/v1/admin/platform/temples/audits/:id/reject` | ✓ | `auditRemark`(opt) | Bearer | 驳回申请 |
 | PUT | `/api/v1/admin/platform/temples/:id/status` | ✓ | `status` | Bearer | 寺院状态（normal/banned/recommended） |
+| PUT | `/api/v1/admin/platform/beliefs/:code` | ✓ | `name`, `summary`(opt), `description`, `coverImage`(opt), `sort`(opt) | Bearer | 维护一级流派运营资料 |
 | GET | `/api/v1/temples/:id` | ✓ | — | 无 | 寺院详情（**复用 C 端接口**） |
 
 ### 5.4 法师审核（master-service @ 8084）
