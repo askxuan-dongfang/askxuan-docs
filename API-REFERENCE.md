@@ -220,6 +220,7 @@
 | POST | `/api/v1/live/rooms/:id/close` | ios-master ✓ | — | Master | 关闭 Provider 会话和房间 |
 
 > 默认 `LIVE_ENABLED=false` 且 Provider 为 `disabled`。此状态下法师端不展示开播控件，`start` 返回 `50320`，不会生成伪造推流或观看地址。
+> Docker 本地开发中，服务端对象校验使用内部 `Endpoint=minio:9000`，返回客户端的预签名 URL 使用 `PresignEndpoint=localhost:9000`；两者指向同一 MinIO，避免把容器内部地址暴露给客户端。
 
 ### 1.14 社区内容 / 大师广场（community-service @ 8099）
 
@@ -266,7 +267,9 @@
 | GET | `/api/v1/reviews` | — | `targetType`(opt), `targetId`(opt), `userId`(opt), `rating`(opt), `page` | 无 | 评价列表 |
 | GET | `/api/v1/reviews/:id` | — | — | 无 | 评价详情 |
 
-### 1.16 C 端已知不对齐问题
+### 1.18 备用 React Native C 端已知问题
+
+> `mobile-customer` 是回归参考实现，不属于本次定义的五个正式客户端；以下问题不计入五端发布结论，但保留为后续维护队列。
 
 | # | 客户端 | 位置 | 问题 |
 |---|--------|------|------|
@@ -396,10 +399,10 @@
 
 | # | 位置 | 问题 |
 |---|------|------|
-| M1 | `APIClient.swift:108-115` | 未识别 40101 业务码，半登录状态 |
-| M2 | `Endpoint.swift:98-103` | 3 个 booking 端点路径错误（detail/confirm/complete），后端未定义 |
-| M3 | `BookingsView.swift:97-110` | View 显示 mock 数据，ViewModel 加载的真实数据被忽略 |
-| M4 | `Models/BlessingTask.swift` | 状态枚举用 `doing`/`done`，后端用 `in_progress`/`completed` |
+| M1 | `APIClient.swift` | ✅ 已修复：识别 40101 并触发统一登出 |
+| M2 | `Endpoint.swift` | ✅ 已修复：预约详情、确认、完成路径与后端复数路由一致 |
+| M3 | `BookingsView.swift` | ✅ 已修复：状态筛选、分页、空态和详情均使用真实 ViewModel 数据及预约 ID |
+| M4 | `Models/BlessingTask.swift` | ✅ 已修复：状态使用 `in_progress` / `completed` |
 
 ---
 
@@ -1297,7 +1300,7 @@
 **路径前缀**：`/api/v1/media`、`/api/v1/live`
 **职责**：媒体凭证上传、对象完成校验、转码/审核回调、直播房间和 OpenIM 群聊绑定。接口明细见 1.13。
 
-本地开发使用 MinIO Provider；直播 Provider 未配置时能力接口明确返回关闭状态，开播接口失败且不产生推流会话。
+本地开发使用 MinIO Provider；服务端内部对象校验地址与客户端预签名地址分离配置。直播 Provider 未配置时能力接口明确返回关闭状态，开播接口失败且不产生推流会话。
 
 ---
 
