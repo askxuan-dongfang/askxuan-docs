@@ -1,14 +1,14 @@
 # 问玄东方全栈接口文档（面向 5 个端侧客户端）
 
-**文档版本**：2026-07-13
+**文档版本**：2026-07-15
 **网关地址**：`http://localhost:8080`（本地开发）/ `https://api.askxuan.com`（生产）
 **网关模型**：自研 net/http + httputil.ReverseProxy，23 条公开业务路由 + 2 条 IM 路由 + 24 条管理台路由 = 49 条 Prefix；最长前缀匹配，动态服务发现优先、静态 Target 回退
-**接口总数**：246 个（C 端 81 + 管理台 163 + Provider 回调 2）
+**接口总数**：248 个（C 端 83 + 管理台 163 + Provider 回调 2）
 
 **文档结构**：
 
 - **上篇：客户端视角**——6 个客户端各自调用哪些接口（第一至第五章）
-- **下篇：后端视角**——19 个后端服务各自提供哪些接口（第六至第二十四章）
+- **下篇：后端视角**——20 个后端服务各自提供哪些接口（第六至第二十五章）
 - **附录**：覆盖矩阵、网关路由表、端口表、统计表
 
 ---
@@ -23,7 +23,7 @@
 | Header | `Authorization: Bearer <accessToken>` |
 | 网关注入 Header | `X-User-Id` / `X-User-Roles` / `X-Client-Id` / `X-Temple-Id` / `X-Master-Id` / `X-User-Type` / `X-Client-Type` |
 | JWT Claims | UserId / Mobile / UserType / Roles / ClientID / TempleID / MasterID / Type（8 字段） |
-| 不鉴权白名单 | `/api/v1/auth/login`、`/api/v1/auth/refresh`、`/api/v1/auth/admin/login`、`/api/v1/users/register`、`/api/v1/payments/callback/wechat`、`/api/v1/payments/callback/alipay`、`/api/v1/beliefs`、`/api/v1/temples`、`/api/v1/masters`、`/api/v1/products`、`/api/v1/marketing/banners`、`/api/v1/announcements`、`/api/v1/diy/designs`、`/api/v1/diy/materials`、`/api/v1/health`、`/api/v1/im`（OpenIM REST 透传，由 OpenIM 自身鉴权）、`/openim/webhook`（OpenIM 事件回调，无 JWT） |
+| 不鉴权白名单 | `/api/v1/auth/login`、`/api/v1/auth/refresh`、`/api/v1/auth/admin/login`、`/api/v1/users/register`、`/api/v1/bookings/availability`、支付回调、`/api/v1/beliefs`、`/api/v1/temples`、`/api/v1/masters`、`/api/v1/products`、`/api/v1/health`、`/api/v1/im`、`/openim/webhook` 等公开入口 |
 | 白名单匹配规则 | GET 请求：前缀匹配（`path == prefix` 或 `path 以 prefix+"/" 开头`，支持 `/temples/T001` 等详情页）；非 GET 请求：精确匹配 |
 
 ### 2. 响应格式
@@ -45,6 +45,11 @@
 | 40401 | 资源不存在 |
 | 50001 | 服务器内部错误 |
 | 50201-50299 | 业务错误码（具体见各服务） |
+| 40414 | 寺院未提供该服务 |
+| 40415 | 时段不存在或已停用 |
+| 40907 | 时段容量已满 |
+| 40908 | 预约支付已过期 |
+| 50205 | temple/master/payment gRPC 依赖不可用 |
 
 ### 3. 分页约定
 
@@ -119,10 +124,12 @@
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
-| POST | `/api/v1/bookings` | ios-customer ✓ / mobile-customer ✓ | `userId`, `templeId`, `templeName`(opt), `masterId`, `masterName`(opt) | Bearer | 创建预约 |
-| GET | `/api/v1/bookings` | ios-customer ✓ / mobile-customer ✓ | `userId`(opt), `status`(opt), `templeId`(opt), `page`, `size` | Bearer | 预约列表 |
+| POST | `/api/v1/bookings` | ios-customer ✓ / mobile-customer ✓ | `requestId`, `templeId`, `masterId`, `serviceId`, `slotCode`, `bookingDate`, `meritMoney`, `meritMoneyTier`, `note`(opt) | Bearer | 服务端计价、占位并自动调用本地模拟支付；名称/价格字段忽略 |
+| GET | `/api/v1/bookings/availability` | ios-customer ✓ / mobile-customer ✓ | `templeId`, `serviceId`, `date` | 公开 | 权威服务费、容量和剩余时段 |
+| POST | `/api/v1/bookings/:id/pay` | ios-customer 兼容 | — | Bearer | 待支付预约幂等重试 |
+| GET | `/api/v1/bookings` | ios-customer ✓ / mobile-customer ✓ | `status`(opt), `templeId`(opt), `page`, `size`；用户以JWT为准 | Bearer | 预约列表 |
 | GET | `/api/v1/bookings/:id` | ios-customer ✓ / mobile-customer ✓ | — | Bearer | 预约详情 |
-| PUT | `/api/v1/bookings/:id/status` | ios-customer ✓ | `status` | Bearer | 更新预约状态 |
+| PUT | `/api/v1/bookings/:id/status` | ios-customer ✓ | `status=cancelled` | Bearer | 用户取消自己的预约并释放时段 |
 | POST | `/api/v1/bookings/:id/review` | — | `rating`, `content`, `images`(opt) | Bearer | 创建预约评价 |
 | GET | `/api/v1/bookings/:id/review` | — | — | Bearer | 预约评价详情 |
 
@@ -441,8 +448,8 @@
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
 | GET | `/api/v1/admin/temples/services` | ✓ | — | Bearer | 服务列表 |
-| POST | `/api/v1/admin/temples/services` | ✓ | `serviceCode`, `serviceName`, `price`, `timeSlots`, `intentTags`(opt) | Bearer | 新增服务 |
-| PUT | `/api/v1/admin/temples/services/:id` | ✓ | `serviceName`(opt), `price`(opt), `timeSlots`(opt), `intentTags`(opt) | Bearer | 更新服务 |
+| POST | `/api/v1/admin/temples/services` | ✓ | `serviceCode`, `serviceName`, `price`, `slots[{code,label,startTime,endTime,capacity,status,sort}]`, `timeSlots`(compat), `intentTags`(opt) | Bearer | 新增服务 |
+| PUT | `/api/v1/admin/temples/services/:id` | ✓ | `serviceName`(opt), `price`(opt), `slots`(opt), `timeSlots`(compat), `intentTags`(opt) | Bearer | 更新服务 |
 | PUT | `/api/v1/admin/temples/services/:id/status` | ✓ | `status` | Bearer | 服务上下架 |
 
 > **注**：`service.ts` 与 `temple.ts` 都实现了此组接口，存在重复定义。
@@ -837,8 +844,8 @@
 | POST | `/api/v1/admin/temples/images` | adminImageCreate | `url`, `type`, `sort`(opt) | jwt:Auth | 🏛️ | 新增寺院图片 |
 | DELETE | `/api/v1/admin/temples/images/:id` | adminImageDelete | — | jwt:Auth | 🏛️ | 删除寺院图片 |
 | GET | `/api/v1/admin/temples/services` | adminServiceList | — | jwt:Auth | 🏛️ | 寺院服务列表 |
-| POST | `/api/v1/admin/temples/services` | adminServiceCreate | `serviceCode`, `serviceName`, `price`, `timeSlots`, `intentTags`(opt) | jwt:Auth | 🏛️ | 新增服务 |
-| PUT | `/api/v1/admin/temples/services/:id` | adminServiceUpdate | `serviceName`(opt), `price`(opt), `timeSlots`(opt), `intentTags`(opt) | jwt:Auth | 🏛️ | 更新服务 |
+| POST | `/api/v1/admin/temples/services` | adminServiceCreate | `serviceCode`, `serviceName`, `price`, `slots`, `timeSlots`(compat), `intentTags`(opt) | jwt:Auth | 🏛️ | 新增服务与容量时段 |
+| PUT | `/api/v1/admin/temples/services/:id` | adminServiceUpdate | `serviceName`(opt), `price`(opt), `slots`(opt), `timeSlots`(compat), `intentTags`(opt) | jwt:Auth | 🏛️ | 更新服务与容量时段 |
 | PUT | `/api/v1/admin/temples/services/:id/status` | adminServiceStatus | `status` | jwt:Auth | 🏛️ | 服务上下架 |
 | GET | `/api/v1/admin/temples/blessing-tasks` | adminBlessingTaskList | `status`(opt), `page`, `size` | jwt:Auth | 🏛️ | 加持任务列表 |
 | GET | `/api/v1/admin/temples/blessing-tasks/:id` | adminBlessingTaskDetail | — | jwt:Auth | 🏛️ | 加持任务详情 |
@@ -916,16 +923,20 @@
 ## 第十章：booking-service（端口 8085）
 
 **路径前缀**：`/api/v1/bookings`（C 端）、`/api/v1/admin/bookings`（寺院台）、`/api/v1/admin/masters/bookings`（法师台）
-**职责**：预约创建与状态流转、预约评价、状态机超时取消
+**职责**：服务端计价、日期时段容量、防超卖、模拟支付及补偿对账、预约履约与评价
+
+**内部 gRPC**：`temple.rpc:9083`、`master.rpc:9084`、`payment.rpc:9090`，均通过 etcd 发现；booking-service 不运行时跨库查询寺院、法师或支付库。
 
 ### 10.1 C 端接口（6 个，Bearer 鉴权）
 
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
-| POST | `/api/v1/bookings` | create | `userId`, `templeId`, `templeName`(opt), `masterId`, `masterName`(opt) | Bearer | 📱 📲 | 创建预约 |
-| GET | `/api/v1/bookings` | list | `userId`(opt), `status`(opt), `templeId`(opt), `page`, `size` | Bearer | 📱 📲 | 预约列表 |
+| POST | `/api/v1/bookings` | create | `requestId`, `templeId`, `masterId`, `serviceId`, `slotCode`, `bookingDate`, `meritMoney`, `meritMoneyTier`, `note`(opt) | Bearer | 📱 📲 | 服务端计价、占位、模拟支付 |
+| GET | `/api/v1/bookings/availability` | availability | `templeId`, `serviceId`, `date` | 公开 | 📱 📲 | 权威价格与剩余时段 |
+| POST | `/api/v1/bookings/:id/pay` | pay | — | Bearer | 📱 📲 | 幂等支付重试 |
+| GET | `/api/v1/bookings` | list | `status`(opt), `templeId`(opt), `page`, `size` | Bearer | 📱 📲 | JWT用户预约列表 |
 | GET | `/api/v1/bookings/:id` | detail | — | Bearer | 📱 📲 | 预约详情 |
-| PUT | `/api/v1/bookings/:id/status` | updateStatus | `status` | Bearer | 📱 | 更新预约状态 |
+| PUT | `/api/v1/bookings/:id/status` | updateStatus | `status=cancelled` | Bearer | 📱 | 取消自己的预约 |
 | POST | `/api/v1/bookings/:id/review` | createReview | `rating`, `content`, `images`(opt) | Bearer | — | 创建评价 |
 | GET | `/api/v1/bookings/:id/review` | reviewDetail | — | Bearer | — | 评价详情 |
 
