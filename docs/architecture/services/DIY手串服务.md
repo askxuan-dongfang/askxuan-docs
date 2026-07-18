@@ -1,6 +1,6 @@
 # diy-service DIY手串服务设计文档
 
-> **文档版本**: v1.2
+> **文档版本**: v1.3
 > **创建日期**: 2026-07-01
 > **服务端口**: 8088
 > **业务域**: 商城业务域
@@ -67,11 +67,42 @@ graph TB
 | design_no | VARCHAR(32) | 设计编号 |
 | user_id | VARCHAR(32) | 用户ID |
 | name | VARCHAR(128) | 设计名称 |
-| design_data | TEXT | 材料配置JSON |
-| total_price | DECIMAL(10,2) | 总价 |
+| design_data | TEXT | v1/v2 设计文档 JSON；v2 含有序珠位和聚合计价项 |
+| total_price | DECIMAL(10,2) | 客户端保存时的展示预估，不作为订单最终价 |
 | status | VARCHAR(16) | private/public/pending_review/approved/rejected |
 | bless_service_code | VARCHAR(32) | 加持服务编码 |
 | create_time | DATETIME | 创建时间 |
+
+#### 3.1.1 设计文档 v2
+
+```json
+{
+  "version": 2,
+  "wristSizeMm": 160,
+  "fitAllowanceMm": 5,
+  "beads": [
+    {
+      "slotId": "slot-1",
+      "position": 0,
+      "materialId": 2,
+      "skuId": null,
+      "materialName": "星月菩提",
+      "spec": "10mm",
+      "unitPrice": 18,
+      "subtype": "main_bead",
+      "image": "/assets/materials/bodhi.jpg",
+      "diameterMm": 10
+    }
+  ],
+  "cord": { "materialId": 14, "quantity": 1, "subtype": "cord" },
+  "items": [
+    { "materialId": 2, "spec": "10mm", "unitPrice": 18, "quantity": 12, "subtype": "main_bead" },
+    { "materialId": 14, "spec": "", "unitPrice": 2, "quantity": 1, "subtype": "cord" }
+  ]
+}
+```
+
+`beads` 是客户端恢复、旋转和拖动换位的权威顺序，`items` 是当前设计广场下单解析器使用的聚合投影。旧版直接数组及 `{materials:[...]}` 仍可下单；iOS 编辑时会迁移为 v2。保存设计只持久化快照，客户端负责实时渲染和本地预估；创建订单时服务端忽略文档里的单价并重新查询材料/SKU、状态和库存。
 
 ### 3.2 diy_order（DIY订单表）
 
@@ -244,6 +275,7 @@ stateDiagram-v2
 9. **发货**：填物流单号 → shipped → MQ通知用户
 10. **自动收货**：shipped 超过7天自动 completed
 11. **退换货期限**：completed 后7天内可申请退换货
+12. **实时编辑**：C 端使用 SwiftUI 2.5D 圆环渲染有序珠位，支持旋转、拖动换位/删除、撤销/重做、手围松紧提示和本机草稿恢复；显示金额是本地预估，订单响应是最终计价
 
 ---
 

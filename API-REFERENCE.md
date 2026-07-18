@@ -1,14 +1,14 @@
 # 问玄东方全栈接口文档（面向 5 个端侧客户端）
 
-**文档版本**：2026-07-15
+**文档版本**：2026-07-18
 **网关地址**：`http://localhost:8080`（本地开发）/ `https://api.askxuan.com`（生产）
-**网关模型**：自研 net/http + httputil.ReverseProxy，23 条公开业务路由 + 2 条 IM 路由 + 24 条管理台路由 = 49 条 Prefix；最长前缀匹配，动态服务发现优先、静态 Target 回退
-**接口总数**：248 个（C 端 83 + 管理台 163 + Provider 回调 2）
+**网关模型**：自研 net/http + httputil.ReverseProxy，23 条公开业务路由 + 2 条 IM 路由 + 25 条管理台路由 = 50 条 Prefix；最长前缀匹配，动态服务发现优先、静态 Target 回退
+**接口总数**：264 个唯一 HTTP 契约（258 条 `.api` 声明 + 6 条显式注册路由）
 
 **文档结构**：
 
 - **上篇：客户端视角**——6 个客户端各自调用哪些接口（第一至第五章）
-- **下篇：后端视角**——20 个后端服务各自提供哪些接口（第六至第二十五章）
+- **下篇：后端视角**——19 个业务服务各自提供哪些接口（第六至第二十四章）；gateway 作为第 20 个后端进程列在附录
 - **附录**：覆盖矩阵、网关路由表、端口表、统计表
 
 ---
@@ -146,13 +146,16 @@
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
 | GET | `/api/v1/diy/designs` | ios-customer ✓ | `page`, `size` | 无 | 设计列表 |
-| POST | `/api/v1/diy/designs` | ios-customer ✓ | `userId`, `name`, `designData`, `totalPrice`, `status` | Bearer | 保存设计 |
+| POST | `/api/v1/diy/designs` | ios-customer ✓ | `userId`, `name`, `designData`(v1/v2 JSON 字符串), `totalPrice`(展示预估), `status`, `blessServiceCode`(opt) | Bearer | 保存设计，响应 `{id}`；不锁库存 |
 | GET | `/api/v1/diy/designs/:id` | ios-customer ✓ | — | 无 | 设计详情 |
 | POST | `/api/v1/diy/designs/:id/order` | ios-customer ✓ | `userId`, `blessServiceCode`(opt), `addressId` | Bearer | 服务端按材料/SKU重定价并创建订单，返回最终金额、明细、`paymentStatus`和快照 |
 | GET | `/api/v1/diy/materials` | ios-customer ✓ | `category`(opt), `page`, `size` | 无 | 材料库列表 |
+| GET | `/api/v1/diy/blessing-services` | ios-customer ✓ | `page`, `size` | 无 | 可选加持服务列表 |
 | POST | `/api/v1/diy/orders` | ios-customer ✓ | `userId`, `designId`, `items`, `blessServiceCode`(opt), `addressId` | Bearer | 创建 DIY 订单 |
 | GET | `/api/v1/diy/orders` | ios-customer ✓ | `userId`, `status`(opt), `page`, `size` | Bearer | DIY 订单列表 |
 | GET | `/api/v1/diy/orders/:id` | ios-customer ✓ | — | Bearer | DIY 订单详情 |
+
+`designData` v2 使用 `version=2`、`wristSizeMm`、`fitAllowanceMm`、有序 `beads[]`、可选 `cord` 和聚合 `items[]`。`beads[]` 保存 `slotId/position/materialId/skuId/materialName/spec/unitPrice/subtype/image/diameterMm`；`items[]` 保存现有下单解析器使用的 `materialId/skuId/materialName/spec/unitPrice/quantity/subtype`。客户端 `unitPrice/totalPrice` 只用于预估展示，创建订单时服务端按材料/SKU、上下架状态和库存重新计价。
 
 ### 1.8 订单模块（order-service @ 8089）
 
@@ -394,7 +397,7 @@
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
-| GET | `/api/v1/admin/reviews` | ✓ | `targetType`(opt), `targetId`(opt), `status`(opt), `rating`(opt), `page` | Bearer | 评价列表（按 targetType=master 过滤） |
+| GET | `/api/v1/admin/masters/reviews` | ✓ | `rating`(opt), `page`, `size` | Bearer | 当前法师评价列表（法师身份从 JWT 获取） |
 
 ### 2.10 法师提现（finance-service @ 8091）
 
@@ -422,7 +425,7 @@
 | 技术栈 | Vue3 + Vite + TS + Element Plus |
 | dev 端口 | 5174 |
 | baseURL | `/api/v1`（dev Vite proxy → `http://localhost:8080`） |
-| 鉴权存储 | localStorage `df_admin_token` / `df_admin_refresh_token` |
+| 鉴权存储 | localStorage `df_temple_admin_token` / `df_temple_admin_refresh_token` |
 | 401 处理 | HTTP 401 自动 refresh + 重试一次；兼容 message-service 裸 JSON |
 | X-Client-Type | `temple-admin` |
 
@@ -441,7 +444,6 @@
 | PUT | `/api/v1/admin/temples/info` | ✓ | `name`(opt), `region`(opt), `type`(opt), `beliefCode`(opt), `sect`(opt), `address`(opt), `coverImage`(opt) | Bearer | 更新寺院信息 |
 | POST | `/api/v1/admin/temples/images` | ✓ | `url`, `type`, `sort`(opt) | Bearer | 新增寺院图片 |
 | DELETE | `/api/v1/admin/temples/images/:id` | ✓ | — | Bearer | 删除寺院图片 |
-| GET | `/api/v1/admin/temples/images` | ✓ | — | Bearer | 寺院图片列表 |
 
 ### 3.3 寺院服务（temple-service @ 8083）
 
@@ -472,7 +474,6 @@
 | PUT | `/api/v1/admin/bookings/:id/confirm` | ✓ | `remark`(opt) | Bearer | 确认预约 |
 | PUT | `/api/v1/admin/bookings/:id/cancel` | ✓ | `remark`(opt) | Bearer | 取消预约 |
 | GET | `/api/v1/admin/bookings/:id/status-log` | ✓ | — | Bearer | 状态流转日志 |
-| GET | `/api/v1/admin/bookings/:id/review` | ✓ | — | Bearer | 预约评价详情 |
 | PUT | `/api/v1/admin/bookings/:id/review/reply` | ✓ | `masterReply` | Bearer | 法师回复评价 |
 
 ### 3.6 加持任务（temple-service @ 8083）
@@ -515,7 +516,7 @@
 | 技术栈 | Vue3 + Vite + TS + Element Plus |
 | dev 端口 | 5175 |
 | baseURL | `/api/v1`（dev Vite proxy → `http://localhost:8080`） |
-| 鉴权存储 | localStorage `df_admin_token` / `df_admin_refresh_token` |
+| 鉴权存储 | localStorage `df_shop_admin_token` / `df_shop_admin_refresh_token` |
 | 401 处理 | HTTP 401 自动 refresh + 重试一次；**未兼容 message-service 裸 JSON** |
 | X-Client-Type | `shop-admin` |
 
@@ -626,7 +627,7 @@
 | 技术栈 | Vue3 + Vite + TS + Element Plus |
 | dev 端口 | 5210 |
 | baseURL | `/api/v1`（dev Vite proxy → `http://localhost:8080`） |
-| 鉴权存储 | localStorage `df_admin_token` / `df_admin_refresh_token` |
+| 鉴权存储 | localStorage `df_platform_admin_token` / `df_platform_admin_refresh_token` |
 | 401 处理 | HTTP 401 自动 refresh + 重试一次；兼容 message-service 裸 JSON |
 | X-Client-Type | `platform-admin` |
 
@@ -754,13 +755,13 @@
 |---|------|------|
 | P1 | `master.ts` + `temple.ts` | C 端与管理端接口混用：`getMasterList`/`getMasterDetail` 用 C 端 `/masters`，`getTempleDetail` 用 C 端 `/temples/{id}` |
 | P2 | `system.ts` | 角色/权限/敏感词从其他模块 re-export，职责重叠 |
-| P3 | localStorage key | 与其他 web admin 共享 `df_admin_token` |
+| P3 | localStorage key | ✅ 已修复：使用 `df_platform_admin_token`，与寺院台和商城台隔离 |
 
 ---
 
 # 下篇：后端视角
 
-> 本篇按 19 个后端服务分章，回答"每个后端服务提供哪些接口"。
+> 本篇按 19 个业务服务分章，回答"每个业务服务提供哪些接口"；gateway 作为第 20 个后端进程负责统一鉴权、发现与转发，路由见附录 B。
 > 每个服务分 C 端接口和管理台接口两组，标注鉴权方式与客户端调用情况。
 > 客户端调用列：📱=ios-customer，📲=mobile-customer，🔪=ios-master，🏛️=web-temple-admin，🛒=web-shop-admin，🌐=web-platform-admin。
 
@@ -1003,18 +1004,21 @@
 **路径前缀**：`/api/v1/diy`（C 端）、`/api/v1/admin/diy`（管理台）
 **职责**：DIY 设计、材料库、DIY 订单、加持服务
 
-### 12.1 C 端接口（8 个，Bearer 鉴权）
+### 12.1 C 端接口（9 个，设计与材料读取无需鉴权）
 
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
 | GET | `/api/v1/diy/designs` | designList | `page`, `size` | 无 | 📱 | 设计列表 |
-| POST | `/api/v1/diy/designs` | designSave | `userId`, `name`, `designData`, `totalPrice`, `status` | Bearer | 📱 | 保存设计 |
+| POST | `/api/v1/diy/designs` | designSave | `userId`, `name`, `designData`(v1/v2 JSON 字符串), `totalPrice`(展示预估), `status`, `blessServiceCode`(opt) | Bearer | 📱 | 保存设计，响应 `{id}`；不锁库存 |
 | GET | `/api/v1/diy/designs/:id` | designDetail | — | 无 | 📱 | 设计详情 |
 | POST | `/api/v1/diy/designs/:id/order` | diyDesignOrderCreate | `userId`, `blessServiceCode`(opt), `addressId` | Bearer | 📱 | 服务端重定价，返回最终金额、材料明细、设计与计价快照 |
 | GET | `/api/v1/diy/materials` | materialList | `category`(opt), `page`, `size` | 无 | 📱 | 材料库列表 |
+| GET | `/api/v1/diy/blessing-services` | blessingServiceList | `page`, `size` | 无 | 📱 | 可选加持服务列表 |
 | POST | `/api/v1/diy/orders` | diyOrderCreate | `userId`, `designId`, `items`, `blessServiceCode`(opt), `addressId` | Bearer | 📱 | 创建 DIY 订单 |
 | GET | `/api/v1/diy/orders` | diyOrderList | `userId`, `status`(opt), `page`, `size` | Bearer | 📱 | DIY 订单列表 |
 | GET | `/api/v1/diy/orders/:id` | diyOrderDetail | — | Bearer | 📱 | DIY 订单详情 |
+
+设计文档 v2 的字段和计价信任边界见第一章 1.7：有序 `beads[]` 用于精确恢复编辑状态，聚合 `items[]` 保持设计广场下单兼容；最终价格始终以服务端下单事务的重新查询结果为准。
 
 ### 12.2 管理台接口（13 个，jwt:Auth）
 
@@ -1083,7 +1087,7 @@
 
 ## 第十五章：review-service（端口 8092）
 
-**路径前缀**：`/api/v1/reviews`（C 端）、`/api/v1/admin/reviews`（管理台）、`/api/v1/admin/platform/reviews`（平台台）
+**路径前缀**：`/api/v1/reviews`（C 端）、`/api/v1/admin/reviews`（寺院/平台台）、`/api/v1/admin/platform/reviews`（平台台）、`/api/v1/admin/masters/reviews`（法师端）
 **职责**：评价提交、评价回复、评价举报
 
 ### 15.1 C 端接口（3 个，均无鉴权）
@@ -1098,7 +1102,7 @@
 
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
-| GET | `/api/v1/admin/reviews` | adminReviewList | `targetType`(opt), `targetId`(opt), `status`(opt), `rating`(opt), `page` | ⚠️ 无 | 🏛️ 🌐 🔪 | 管理台评价列表 |
+| GET | `/api/v1/admin/reviews` | adminReviewList | `targetType`(opt), `targetId`(opt), `status`(opt), `rating`(opt), `page` | ⚠️ 无 | 🏛️ 🌐 | 管理台评价列表 |
 | GET | `/api/v1/admin/reviews/:id` | adminReviewDetail | — | ⚠️ 无 | 🏛️ 🌐 | 评价详情 |
 | POST | `/api/v1/admin/reviews/:id/reply` | reviewReply | `replierType`, `replierId`, `content` | ⚠️ 无 | 🏛️ 🌐 | 回复评价 |
 | POST | `/api/v1/admin/reviews/:id/report` | reviewReport | `reporterId`, `reason` | ⚠️ 无 | — | 举报评价 |
@@ -1109,6 +1113,12 @@
 |------|------|---------|---------|------|-----------|------|
 | GET | `/api/v1/admin/platform/reviews/reports` | reportList | `status`(opt), `page`, `size` | ⚠️ 无 | 🌐 | 举报列表 |
 | PUT | `/api/v1/admin/platform/reviews/reports/:id/handle` | reportHandle | `handleResult`, `remark`(opt) | ⚠️ 无 | 🌐 | 处理举报 |
+
+### 15.4 法师端接口（1 个，jwt:Auth）
+
+| 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
+|------|------|---------|---------|------|-----------|------|
+| GET | `/api/v1/admin/masters/reviews` | masterReviewList | `rating`(opt), `page`, `size` | jwt:Auth | 🔪 | 当前法师评价列表，法师身份从 JWT 获取 |
 
 ---
 
@@ -1216,6 +1226,15 @@
 | GET | `/api/v1/admin/messages/master` | masterMessageList | `isRead`(opt), `page`, `size` | jwt:Auth | 🔪 | 法师消息列表 |
 | PUT | `/api/v1/admin/messages/master/:id/read` | masterMessageRead | — | jwt:Auth | 🔪 | 法师消息已读 |
 
+### 18.7 OpenIM 回调（2 个，显式注册）
+
+| 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
+|------|------|---------|---------|------|-----------|------|
+| POST | `/openim/webhook` | openIMWebhook | `sendID`, `recvID`, `content`, `sessionType`, `contentType`, `senderName`(opt), `senderNickname`(opt) | 网关白名单 | OpenIM | 通用回调入口，仅落库单聊文本消息 |
+| POST | `/openim/webhook/:command` | openIMWebhook | 同上；`command` 为 OpenIM 回调命令 | 网关白名单 | OpenIM | 命令式兼容入口，仅落库单聊文本消息 |
+
+两条回调不在 `message.api` 中，由 message-service 直接注册；生产部署必须限制来源网络，并在 OpenIM 侧配置回调地址。
+
 ---
 
 ## 第十九章：logistics-service（端口 8095）
@@ -1274,8 +1293,8 @@
 
 ## 第二十一章：file-service（端口 8097）
 
-**路径前缀**：`/api/v1/files`（C 端）
-**职责**：文件上传、预签名 URL
+**路径前缀**：`/api/v1/files`（C 端）、`/api/v1/admin/files`（平台管理台）
+**职责**：文件上传、预签名 URL、数据库备份创建/下载/恢复
 
 ### 21.1 C 端接口（2 个，Bearer 鉴权）
 
@@ -1283,6 +1302,15 @@
 |------|------|---------|---------|------|-----------|------|
 | GET | `/api/v1/files/presigned` | presigned | `fileName`, `objectType`(opt), `operate`(opt), `objectName`(opt) | Bearer | 📱 | 预签名 URL |
 | POST | `/api/v1/files/upload` | upload | multipart form | Bearer | 📱 | 直接上传 |
+
+### 21.2 平台备份接口（4 个，由网关限制 platform_super）
+
+| 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
+|------|------|---------|---------|------|-----------|------|
+| GET | `/api/v1/admin/files/backups` | backupList | — | 网关角色校验 | 🌐 | 备份列表 |
+| POST | `/api/v1/admin/files/backups` | backupCreate | — | 网关角色校验 | 🌐 | 创建手动全量备份 |
+| GET | `/api/v1/admin/files/backups/:filename/download` | backupDownload | — | 网关角色校验 | 🌐 | 获取限时下载地址 |
+| POST | `/api/v1/admin/files/backups/:filename/restore` | backupRestore | `confirm` | 网关角色校验 | 🌐 | 恢复指定备份 |
 
 ---
 
@@ -1328,26 +1356,26 @@
 |------|--------|------|-----|-------|------|---------|
 | 6 | auth-service | 8081 | 4 | 8 | 12 | ✅ 管理台 jwt |
 | 7 | user-service | 8082 | 7 | 3 | 10 | ✅ 管理台 jwt |
-| 8 | temple-service | 8083 | 3 | 19 | 22 | ✅ 管理台 jwt |
+| 8 | temple-service | 8083 | 5 | 19 | 24 | ✅ 管理台 jwt |
 | 9 | master-service | 8084 | 2 | 20 | 22 | ✅ 管理台 jwt |
-| 10 | booking-service | 8085 | 6 | 9 | 15 | ✅ 管理台 jwt |
-| 11 | product-service | 8086 | 3 | 12 | 15 | ✅ 管理台 jwt |
-| 12 | diy-service | 8088 | 7 | 13 | 20 | ✅ 管理台 jwt |
+| 10 | booking-service | 8085 | 8 | 9 | 17 | ✅ 管理台 jwt |
+| 11 | product-service | 8086 | 4 | 12 | 16 | ✅ 管理台 jwt |
+| 12 | diy-service | 8088 | 9 | 13 | 22 | ✅ 管理台 jwt |
 | 13 | order-service | 8089 | 5 | 6 | 11 | ✅ 管理台 jwt |
 | 14 | payment-service | 8090 | 5 | 0 | 5 | ✅ refund jwt |
-| 15 | review-service | 8092 | 3 | 6 | 9 | ⚠️ 管理台未声明 jwt |
+| 15 | review-service | 8092 | 3 | 7 | 10 | ⚠️ 通用管理接口未声明 jwt；法师接口有 jwt |
 | 16 | finance-service | 8091 | 0 | 11 | 11 | ⚠️ 管理台未声明 jwt |
 | 17 | audit-service | 8093 | 0 | 10 | 10 | ⚠️ 管理台未声明 jwt |
 | 18 | message-service | 8094 | 9 | 10 | 19 | ⚠️ 部分管理台未声明 jwt |
 | 19 | logistics-service | 8095 | 0 | 8 | 8 | ⚠️ 管理台未声明 jwt |
 | 20 | marketing-service | 8096 | 6 | 11 | 17 | ⚠️ 管理台未声明 jwt |
-| 21 | file-service | 8097 | 2 | 0 | 2 | — |
+| 21 | file-service | 8097 | 2 | 4 | 6 | ✅ 网关限制平台超管 |
 | 22 | ai-service | 8098 | 8 | 0 | 8 | ✅ 会话所有权校验 |
 | 23 | media-service | 8100 | 3 | 7 | 12 | ✅ 所有权/角色/回调令牌 |
 | 24 | community-service | 8099 | 8 | 10 | 18 | ✅ 所有权/角色/审核事务 |
-| **合计** | — | — | **81** | **163** | **246** | — |
+| **`.api` 合计** | — | — | **88** | **168** | **258** | — |
 
-> media-service 另有 2 个 Provider 回调接口，因此总计比 C 端与管理端之和多 2。
+> media-service 的总计另含 2 个 Provider 回调，因此 258 比 C 端与管理台两列之和多 2。另有 6 条未写入 `.api`、由服务直接注册的路由：booking-service 法师预约操作 3 条、finance-service 商城报表 1 条、message-service OpenIM 回调 2 条；完整唯一 HTTP 契约为 264 条。
 
 > ⚠️ **鉴权缺口**：review / finance / audit / message(部分) / logistics / marketing 共 6 个服务的管理台接口在 .api 文件中未声明 `jwt: Auth`，完全依赖网关鉴权。绕过网关直连服务端口即可无鉴权访问。
 
@@ -1382,7 +1410,7 @@
 
 ---
 
-## 附录 B：网关路由表（49 条 Prefix）
+## 附录 B：网关路由表（50 条 Prefix）
 
 ### C 端与透传路由（25 条）
 
@@ -1414,10 +1442,11 @@
 | `/api/v1/im` | OpenIM | 10002 |
 | `/openim` | message-service | 8094 |
 
-### 管理台路由（24 条，最长前缀匹配）
+### 管理台路由（25 条，最长前缀匹配）
 
 | 前缀 | 目标服务 | 端口 |
 |------|---------|------|
+| `/api/v1/admin/files` | file-service | 8097 |
 | `/api/v1/admin/platform/beliefs` | temple-service | 8083 |
 | `/api/v1/admin/auth` | auth-service | 8081 |
 | `/api/v1/admin/users` | user-service | 8082 |
@@ -1480,25 +1509,25 @@
 |------|--------|------|-----|-------|------|
 | 1 | auth-service | 8081 | 4 | 8 | 12 |
 | 2 | user-service | 8082 | 7 | 3 | 10 |
-| 3 | temple-service | 8083 | 3 | 19 | 22 |
+| 3 | temple-service | 8083 | 5 | 19 | 24 |
 | 4 | master-service | 8084 | 2 | 20 | 22 |
-| 5 | booking-service | 8085 | 6 | 9 | 15 |
-| 6 | product-service | 8086 | 3 | 12 | 15 |
-| 7 | diy-service | 8088 | 7 | 13 | 20 |
+| 5 | booking-service | 8085 | 8 | 9 | 17 |
+| 6 | product-service | 8086 | 4 | 12 | 16 |
+| 7 | diy-service | 8088 | 9 | 13 | 22 |
 | 8 | order-service | 8089 | 5 | 6 | 11 |
 | 9 | payment-service | 8090 | 5 | 0 | 5 |
 | 10 | finance-service | 8091 | 0 | 11 | 11 |
-| 11 | review-service | 8092 | 3 | 6 | 9 |
+| 11 | review-service | 8092 | 3 | 7 | 10 |
 | 12 | audit-service | 8093 | 0 | 10 | 10 |
 | 13 | message-service | 8094 | 9 | 10 | 19 |
 | 14 | logistics-service | 8095 | 0 | 8 | 8 |
 | 15 | marketing-service | 8096 | 6 | 11 | 17 |
-| 16 | file-service | 8097 | 2 | 0 | 2 |
+| 16 | file-service | 8097 | 2 | 4 | 6 |
 | 17 | ai-service | 8098 | 8 | 0 | 8 |
 | 18 | media-service | 8100 | 3 | 7 | 12 |
 | 19 | community-service | 8099 | 8 | 10 | 18 |
-| **合计** | — | — | **81** | **163** | **246** |
+| **`.api` 合计** | — | — | **88** | **168** | **258** |
 
 ---
 
-**文档完成。本接口文档基于 2026-07-13 项目代码状态整理，覆盖 5 个正式客户端、备用 mobile-customer 与 Provider 回调涉及的 246 个后端接口。**
+**文档完成。本接口文档基于 2026-07-18 项目代码状态整理，覆盖 5 个正式客户端、备用 mobile-customer、Provider 回调与显式注册路由涉及的 264 个唯一 HTTP 契约。**
