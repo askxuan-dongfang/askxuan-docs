@@ -124,13 +124,16 @@ X-Client-Version: 1.0.0
 
 ### 3.3 白名单路径（无需鉴权）
 
-> 与 `gateway-service/etc/gateway.yaml` 的 `NoAuthPaths` 一致，共 16 条。
+> 以 `gateway-service/etc/gateway.yaml` 的 `NoAuthPaths` 为唯一运行时事实源。
 > **匹配规则**：GET 请求前缀匹配（`path == prefix` 或 `path 以 prefix+"/" 开头`，支持 `/temples/T001` 等详情页）；非 GET 请求精确匹配。
 
 - `POST /api/v1/auth/login`（C 端登录）
 - `POST /api/v1/auth/refresh`（Token 续期）
 - `POST /api/v1/auth/admin/login`（管理台登录，含 temple_admin / master / shop_admin / platform_admin）
 - `POST /api/v1/users/register`（用户注册）
+- `GET /api/v1/bookings/availability`（预约可用时段和服务端价格）
+- `GET /api/v1/intentions*`（诉求聚合）
+- `GET /api/v1/beliefs*`（一级流派）
 - `POST /api/v1/payments/callback/wechat`（微信支付回调）
 - `POST /api/v1/payments/callback/alipay`（支付宝支付回调）
 - `GET /api/v1/temples*`（C 端浏览寺院列表/详情）
@@ -140,6 +143,9 @@ X-Client-Version: 1.0.0
 - `GET /api/v1/announcements*`（公告列表）
 - `GET /api/v1/diy/designs*`（DIY 设计广场）
 - `GET /api/v1/diy/materials*`（DIY 材料库）
+- `GET /api/v1/community/feed*`、`GET /api/v1/community/posts*`（大师广场公开内容）
+- `POST /api/v1/media/callback/transcode`、`POST /api/v1/media/callback/audit`（带回调令牌）
+- `GET /api/v1/live/capabilities`（直播能力开关）
 - `GET /api/v1/health`（网关健康检查）
 - `/api/v1/im*`（OpenIM REST 透传，由 OpenIM 自身鉴权，多方法）
 - `POST /openim/webhook`（OpenIM webhook 回调，无 JWT）
@@ -166,6 +172,20 @@ X-Client-Version: 1.0.0
 | shop_admin | 商城域全部数据 |
 | platform_super | 全平台数据 |
 | platform_service | 投诉/举报相关数据 |
+
+网关对 `/api/v1/admin/*` 再做路径级角色校验。下游服务依赖网关注入的 `X-User-*` 角色头，生产网络不得将管理服务端口直接暴露给客户端。
+
+### 4.3 关键闭环契约
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/v1/bookings` | JWT 用户创建预约；客户端价格字段忽略 |
+| GET | `/api/v1/bookings/availability` | 权威服务费、结构化时段和剩余容量 |
+| POST | `/api/v1/bookings/:id/pay` | 待支付预约幂等重试 |
+| POST/GET | `/api/v1/bookings/:id/review` | 完成预约提交/查看评价，校验所有权 |
+| GET | `/api/v1/diy/blessing-services` | 登录用户读取当前已上架加持服务 |
+| POST | `/api/v1/diy/designs/:id/order` | 设计广场下单；服务端重新查价和库存 |
+| GET/POST | `/api/v1/admin/files/backups` | 平台超管列出/创建手动全量备份 |
 
 ## 5. 接口分组规范
 
@@ -225,4 +245,5 @@ service temple-service {
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
+| v1.1 | 2026-07-18 | 对齐白名单、路径级角色、预约评价、DIY 加持服务与平台备份契约 |
 | v1.0 | 2026-07-01 | 初始版本 |

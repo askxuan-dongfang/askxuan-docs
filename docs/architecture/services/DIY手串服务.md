@@ -169,6 +169,7 @@ graph TB
 | POST | /api/v1/diy/orders | 创建DIY订单 | customer |
 | GET | /api/v1/diy/orders | 我的DIY订单列表 | customer |
 | GET | /api/v1/diy/orders/:id | DIY订单详情（含加持进度） | customer |
+| GET | /api/v1/diy/blessing-services | 当前已上架加持服务和展示价格 | customer |
 
 ### 4.2 商城台接口（需鉴权）
 
@@ -230,7 +231,7 @@ stateDiagram-v2
 
 1. **设计广场**：仅展示 `public` 状态的设计
 2. **材料分类**：7类（主珠/隔片/佛头/吊坠/流苏/三通/绳线），参照统一数据字典
-3. **加持服务**：4项固定服务（E001-E004），价格必须精确匹配统一数据字典
+3. **加持服务**：商城台可维护 `extra_service`；C 端只展示已上架项，下单时服务端再次按服务编码锁定并计价
 4. **订单创建**：用户提交设计 → status=pending_review → 等待商城审核
    - 自主设计下单走 `POST /api/v1/diy/orders`，请求体必须带 `items`
    - 设计广场直接下单走 `POST /api/v1/diy/designs/:id/order`，后端从 `diy_design.design_data` 解析材料 ID/规格/数量，仅允许 `public` / `approved` 设计
@@ -238,7 +239,7 @@ stateDiagram-v2
    - 订单、明细、库存扣减和不可变设计/计价快照同事务提交，任一失败完整回滚
 5. **支付与作者收益**：payment-service 按订单号校验所属用户、`pending_review` 状态和最终金额；支付成功事件为设计广场订单幂等生成待结算作者收益，默认比例 `0%`，不越过商城审核改变订单状态
 6. **审核流程**：支付成功后订单仍为 `pending_review`；商城 approve → `in_making`，reject → `cancelled`，订单状态变更与材料/SKU库存归还同事务完成；已支付订单另走退款流程
-7. **制作完成**：含加持 → awaiting_blessing（创建 blessing_task + MQ派单）；无加持 → awaiting_shipment
+7. **制作完成**：使用下单时的不可变设计快照判断加持；订单状态、服务上架校验和 `blessing_task` 创建在同一事务内提交
 8. **加持协同**：发 MQ `blessing.dispatch` 到 temple-service；接收 `blessing.complete` 回传更新状态
 9. **发货**：填物流单号 → shipped → MQ通知用户
 10. **自动收货**：shipped 超过7天自动 completed
