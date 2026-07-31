@@ -1,9 +1,9 @@
 # 问玄东方全栈接口文档（面向 5 个端侧客户端）
 
-**文档版本**：2026-07-18
+**文档版本**：2026-07-29
 **网关地址**：`http://localhost:8080`（本地开发）/ `https://api.askxuan.com`（生产）
 **网关模型**：自研 net/http + httputil.ReverseProxy，23 条公开业务路由 + 2 条 IM 路由 + 25 条管理台路由 = 50 条 Prefix；最长前缀匹配，动态服务发现优先、静态 Target 回退
-**接口总数**：264 个唯一 HTTP 契约（258 条 `.api` 声明 + 6 条显式注册路由）
+**接口总数**：265 个唯一运行时 HTTP 契约（由 `routes.go` 与本文档机器对比）
 
 **文档结构**：
 
@@ -329,9 +329,10 @@
 | GET | `/api/v1/admin/masters/bookings` | ✓ | `status`(opt), `page`, `size` | Bearer + AdminAuth | 法师视角预约列表 |
 | GET | `/api/v1/admin/masters/bookings/:id` | ✓ | — | Bearer | 预约详情（校验归属本法师） |
 | PUT | `/api/v1/admin/masters/bookings/:id/confirm` | ✓ | `remark`(opt) | Bearer | 确认预约（pending → confirmed） |
+| PUT | `/api/v1/admin/masters/bookings/:id/start` | ✓ | `remark`(opt) | Bearer | 开始服务（confirmed → in_progress） |
 | PUT | `/api/v1/admin/masters/bookings/:id/complete` | ✓ | `remark`(opt) | Bearer | 完成预约（in_progress → completed） |
 
-> **注**：法师端 detail/confirm/complete 端点已补齐（2026-07-05 闭环修复），校验 booking.master_code 必须匹配当前法师。
+> **注**：法师端 detail/confirm/start/complete 端点已补齐，均校验预约必须归属当前 JWT 法师。
 
 ### 2.3 法师加持任务（master-service @ 8084）
 
@@ -410,7 +411,7 @@
 | # | 位置 | 问题 |
 |---|------|------|
 | M1 | `APIClient.swift` | ✅ 已修复：识别 40101 并触发统一登出 |
-| M2 | `Endpoint.swift` | ✅ 已修复：预约详情、确认、完成路径与后端复数路由一致 |
+| M2 | `Endpoint.swift` | ✅ 已修复：预约详情、确认、开始、完成路径与后端复数路由一致 |
 | M3 | `BookingsView.swift` | ✅ 已修复：状态筛选、分页、空态和详情均使用真实 ViewModel 数据及预约 ID |
 | M4 | `Models/BlessingTask.swift` | ✅ 已修复：状态使用 `in_progress` / `completed` |
 
@@ -954,16 +955,17 @@
 | GET | `/api/v1/admin/bookings/:id/status-log` | adminBookingStatusLog | — | jwt:Auth | 🏛️ | 状态流转日志 |
 | PUT | `/api/v1/admin/bookings/:id/review/reply` | adminReviewReply | `masterReply` | jwt:Auth | 🏛️ | 法师回复评价 |
 
-### 10.3 法师工作台接口（4 个，jwt:Auth）
+### 10.3 法师工作台接口（5 个，jwt:Auth）
 
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
 | GET | `/api/v1/admin/masters/bookings` | masterBookingList | `status`(opt), `page`, `size` | jwt:Auth | 🔪 | 法师视角预约列表 |
 | GET | `/api/v1/admin/masters/bookings/:id` | masterBookingDetail | — | jwt:Auth | 🔪 | 预约详情（校验归属本法师） |
 | PUT | `/api/v1/admin/masters/bookings/:id/confirm` | masterBookingConfirm | `remark`(opt) | jwt:Auth | 🔪 | 确认预约（pending → confirmed） |
+| PUT | `/api/v1/admin/masters/bookings/:id/start` | masterBookingStart | `remark`(opt) | jwt:Auth | 🔪 | 开始服务（confirmed → in_progress） |
 | PUT | `/api/v1/admin/masters/bookings/:id/complete` | masterBookingComplete | `remark`(opt) | jwt:Auth | 🔪 | 完成预约（in_progress → completed） |
 
-> ✅ **闭环修复**（2026-07-05）：补齐法师端 detail/confirm/complete 3 个端点，校验 booking.master_code 必须匹配当前法师。
+> ✅ **闭环修复**：补齐法师端 detail/confirm/start/complete 端点，校验预约必须匹配当前 JWT 法师。
 
 ---
 
@@ -1358,7 +1360,7 @@
 | 7 | user-service | 8082 | 7 | 3 | 10 | ✅ 管理台 jwt |
 | 8 | temple-service | 8083 | 5 | 19 | 24 | ✅ 管理台 jwt |
 | 9 | master-service | 8084 | 2 | 20 | 22 | ✅ 管理台 jwt |
-| 10 | booking-service | 8085 | 8 | 9 | 17 | ✅ 管理台 jwt |
+| 10 | booking-service | 8085 | 8 | 13 | 21 | ✅ 管理台 jwt |
 | 11 | product-service | 8086 | 4 | 12 | 16 | ✅ 管理台 jwt |
 | 12 | diy-service | 8088 | 9 | 13 | 22 | ✅ 管理台 jwt |
 | 13 | order-service | 8089 | 5 | 6 | 11 | ✅ 管理台 jwt |
@@ -1373,9 +1375,9 @@
 | 22 | ai-service | 8098 | 8 | 0 | 8 | ✅ 会话所有权校验 |
 | 23 | media-service | 8100 | 3 | 7 | 12 | ✅ 所有权/角色/回调令牌 |
 | 24 | community-service | 8099 | 8 | 10 | 18 | ✅ 所有权/角色/审核事务 |
-| **`.api` 合计** | — | — | **88** | **168** | **258** | — |
+| **`.api` 合计** | — | — | **88** | **172** | **262** | — |
 
-> media-service 的总计另含 2 个 Provider 回调，因此 258 比 C 端与管理台两列之和多 2。另有 6 条未写入 `.api`、由服务直接注册的路由：booking-service 法师预约操作 3 条、finance-service 商城报表 1 条、message-service OpenIM 回调 2 条；完整唯一 HTTP 契约为 264 条。
+> media-service 的总计另含 2 个 Provider 回调，因此 262 比 C 端与管理台两列之和多 2。另有 3 条由服务直接注册、未写入 `.api` 的路由：finance-service 商城报表 1 条、message-service OpenIM 回调 2 条；完整唯一运行时 HTTP 契约为 265 条。执行 `node scripts/audit-api-reference.mjs` 可复核源码与本文档。
 
 > ⚠️ **鉴权缺口**：review / finance / audit / message(部分) / logistics / marketing 共 6 个服务的管理台接口在 .api 文件中未声明 `jwt: Auth`，完全依赖网关鉴权。绕过网关直连服务端口即可无鉴权访问。
 
@@ -1526,8 +1528,8 @@
 | 17 | ai-service | 8098 | 8 | 0 | 8 |
 | 18 | media-service | 8100 | 3 | 7 | 12 |
 | 19 | community-service | 8099 | 8 | 10 | 18 |
-| **`.api` 合计** | — | — | **88** | **168** | **258** |
+| **`.api` 合计** | — | — | **88** | **172** | **262** |
 
 ---
 
-**文档完成。本接口文档基于 2026-07-18 项目代码状态整理，覆盖 5 个正式客户端、备用 mobile-customer、Provider 回调与显式注册路由涉及的 264 个唯一 HTTP 契约。**
+**文档完成。本接口文档基于 2026-07-29 项目代码状态整理，覆盖 5 个正式客户端、备用 mobile-customer、Provider 回调与显式注册路由涉及的 265 个唯一运行时 HTTP 契约。**

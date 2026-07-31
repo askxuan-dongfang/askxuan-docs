@@ -10,7 +10,7 @@
 
 ```
 askXuan-docs/
-├── API-REFERENCE.md                # 全栈接口文档（246 个接口，覆盖 5 个正式客户端 + 备用 RN × 19 服务）
+├── API-REFERENCE.md                # 全栈接口文档（265 个运行时契约，覆盖 5 个正式客户端 + 备用 RN × 20 服务）
 │
 ├── docs/
 │   ├── architecture/               # 架构规范
@@ -42,6 +42,7 @@ askXuan-docs/
 │   │
 │   ├── product/                    # 产品设计
 │   │   ├── 管理端架构.md            # 三套管理台（寺院/商城/平台）的权限与功能划分
+│   │   ├── 功能对齐矩阵.md           # 功能、客户端、原型、服务和当前限制总表
 │   │   └── 业务逻辑对齐审计报告.md   # 代码-文档-原型一致性审计
 │   │
 │   ├── guides/                     # 开发指南
@@ -70,12 +71,12 @@ askXuan-docs/
 ### 客户端矩阵
 | 客户端 | 类型 | 技术栈 |
 |--------|------|--------|
-| C 端 iOS App | 移动端 | Swift + UIKit |
-| 法师端 iOS App | 移动端 | Swift + UIKit |
+| C 端 iOS App | 移动端 | Swift + SwiftUI |
+| 法师端 iOS App | 移动端 | Swift + SwiftUI |
 | mobile-customer | 跨端 | React Native (Expo) |
-| 寺院管理台 | Web | Vue 3 + Vite + TailwindCSS |
-| 商城管理台 | Web | Vue 3 + Vite + TailwindCSS |
-| 平台管理台 | Web | Vue 3 + Vite + TailwindCSS |
+| 寺院管理台 | Web | Vue 3 + Vite + Element Plus |
+| 商城管理台 | Web | Vue 3 + Vite + Element Plus |
+| 平台管理台 | Web | Vue 3 + Vite + Element Plus |
 
 ## 文档约定
 - 中文撰写，技术术语保留英文原文
