@@ -148,7 +148,7 @@ X-Client-Version: 1.0.0
 - `GET /api/v1/live/capabilities`（直播能力开关）
 - `GET /api/v1/health`（网关健康检查）
 - `/api/v1/im*`（OpenIM REST 透传，由 OpenIM 自身鉴权，多方法）
-- `POST /openim/webhook`（OpenIM webhook 回调，无 JWT）
+- `POST /openim/webhook`（已废弃的兼容空操作，无 JWT；预约聊天使用 booking-service 内网回调）
 
 ## 4. 角色权限
 

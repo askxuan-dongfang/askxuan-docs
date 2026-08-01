@@ -1,9 +1,9 @@
 # 问玄东方全栈接口文档（面向 5 个端侧客户端）
 
-**文档版本**：2026-07-29
+**文档版本**：2026-07-31
 **网关地址**：`http://localhost:8080`（本地开发）/ `https://api.askxuan.com`（生产）
 **网关模型**：自研 net/http + httputil.ReverseProxy，23 条公开业务路由 + 2 条 IM 路由 + 25 条管理台路由 = 50 条 Prefix；最长前缀匹配，动态服务发现优先、静态 Target 回退
-**接口总数**：265 个唯一运行时 HTTP 契约（由 `routes.go` 与本文档机器对比）
+**接口总数**：270 个唯一运行时 HTTP 契约（由 `routes.go` 与本文档机器对比）
 
 **文档结构**：
 
@@ -23,7 +23,7 @@
 | Header | `Authorization: Bearer <accessToken>` |
 | 网关注入 Header | `X-User-Id` / `X-User-Roles` / `X-Client-Id` / `X-Temple-Id` / `X-Master-Id` / `X-User-Type` / `X-Client-Type` |
 | JWT Claims | UserId / Mobile / UserType / Roles / ClientID / TempleID / MasterID / Type（8 字段） |
-| 不鉴权白名单 | `/api/v1/auth/login`、`/api/v1/auth/refresh`、`/api/v1/auth/admin/login`、`/api/v1/users/register`、`/api/v1/bookings/availability`、支付回调、`/api/v1/beliefs`、`/api/v1/temples`、`/api/v1/masters`、`/api/v1/products`、`/api/v1/health`、`/api/v1/im`、`/openim/webhook` 等公开入口 |
+| 不鉴权白名单 | `/api/v1/auth/login`、`/api/v1/auth/refresh`、`/api/v1/auth/admin/login`、`/api/v1/users/register`、`/api/v1/bookings/availability`、支付回调、`/api/v1/beliefs`、`/api/v1/temples`、`/api/v1/masters`、`/api/v1/products`、`/api/v1/health`、`/api/v1/im`、OpenIM webhook 等公开入口；webhook 仅允许 OpenIM 内网访问 |
 | 白名单匹配规则 | GET 请求：前缀匹配（`path == prefix` 或 `path 以 prefix+"/" 开头`，支持 `/temples/T001` 等详情页）；非 GET 请求：精确匹配 |
 
 ### 2. 响应格式
@@ -132,6 +132,9 @@
 | PUT | `/api/v1/bookings/:id/status` | ios-customer ✓ | `status=cancelled` | Bearer | 用户取消自己的预约并释放时段 |
 | POST | `/api/v1/bookings/:id/review` | — | `rating`, `content`, `images`(opt) | Bearer | 创建预约评价 |
 | GET | `/api/v1/bookings/:id/review` | — | — | Bearer | 预约评价详情 |
+| GET | `/api/v1/bookings/chats` | ios-customer ✓ / ios-master ✓ | `page`, `size` | Bearer | 仅返回支付成功且未取消、归属当前用户/法师的预约会话 |
+| GET | `/api/v1/bookings/:id/chat/messages` | ios-customer ✓ / ios-master ✓ | `page`, `size` | Bearer | 按预约读取持久化文字历史，校验双方归属 |
+| POST | `/api/v1/bookings/:id/chat/messages` | ios-customer ✓ / ios-master ✓ | `clientMessageId`, `content` | Bearer | 服务端再次核验支付与归属后，通过 OpenIM 实时投递；幂等发送 |
 
 ### 1.6 商品模块（product-service @ 8086）
 
@@ -188,7 +191,7 @@
 | PUT | `/api/v1/messages/:id/read` | ios-customer ✓ | — | Bearer | 标记单条已读 |
 | GET | `/api/v1/messages/unread-count` | ios-customer ✓ | `userId` | Bearer | 未读数 |
 | PUT | `/api/v1/messages/read-all` | ios-customer ✓ | `userId` | Bearer | 全部已读 |
-| POST | `/api/v1/messages/send` | ios-customer ✓ | `conversationId`, `userId`, `content` | Bearer | 发送咨询消息 |
+| POST | `/api/v1/messages/send` | 旧版兼容 | `conversationId`, `userId`, `content` | Bearer | 已废弃，固定返回 `40909`；改用付费预约对话 |
 | POST | `/api/v1/messages/device-token` | ios-customer ✓ | `userId`, `clientType`, `platform`, `deviceToken`, `bundleId`(opt) | Bearer | 注册 APNs token |
 | DELETE | `/api/v1/messages/device-token` | — | `userId`, `deviceToken` | Bearer | 解绑设备 token |
 | DELETE | `/api/v1/messages/:id` | ios-customer ✓ | — | Bearer | 删除消息 |
@@ -719,6 +722,8 @@
 | PUT | `/api/v1/admin/finance/commission-config/:id` | ✓ | `rate`, `description`(opt) | Bearer | 更新抽成配置 |
 | GET | `/api/v1/admin/finance/reports` | ✓ | `startTime`, `endTime`, `type`(opt), `page`, `size` | Bearer | 财务报表 |
 
+结算单列表和详情响应包含 `sourceType`、`sourceNo`，用于从平台结算追溯预约等原始业务单。预约支付先形成平台总账收款，`reviewed` 后才生成寺院/大师结算；支付成功不等于已向大师入账。
+
 ### 5.8 消息推送（message-service @ 8094）
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
@@ -929,6 +934,8 @@
 
 **内部 gRPC**：`temple.rpc:9083`、`master.rpc:9084`、`payment.rpc:9090`，均通过 etcd 发现；booking-service 不运行时跨库查询寺院、法师或支付库。
 
+**OpenIM 强制权限**：OpenIM 的 `beforeSendSingleMsg` 同步回调指向 booking-service，`failedContinue=false`。`u_<userId>` 与 `m_<masterNumericId>` 的文字消息必须带有 booking-service 生成的 `ex=askxuan-booking:<bookingId>:<clientMessageId>` 标记，并且该精确预约必须 `payment_status=success`、未取消且双方归属匹配；`afterSendSingleMsg` 按该预约将文字消息写入 `booking_chat_message`。客户端持有 IMToken 也不能绕过 REST 直接发送。
+
 ### 10.1 C 端接口（6 个，Bearer 鉴权）
 
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
@@ -941,6 +948,11 @@
 | PUT | `/api/v1/bookings/:id/status` | updateStatus | `status=cancelled` | Bearer | 📱 | 取消自己的预约 |
 | POST | `/api/v1/bookings/:id/review` | createReview | `rating`, `content`, `images`(opt) | Bearer | — | 创建评价 |
 | GET | `/api/v1/bookings/:id/review` | reviewDetail | — | Bearer | — | 评价详情 |
+| GET | `/api/v1/bookings/chats` | chatList | `page`, `size` | Bearer | 📱 法师端 | 已支付预约会话列表 |
+| GET | `/api/v1/bookings/:id/chat/messages` | chatMessageList | `page`, `size` | Bearer | 📱 法师端 | 预约文字消息历史 |
+| POST | `/api/v1/bookings/:id/chat/messages` | chatMessageSend | `clientMessageId`, `content` | Bearer | 📱 法师端 | 权限校验、持久化和 OpenIM 投递 |
+| POST | `/openim/booking-chat-webhook` | bookingChatWebhook | OpenIM callback payload | OpenIM 内网 | OpenIM | 发送前付费资格校验或发送后消息落库 |
+| POST | `/openim/booking-chat-webhook/:command` | bookingChatWebhook | 同上 | OpenIM 内网 | OpenIM | 命令式兼容入口 |
 
 ### 10.2 寺院管理台接口（8 个，jwt:Auth）
 
@@ -1192,7 +1204,7 @@
 |------|------|---------|---------|------|-----------|------|
 | GET | `/api/v1/messages/unread-count` | unreadCount | `userId` | Bearer | 📱 | 未读数（**复数**） |
 | PUT | `/api/v1/messages/read-all` | readAll | `userId` | Bearer | 📱 | 全部已读 |
-| POST | `/api/v1/messages/send` | sendMessage | `conversationId`, `userId`, `content` | Bearer | 📱 | 发送咨询消息 |
+| POST | `/api/v1/messages/send` | sendMessage | `conversationId`, `userId`, `content` | Bearer | 兼容 | 已废弃，固定返回 `40909`；改用 `/api/v1/bookings/:id/chat/messages` |
 | POST | `/api/v1/messages/device-token` | registerDeviceToken | `userId`, `clientType`, `platform`, `deviceToken`, `bundleId`(opt) | Bearer | 📱 🔪 | 注册 APNs token |
 | DELETE | `/api/v1/messages/device-token` | unbindDeviceToken | `userId`, `deviceToken` | Bearer | — | 解绑设备 token |
 | DELETE | `/api/v1/messages/:id` | deleteMessage | — | Bearer | 📱 | 删除消息 |
@@ -1232,8 +1244,8 @@
 
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
-| POST | `/openim/webhook` | openIMWebhook | `sendID`, `recvID`, `content`, `sessionType`, `contentType`, `senderName`(opt), `senderNickname`(opt) | 网关白名单 | OpenIM | 通用回调入口，仅落库单聊文本消息 |
-| POST | `/openim/webhook/:command` | openIMWebhook | 同上；`command` 为 OpenIM 回调命令 | 网关白名单 | OpenIM | 命令式兼容入口，仅落库单聊文本消息 |
+| POST | `/openim/webhook` | openIMWebhook | 历史回调体 | 网关白名单 | 兼容 | 已废弃的成功空操作，不再写入咨询通知 |
+| POST | `/openim/webhook/:command` | openIMWebhook | 同上 | 网关白名单 | 兼容 | 已废弃的命令式空操作；预约聊天回调由 booking-service 内网处理 |
 
 两条回调不在 `message.api` 中，由 message-service 直接注册；生产部署必须限制来源网络，并在 OpenIM 侧配置回调地址。
 
@@ -1360,7 +1372,7 @@
 | 7 | user-service | 8082 | 7 | 3 | 10 | ✅ 管理台 jwt |
 | 8 | temple-service | 8083 | 5 | 19 | 24 | ✅ 管理台 jwt |
 | 9 | master-service | 8084 | 2 | 20 | 22 | ✅ 管理台 jwt |
-| 10 | booking-service | 8085 | 8 | 13 | 21 | ✅ 管理台 jwt |
+| 10 | booking-service | 8085 | 11 | 13 | 24 | ✅ 运行时统一 JWT 中间件；聊天校验支付与归属 |
 | 11 | product-service | 8086 | 4 | 12 | 16 | ✅ 管理台 jwt |
 | 12 | diy-service | 8088 | 9 | 13 | 22 | ✅ 管理台 jwt |
 | 13 | order-service | 8089 | 5 | 6 | 11 | ✅ 管理台 jwt |
@@ -1375,9 +1387,9 @@
 | 22 | ai-service | 8098 | 8 | 0 | 8 | ✅ 会话所有权校验 |
 | 23 | media-service | 8100 | 3 | 7 | 12 | ✅ 所有权/角色/回调令牌 |
 | 24 | community-service | 8099 | 8 | 10 | 18 | ✅ 所有权/角色/审核事务 |
-| **`.api` 合计** | — | — | **88** | **172** | **262** | — |
+| **`.api` 合计** | — | — | **91** | **172** | **265** | — |
 
-> media-service 的总计另含 2 个 Provider 回调，因此 262 比 C 端与管理台两列之和多 2。另有 3 条由服务直接注册、未写入 `.api` 的路由：finance-service 商城报表 1 条、message-service OpenIM 回调 2 条；完整唯一运行时 HTTP 契约为 265 条。执行 `node scripts/audit-api-reference.mjs` 可复核源码与本文档。
+> media-service 的总计另含 2 个 Provider 回调，因此 265 比 C 端与管理台两列之和多 2。另有 5 条由服务直接注册、未写入 `.api` 的路由：finance-service 商城报表 1 条、message-service 通用 OpenIM 回调 2 条、booking-service OpenIM 强制权限回调 2 条；完整唯一运行时 HTTP 契约为 270 条。执行 `node scripts/audit-api-reference.mjs` 可复核源码与本文档。
 
 > ⚠️ **鉴权缺口**：review / finance / audit / message(部分) / logistics / marketing 共 6 个服务的管理台接口在 .api 文件中未声明 `jwt: Auth`，完全依赖网关鉴权。绕过网关直连服务端口即可无鉴权访问。
 
@@ -1513,7 +1525,7 @@
 | 2 | user-service | 8082 | 7 | 3 | 10 |
 | 3 | temple-service | 8083 | 5 | 19 | 24 |
 | 4 | master-service | 8084 | 2 | 20 | 22 |
-| 5 | booking-service | 8085 | 8 | 9 | 17 |
+| 5 | booking-service | 8085 | 11 | 13 | 24 |
 | 6 | product-service | 8086 | 4 | 12 | 16 |
 | 7 | diy-service | 8088 | 9 | 13 | 22 |
 | 8 | order-service | 8089 | 5 | 6 | 11 |
@@ -1528,8 +1540,8 @@
 | 17 | ai-service | 8098 | 8 | 0 | 8 |
 | 18 | media-service | 8100 | 3 | 7 | 12 |
 | 19 | community-service | 8099 | 8 | 10 | 18 |
-| **`.api` 合计** | — | — | **88** | **172** | **262** |
+| **`.api` 合计** | — | — | **91** | **172** | **265** |
 
 ---
 
-**文档完成。本接口文档基于 2026-07-29 项目代码状态整理，覆盖 5 个正式客户端、备用 mobile-customer、Provider 回调与显式注册路由涉及的 265 个唯一运行时 HTTP 契约。**
+**文档完成。本接口文档基于 2026-07-31 项目代码状态整理，覆盖 5 个正式客户端、备用 mobile-customer、Provider 回调与显式注册路由涉及的 270 个唯一运行时 HTTP 契约。**
