@@ -2,8 +2,8 @@
 
 **文档版本**：2026-07-31
 **网关地址**：`http://localhost:8080`（本地开发）/ `https://api.askxuan.com`（生产）
-**网关模型**：自研 net/http + httputil.ReverseProxy，23 条公开业务路由 + 2 条 IM 路由 + 25 条管理台路由 = 50 条 Prefix；最长前缀匹配，动态服务发现优先、静态 Target 回退
-**接口总数**：270 个唯一运行时 HTTP 契约（由 `routes.go` 与本文档机器对比）
+**网关模型**：自研 net/http + httputil.ReverseProxy，23 条公开业务路由 + 2 条 IM 路由 + 26 条管理台路由 = 51 条 Prefix；最长前缀匹配，动态服务发现优先、静态 Target 回退
+**接口总数**：279 个唯一运行时 HTTP 契约（由 `routes.go` 与本文档机器对比）
 
 **文档结构**：
 
@@ -108,7 +108,8 @@
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
-| GET | `/api/v1/beliefs/:code` | ios-customer ✓ | — | 无 | 一级流派资料；code 为 `han_buddhism`/`tibetan_buddhism`/`daoism`/`folk` |
+| GET | `/api/v1/beliefs` | ios-customer ✓ / mobile-customer ✓ | — | 无 | 平台启用的一级流派，按 `sort/code` 排序；客户端首页和筛选项以此为准 |
+| GET | `/api/v1/beliefs/:code` | ios-customer ✓ | — | 无 | 一级流派详情；`code` 是平台维护的稳定业务编码 |
 | GET | `/api/v1/temples` | ios-customer ✓ / mobile-customer ✓ | `beliefCode`(opt), `sect`(opt), `type`(opt), `region`(opt), `page`, `size` | 无 | 寺院列表 |
 | GET | `/api/v1/temples/:id` | ios-customer ✓ / mobile-customer ✓ | — | 无 | 寺院详情 |
 | GET | `/api/v1/temples/:id/services` | ios-customer ✓ | — | 无 | 寺院服务列表 |
@@ -252,6 +253,7 @@
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
+| GET | `/api/v1/intentions/tags` | ios-customer ✓ / mobile-customer ✓ | — | 无 | 平台启用的心愿分类，含图标、落地类型、落地值、按钮文案和排序 |
 | GET | `/api/v1/intentions` | ios-customer ✓ | `code`(opt), `page`, `size` | 无 | 混合返回商品与寺院服务；含 `resourceType/sourceId/price/image/orderTarget/templeCode/serviceCode` |
 
 ### 1.16 营销模块（marketing-service @ 8096）
@@ -668,8 +670,20 @@
 | PUT | `/api/v1/admin/platform/temples/audits/:id/final-pass` | ✓ | `auditRemark`(opt) | Bearer | 终审通过 |
 | PUT | `/api/v1/admin/platform/temples/audits/:id/reject` | ✓ | `auditRemark`(opt) | Bearer | 驳回申请 |
 | PUT | `/api/v1/admin/platform/temples/:id/status` | ✓ | `status` | Bearer | 寺院状态（normal/banned/recommended） |
-| PUT | `/api/v1/admin/platform/beliefs/:code` | ✓ | `name`, `summary`(opt), `description`, `coverImage`(opt), `sort`(opt) | Bearer | 维护一级流派运营资料 |
+| GET | `/api/v1/admin/platform/beliefs` | ✓ | — | Bearer | 一级流派列表，包含停用项 |
+| POST | `/api/v1/admin/platform/beliefs` | ✓ | `code`, `name`, `summary`(opt), `description`, `coverImage`(opt), `icon`(opt), `sort`(opt) | Bearer | 新增一级流派运营资料 |
+| PUT | `/api/v1/admin/platform/beliefs/:code` | ✓ | `name`, `summary`(opt), `description`, `coverImage`(opt), `icon`(opt), `sort`(opt) | Bearer | 编辑一级流派运营资料 |
+| PUT | `/api/v1/admin/platform/beliefs/:code/status` | ✓ | `status` (`enabled/disabled`) | Bearer | 启用或停用一级流派入口 |
 | GET | `/api/v1/temples/:id` | ✓ | — | 无 | 寺院详情（**复用 C 端接口**） |
+
+### 5.3.1 首页心愿分类（product-service @ 8086）
+
+| 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
+|------|------|-----------|---------|------|------|
+| GET | `/api/v1/admin/platform/intentions` | ✓ | — | Bearer | 心愿分类列表，包含停用项 |
+| POST | `/api/v1/admin/platform/intentions` | ✓ | `code`, `name`, `description`(opt), `icon`(opt), `landingType`(opt), `landingValue`(opt), `actionTitle`(opt), `sort`(opt) | Bearer | 新增心愿分类 |
+| PUT | `/api/v1/admin/platform/intentions/:code` | ✓ | `name`, `description`(opt), `icon`(opt), `landingType`(opt), `landingValue`(opt), `actionTitle`(opt), `sort`(opt) | Bearer | 编辑心愿分类 |
+| PUT | `/api/v1/admin/platform/intentions/:code/status` | ✓ | `status` (`enabled/disabled`) | Bearer | 启用或停用心愿入口 |
 
 ### 5.4 法师审核（master-service @ 8084）
 
@@ -1389,7 +1403,7 @@
 | 24 | community-service | 8099 | 8 | 10 | 18 | ✅ 所有权/角色/审核事务 |
 | **`.api` 合计** | — | — | **91** | **172** | **265** | — |
 
-> media-service 的总计另含 2 个 Provider 回调，因此 265 比 C 端与管理台两列之和多 2。另有 5 条由服务直接注册、未写入 `.api` 的路由：finance-service 商城报表 1 条、message-service 通用 OpenIM 回调 2 条、booking-service OpenIM 强制权限回调 2 条；完整唯一运行时 HTTP 契约为 270 条。执行 `node scripts/audit-api-reference.mjs` 可复核源码与本文档。
+> media-service 的总计另含 2 个 Provider 回调，因此 265 比 C 端与管理台两列之和多 2。另有 14 条由服务直接注册、未写入 `.api` 的路由：finance-service 商城报表 1 条、message-service 通用 OpenIM 回调 2 条、booking-service OpenIM 强制权限回调 2 条，以及信仰/心愿动态主数据 9 条；完整唯一运行时 HTTP 契约为 279 条。执行 `node scripts/audit-api-reference.mjs` 可复核源码与本文档。
 
 > ⚠️ **鉴权缺口**：review / finance / audit / message(部分) / logistics / marketing 共 6 个服务的管理台接口在 .api 文件中未声明 `jwt: Auth`，完全依赖网关鉴权。绕过网关直连服务端口即可无鉴权访问。
 
@@ -1456,12 +1470,13 @@
 | `/api/v1/im` | OpenIM | 10002 |
 | `/openim` | message-service | 8094 |
 
-### 管理台路由（25 条，最长前缀匹配）
+### 管理台路由（26 条，最长前缀匹配）
 
 | 前缀 | 目标服务 | 端口 |
 |------|---------|------|
 | `/api/v1/admin/files` | file-service | 8097 |
 | `/api/v1/admin/platform/beliefs` | temple-service | 8083 |
+| `/api/v1/admin/platform/intentions` | product-service | 8086 |
 | `/api/v1/admin/auth` | auth-service | 8081 |
 | `/api/v1/admin/users` | user-service | 8082 |
 | `/api/v1/admin/temples/masters` | master-service | 8084 |
@@ -1544,4 +1559,4 @@
 
 ---
 
-**文档完成。本接口文档基于 2026-07-31 项目代码状态整理，覆盖 5 个正式客户端、备用 mobile-customer、Provider 回调与显式注册路由涉及的 270 个唯一运行时 HTTP 契约。**
+**文档完成。本接口文档基于 2026-08-12 项目代码状态整理，覆盖 5 个正式客户端、备用 mobile-customer、Provider 回调与显式注册路由涉及的 279 个唯一运行时 HTTP 契约。**
