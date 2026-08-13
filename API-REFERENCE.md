@@ -112,7 +112,7 @@
 | GET | `/api/v1/beliefs/:code` | ios-customer ✓ | — | 无 | 一级流派详情；`code` 是平台维护的稳定业务编码 |
 | GET | `/api/v1/service-types` | ios-customer ✓ / mobile-customer ✓ / web-temple-admin ✓ | — | 无 | 固定 13 项标准服务类型，返回 `code/name/category/priceRange` |
 | GET | `/api/v1/temples` | ios-customer ✓ / mobile-customer ✓ | `beliefCode`(opt), `sect`(opt), `type`(opt), `region`(opt), `page`, `size` | 无 | 寺院列表 |
-| GET | `/api/v1/temples/:id` | ios-customer ✓ / mobile-customer ✓ | — | 无 | 寺院详情 |
+| GET | `/api/v1/temples/:id` | ios-customer ✓ / mobile-customer ✓ | — | 无 | 寺院详情，固定返回 `temple/images/services`，服务仅含上架项 |
 | GET | `/api/v1/temples/:id/services` | ios-customer ✓ | — | 无 | 寺院服务列表 |
 
 ### 1.4 法师模块（master-service @ 8084）
@@ -649,9 +649,9 @@
 | POST | `/api/v1/auth/admin/login` | ✓ | `account`, `password` | 无 | 平台管理员登录 |
 | POST | `/api/v1/auth/refresh` | ✓（拦截器内部） | `refreshToken` | 无 | 刷新 token |
 | GET | `/api/v1/admin/auth/accounts` | ✓ | `keyword`(opt), `status`(opt), `page`, `size` | Bearer | 管理账号列表 |
-| POST | `/api/v1/admin/auth/accounts` | ✓ | `account`, `password`, `name`, `roleId`, `templeId`(opt) | Bearer | 创建管理账号 |
-| PUT | `/api/v1/admin/auth/accounts/:id` | ✓ | `name`(opt), `roleId`(opt), `templeId`(opt), `masterId`(opt) | Bearer | 更新账号 |
-| PUT | `/api/v1/admin/auth/accounts/:id/status` | ✓ | `status` | Bearer | 启用/禁用账号 |
+| POST | `/api/v1/admin/auth/accounts` | ✓ | `account`, `password`, `name`, `roleId`, `templeId`(opt), `masterId`(opt), `shopId`(opt) | Bearer | 创建管理账号并事务同步主体绑定；待审核寺院账号默认停用 |
+| PUT | `/api/v1/admin/auth/accounts/:id` | ✓ | `name`(opt), `roleId`(opt), `templeId`(opt), `masterId`(opt), `shopId`(opt) | Bearer | 更新账号并事务同步主体绑定 |
+| PUT | `/api/v1/admin/auth/accounts/:id/status` | ✓ | `status` | Bearer | 启用/禁用账号；待审核/封禁寺院账号禁止启用 |
 | GET | `/api/v1/admin/auth/roles` | ✓ | — | Bearer | 角色列表 |
 | POST | `/api/v1/admin/auth/roles` | ✓ | `name`, `code`, `description`(opt) | Bearer | 创建角色 |
 | PUT | `/api/v1/admin/auth/roles/:id` | ✓ | `name`(opt), `description`(opt) | Bearer | 更新角色 |
@@ -680,7 +680,7 @@
 | POST | `/api/v1/admin/platform/beliefs` | ✓ | `code`, `name`, `summary`(opt), `description`, `coverImage`(opt), `icon`(opt), `sort`(opt) | Bearer | 新增一级流派运营资料 |
 | PUT | `/api/v1/admin/platform/beliefs/:code` | ✓ | `name`, `summary`(opt), `description`, `coverImage`(opt), `icon`(opt), `sort`(opt) | Bearer | 编辑一级流派运营资料 |
 | PUT | `/api/v1/admin/platform/beliefs/:code/status` | ✓ | `status` (`enabled/disabled`) | Bearer | 启用或停用一级流派入口 |
-| GET | `/api/v1/temples/:id` | ✓ | — | 无 | C 端寺院详情，仅正常/推荐状态可见 |
+| GET | `/api/v1/temples/:id` | ✓ | — | 无 | C 端聚合详情 `temple/images/services`，仅正常/推荐状态可见且服务仅含上架项 |
 
 ### 5.3.1 首页心愿分类（product-service @ 8086）
 
@@ -812,9 +812,9 @@
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
 | GET | `/api/v1/admin/auth/accounts` | adminAccountList | `keyword`(opt), `status`(opt), `page`, `size` | jwt:Auth | 🌐 | 管理账号列表 |
-| POST | `/api/v1/admin/auth/accounts` | adminAccountCreate | `account`, `password`, `name`, `roleId`, `templeId`(opt) | jwt:Auth | 🌐 | 创建管理账号 |
-| PUT | `/api/v1/admin/auth/accounts/:id` | adminAccountUpdate | `name`(opt), `roleId`(opt), `templeId`(opt), `masterId`(opt) | jwt:Auth | 🌐 | 更新管理账号 |
-| PUT | `/api/v1/admin/auth/accounts/:id/status` | adminAccountStatus | `status` | jwt:Auth | 🌐 | 启用/禁用账号 |
+| POST | `/api/v1/admin/auth/accounts` | adminAccountCreate | `account`, `password`, `name`, `roleId`, `templeId`(opt), `masterId`(opt), `shopId`(opt) | jwt:Auth | 🌐 | 创建管理账号并事务同步主体绑定 |
+| PUT | `/api/v1/admin/auth/accounts/:id` | adminAccountUpdate | `name`(opt), `roleId`(opt), `templeId`(opt), `masterId`(opt), `shopId`(opt) | jwt:Auth | 🌐 | 更新管理账号并事务同步主体绑定 |
+| PUT | `/api/v1/admin/auth/accounts/:id/status` | adminAccountStatus | `status` | jwt:Auth | 🌐 | 启用/禁用账号，待审核/封禁寺院账号不可启用 |
 | GET | `/api/v1/admin/auth/roles` | adminRoleList | — | jwt:Auth | 🌐 | 角色列表 |
 | POST | `/api/v1/admin/auth/roles` | adminRoleCreate | `name`, `code`, `description`(opt) | jwt:Auth | 🌐 | 创建角色 |
 | PUT | `/api/v1/admin/auth/roles/:id` | adminRoleUpdate | `name`(opt), `description`(opt) | jwt:Auth | 🌐 | 更新角色 |
@@ -859,7 +859,7 @@
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
 | GET | `/api/v1/temples` | list | `sect`(opt), `type`(opt), `region`(opt), `page`, `size` | 无 | 📱 📲 🌐 | 寺院列表 |
-| GET | `/api/v1/temples/:id` | detail | — | 无 | 📱 📲 🌐 | 寺院详情 |
+| GET | `/api/v1/temples/:id` | detail | — | 无 | 📱 📲 🌐 | 聚合寺院详情 `temple/images/services` |
 | GET | `/api/v1/temples/:id/services` | serviceList | — | 无 | 📱 | 寺院服务列表 |
 | GET | `/api/v1/service-types` | serviceTypeList | — | 无 | 📱 📲 🏛️ | 固定标准服务类型列表 |
 
