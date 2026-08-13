@@ -188,7 +188,7 @@ Swift 不允许变量为 `null`，必须显式声明「可能没有值」的类�
 
 ```swift
 // 1) 声明可选类型：在类型后加 ?
-let masterName: String? = "智海法师"
+let masterName: String? = "明觉法师（演示）"
 let unknownName: String? = nil       // ✅ OK
 
 // 2) 解包方式一：强制解包 !（危险，不推荐）
@@ -239,7 +239,7 @@ let message = "法师 \(name) 今年 \(age) 岁，明年 \(age + 1) 岁"
 
 // 多行字符串
 let intro = """
-智海法师，灵隐寺住持，
+明觉法师（演示），灵隐寺客堂法师，
 专长：佛学、禅修、开光、祈福
 """
 ```
@@ -2535,7 +2535,7 @@ logger.error("加载失败：\(error.localizedDescription, privacy: .public)")
 
 **对应 Task**：`Task 23: 实现师傅模块（master-list + master-profile）`
 - SubTask 23.1：`master-list`：教派分类标签 + 4 维筛选（寺院 / 职位 / 宗派 / 价格）+ 师傅卡片列表
-- SubTask 23.2：`master-profile`：背景区 + 5 Tab（资质 / 预约 / 文创 / 视频 / 咨询）+ 底部双按钮
+- SubTask 23.2：`master-profile`：背景区 + 5 Tab（资质 / 预约 / 文创 / 视频 / 咨询）+ “立即咨询 / 预约服务”双入口；即时咨询按法师权威报价独立付费，不要求先预约服务
 - SubTask 23.3：接入 `/masters`、`/masters/{id}` 接口
 
 **关键技能点**：复杂筛选状态管理、ZStack 背景层、底部固定操作栏。
@@ -2557,6 +2557,7 @@ logger.error("加载失败：\(error.localizedDescription, privacy: .public)")
   - SubTask 25.3：`home → temple-list → temple-detail → booking` 链路
   - SubTask 25.4：`home → master-list → master-profile → booking` 链路
   - SubTask 25.5：`home → ad-landing` 独立返回分支
+  - SubTask 25.6：底部 Dock 只在五个 Tab 根页面显示；进入二级及更深页面后隐藏，使用系统返回按钮和屏幕边缘返回手势
 
 **关键技能点**：多步表单状态管理、POST 请求、TabView + NavigationStack 嵌套、路由管理。
 
@@ -2574,6 +2575,7 @@ logger.error("加载失败：\(error.localizedDescription, privacy: .public)")
 | Task 31 | 我的（profile） | MVP-2 |
 
 法师工作台 App（P03）见 `Task 32-36`，复用 C 端设计系统组件库与网络层，可独立成另一条开发线。
+法师端同样只在工作台、预约、消息、我的四个根页面显示 Dock；预约详情、对话和其他二级页面隐藏 Dock。
 
 ### 路线图小结
 

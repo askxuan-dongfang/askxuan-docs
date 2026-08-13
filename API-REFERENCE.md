@@ -1,9 +1,9 @@
 # 问玄东方全栈接口文档（面向 5 个端侧客户端）
 
-**文档版本**：2026-07-31
+**文档版本**：2026-08-13
 **网关地址**：`http://localhost:8080`（本地开发）/ `https://api.askxuan.com`（生产）
 **网关模型**：自研 net/http + httputil.ReverseProxy，23 条公开业务路由 + 2 条 IM 路由 + 26 条管理台路由 = 51 条 Prefix；最长前缀匹配，动态服务发现优先、静态 Target 回退
-**接口总数**：279 个唯一运行时 HTTP 契约（由 `routes.go` 与本文档机器对比）
+**接口总数**：292 个唯一运行时 HTTP 契约（由 `routes.go` 与本文档机器对比）
 
 **文档结构**：
 
@@ -120,7 +120,7 @@
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
 | GET | `/api/v1/masters` | ios-customer ✓ / mobile-customer ✓ | `beliefCode`(opt), `sect`(opt), `type`(opt), `templeId`(opt), `page`, `size` | 无 | 法师列表 |
-| GET | `/api/v1/masters/:id` | ios-customer ✓ / mobile-customer ✓ | — | 无 | 法师详情 |
+| GET | `/api/v1/masters/:id` | ios-customer ✓ / mobile-customer ✓ | — | 无 | 法师详情，含即时咨询开关、服务端价格、有效期和响应时限 |
 
 ### 1.5 预约模块（booking-service @ 8085）
 
@@ -137,6 +137,14 @@
 | GET | `/api/v1/bookings/chats` | ios-customer ✓ / ios-master ✓ | `page`, `size` | Bearer | 仅返回支付成功且未取消、归属当前用户/法师的预约会话 |
 | GET | `/api/v1/bookings/:id/chat/messages` | ios-customer ✓ / ios-master ✓ | `page`, `size` | Bearer | 按预约读取持久化文字历史，校验双方归属 |
 | POST | `/api/v1/bookings/:id/chat/messages` | ios-customer ✓ / ios-master ✓ | `clientMessageId`, `content` | Bearer | 服务端再次核验支付与归属后，通过 OpenIM 实时投递；幂等发送 |
+| GET | `/api/v1/consultations/quote` | ios-customer ✓ | `masterId` | 无 | 返回法师当前即时咨询开关、权威价格、有效小时和响应分钟 |
+| POST | `/api/v1/consultations` | ios-customer ✓ | `requestId`, `masterId`, `question`(opt) | Bearer | 创建独立即时咨询订单并在本地环境模拟支付；忽略客户端价格 |
+| GET | `/api/v1/consultations` | ios-customer ✓ / ios-master ✓ | `status`(opt), `page`, `size` | Bearer | 当前用户或法师的咨询订单 |
+| GET | `/api/v1/consultations/:id` | ios-customer ✓ / ios-master ✓ | — | Bearer | 咨询订单详情及有效期 |
+| POST | `/api/v1/consultations/:id/pay` | ios-customer ✓ | — | Bearer | 待支付咨询幂等重试 |
+| GET | `/api/v1/chats` | ios-customer ✓ / ios-master ✓ | `page`, `size` | Bearer | 聚合有效即时咨询和已支付预约会话；过期咨询保留只读历史 |
+| GET | `/api/v1/chats/:id/messages` | ios-customer ✓ / ios-master ✓ | `page`, `size` | Bearer | 按通用会话 ID 读取持久化文字历史 |
+| POST | `/api/v1/chats/:id/messages` | ios-customer ✓ / ios-master ✓ | `clientMessageId`, `content` | Bearer | 核验来源、支付、归属和有效期后通过 OpenIM 投递 |
 
 ### 1.6 商品模块（product-service @ 8086）
 
@@ -167,7 +175,7 @@
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
 | POST | `/api/v1/orders` | — | `userId`, `addressId`, `note`(opt), `items` | Bearer | 创建订单 |
-| GET | `/api/v1/orders` | — | `userId`, `status`(opt), `page`, `size` | Bearer | 订单列表 |
+| GET | `/api/v1/orders` | — | `status`(opt), `page`, `size` | Bearer | 订单列表，用户身份以 JWT 为准 |
 | GET | `/api/v1/orders/:id` | — | — | Bearer | 订单详情 |
 | PUT | `/api/v1/orders/:id/confirm` | — | — | Bearer | 确认收货 |
 | POST | `/api/v1/orders/:id/return` | — | `type`, `reason` | Bearer | 申请退换货 |
@@ -266,7 +274,7 @@
 | GET | `/api/v1/marketing/activities` | — | `status`(opt), `type`(opt), `page`, `size` | 无 | 活动列表 |
 | GET | `/api/v1/marketing/coupons` | — | `status`(opt), `type`(opt), `page`, `size` | 无 | 优惠券列表 |
 | POST | `/api/v1/marketing/coupons/:id/receive` | — | `userId` | Bearer | 领取优惠券 |
-| GET | `/api/v1/marketing/my-coupons` | — | `userId`, `status`(opt), `page`, `size` | Bearer | 我的优惠券 |
+| GET | `/api/v1/marketing/my-coupons` | — | `status`(opt), `page`, `size` | Bearer | 我的优惠券，用户身份以 JWT 为准 |
 
 ### 1.16 文件模块（file-service @ 8097）
 
@@ -699,6 +707,7 @@
 | PUT | `/api/v1/admin/platform/masters/audits/:id/pass` | ✓ | `auditRemark`(opt) | Bearer | 审核通过 |
 | PUT | `/api/v1/admin/platform/masters/audits/:id/reject` | ✓ | `auditRemark`(opt) | Bearer | 审核驳回 |
 | PUT | `/api/v1/admin/platform/masters/:id/status` | ✓ | `status` | Bearer | 法师状态（normal/banned） |
+| PUT | `/api/v1/admin/platform/masters/:id/consultation` | ✓ | `consultEnabled`, `consultFee`, `consultValidHours`, `consultResponseMinutes` | Bearer | 平台维护法师即时咨询价格和服务承诺 |
 | GET | `/api/v1/masters` | ✓ | `sect`(opt), `type`(opt), `templeId`(opt), `page`, `size` | 无 | 法师列表（**复用 C 端接口**） |
 | GET | `/api/v1/masters/:id` | ✓ | — | 无 | 法师详情（**复用 C 端接口**） |
 
@@ -906,7 +915,7 @@
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
 | GET | `/api/v1/masters` | list | `sect`(opt), `type`(opt), `templeId`(opt), `page`, `size` | 无 | 📱 📲 🌐 | 法师列表 |
-| GET | `/api/v1/masters/:id` | detail | — | 无 | 📱 📲 🌐 | 法师详情 |
+| GET | `/api/v1/masters/:id` | detail | — | 无 | 📱 📲 🌐 | 公开法师详情；待审核、下架或封禁记录按不存在返回 |
 
 ### 9.2 寺院管理台接口（4 个，jwt:Auth）
 
@@ -939,14 +948,16 @@
 | GET | `/api/v1/admin/masters/profile` | workspaceProfileGet | — | jwt:Auth | 🔪 | 法师资料 |
 | PUT | `/api/v1/admin/masters/profile` | workspaceProfileUpdate | `bio`(opt), `specialties`(opt), `avatar`(opt), `pricing`(opt) | jwt:Auth | 🔪 | 更新资料 |
 
-### 9.5 平台审核接口（4 个，jwt:Auth）
+### 9.5 平台管理与审核接口（5 个，jwt:Auth）
 
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
+| GET | `/api/v1/admin/platform/masters` | platformMasterList | `beliefCode`, `sect`, `type`, `templeId`, `authStatus`, `shelfStatus`, `platformStatus`(均可选), `page`, `size` | jwt:Auth | 🌐 | 全量法师列表，含待审核、下架和封禁记录 |
 | GET | `/api/v1/admin/platform/masters/audits` | platformAuditList | `status`(opt), `page`, `size` | jwt:Auth | 🌐 | 法师资质审核列表 |
 | PUT | `/api/v1/admin/platform/masters/audits/:id/pass` | platformAuditPass | `auditRemark`(opt) | jwt:Auth | 🌐 | 审核通过 |
 | PUT | `/api/v1/admin/platform/masters/audits/:id/reject` | platformAuditReject | `auditRemark`(opt) | jwt:Auth | 🌐 | 审核驳回 |
 | PUT | `/api/v1/admin/platform/masters/:id/status` | platformMasterStatus | `status` | jwt:Auth | 🌐 | 法师状态变更 |
+| PUT | `/api/v1/admin/platform/masters/:id/consultation` | platformMasterConsultConfig | `consultEnabled`, `consultFee`, `consultValidHours`, `consultResponseMinutes` | jwt:Auth | 🌐 | 即时咨询配置 |
 
 ---
 
@@ -957,7 +968,7 @@
 
 **内部 gRPC**：`temple.rpc:9083`、`master.rpc:9084`、`payment.rpc:9090`，均通过 etcd 发现；booking-service 不运行时跨库查询寺院、法师或支付库。
 
-**OpenIM 强制权限**：OpenIM 的 `beforeSendSingleMsg` 同步回调指向 booking-service，`failedContinue=false`。`u_<userId>` 与 `m_<masterNumericId>` 的文字消息必须带有 booking-service 生成的 `ex=askxuan-booking:<bookingId>:<clientMessageId>` 标记，并且该精确预约必须 `payment_status=success`、未取消且双方归属匹配；`afterSendSingleMsg` 按该预约将文字消息写入 `booking_chat_message`。客户端持有 IMToken 也不能绕过 REST 直接发送。
+**OpenIM 强制权限**：OpenIM 的 `beforeSendSingleMsg` 同步回调指向 booking-service，`failedContinue=false`。新消息使用 `ex=askxuan-chat:<sourceType>:<sourceId>:<clientMessageId>`；旧预约标记继续兼容。服务端按精确来源核验咨询支付/有效期或预约支付/未取消状态以及双方归属，`afterSendSingleMsg` 按来源落库。客户端持有 IMToken 也不能绕过 REST 直接发送。
 
 ### 10.1 C 端接口（6 个，Bearer 鉴权）
 
@@ -974,6 +985,14 @@
 | GET | `/api/v1/bookings/chats` | chatList | `page`, `size` | Bearer | 📱 法师端 | 已支付预约会话列表 |
 | GET | `/api/v1/bookings/:id/chat/messages` | chatMessageList | `page`, `size` | Bearer | 📱 法师端 | 预约文字消息历史 |
 | POST | `/api/v1/bookings/:id/chat/messages` | chatMessageSend | `clientMessageId`, `content` | Bearer | 📱 法师端 | 权限校验、持久化和 OpenIM 投递 |
+| GET | `/api/v1/consultations/quote` | consultationQuote | `masterId` | 公开 | 📱 | 即时咨询权威报价 |
+| POST | `/api/v1/consultations` | consultationCreate | `requestId`, `masterId`, `question`(opt) | Bearer | 📱 | 独立咨询订单及 mock 支付 |
+| GET | `/api/v1/consultations` | consultationList | `status`(opt), `page`, `size` | Bearer | 📱 法师端 | 咨询订单列表 |
+| GET | `/api/v1/consultations/:id` | consultationDetail | — | Bearer | 📱 法师端 | 咨询订单详情 |
+| POST | `/api/v1/consultations/:id/pay` | consultationPay | — | Bearer | 📱 | 幂等支付重试 |
+| GET | `/api/v1/chats` | chatList | `page`, `size` | Bearer | 📱 法师端 | 咨询与预约统一会话列表 |
+| GET | `/api/v1/chats/:id/messages` | chatMessageList | `page`, `size` | Bearer | 📱 法师端 | 通用会话历史 |
+| POST | `/api/v1/chats/:id/messages` | chatMessageSend | `clientMessageId`, `content` | Bearer | 📱 法师端 | 通用会话发送 |
 | POST | `/openim/booking-chat-webhook` | bookingChatWebhook | OpenIM callback payload | OpenIM 内网 | OpenIM | 发送前付费资格校验或发送后消息落库 |
 | POST | `/openim/booking-chat-webhook/:command` | bookingChatWebhook | 同上 | OpenIM 内网 | OpenIM | 命令式兼容入口 |
 
@@ -1087,7 +1106,7 @@
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
 | POST | `/api/v1/orders` | orderCreate | `userId`, `addressId`, `note`(opt), `items` | Bearer | — | 创建订单 |
-| GET | `/api/v1/orders` | orderList | `userId`, `status`(opt), `page`, `size` | Bearer | — | 订单列表 |
+| GET | `/api/v1/orders` | orderList | `status`(opt), `page`, `size` | Bearer | — | 订单列表，用户身份以 JWT 为准；查询 `userId` 仅兼容旧客户端且会被覆盖 |
 | GET | `/api/v1/orders/:id` | orderDetail | — | Bearer | — | 订单详情 |
 | PUT | `/api/v1/orders/:id/confirm` | orderConfirm | — | Bearer | — | 确认收货 |
 | POST | `/api/v1/orders/:id/return` | orderReturn | `type`, `reason` | Bearer | — | 申请退换货 |
@@ -1308,7 +1327,7 @@
 | GET | `/api/v1/marketing/activities` | customerActivityList | `status`(opt), `type`(opt), `page`, `size` | 无 | — | 活动列表 |
 | GET | `/api/v1/marketing/coupons` | customerCouponList | `status`(opt), `type`(opt), `page`, `size` | 无 | — | 优惠券列表 |
 | POST | `/api/v1/marketing/coupons/:id/receive` | customerCouponReceive | `userId` | Bearer | — | 领取优惠券 |
-| GET | `/api/v1/marketing/my-coupons` | customerMyCoupon | `userId`, `status`(opt), `page`, `size` | Bearer | — | 我的优惠券 |
+| GET | `/api/v1/marketing/my-coupons` | customerMyCoupon | `status`(opt), `page`, `size` | Bearer | — | 我的优惠券，用户身份以 JWT 为准；查询 `userId` 仅兼容旧客户端且会被覆盖 |
 
 ### 20.2 管理台接口（11 个，⚠️ .api 未声明 jwt）
 
@@ -1393,8 +1412,8 @@
 |------|--------|------|-----|-------|------|---------|
 | 6 | auth-service | 8081 | 4 | 8 | 12 | ✅ 管理台 jwt |
 | 7 | user-service | 8082 | 7 | 3 | 10 | ✅ 管理台 jwt |
-| 8 | temple-service | 8083 | 5 | 19 | 24 | ✅ 管理台 jwt |
-| 9 | master-service | 8084 | 2 | 20 | 22 | ✅ 管理台 jwt |
+| 8 | temple-service | 8083 | 6 | 19 | 25 | ✅ 管理台 jwt |
+| 9 | master-service | 8084 | 2 | 21 | 23 | ✅ 管理台 jwt |
 | 10 | booking-service | 8085 | 11 | 13 | 24 | ✅ 运行时统一 JWT 中间件；聊天校验支付与归属 |
 | 11 | product-service | 8086 | 4 | 12 | 16 | ✅ 管理台 jwt |
 | 12 | diy-service | 8088 | 9 | 13 | 22 | ✅ 管理台 jwt |
@@ -1410,9 +1429,9 @@
 | 22 | ai-service | 8098 | 8 | 0 | 8 | ✅ 会话所有权校验 |
 | 23 | media-service | 8100 | 3 | 7 | 12 | ✅ 所有权/角色/回调令牌 |
 | 24 | community-service | 8099 | 8 | 10 | 18 | ✅ 所有权/角色/审核事务 |
-| **`.api` 合计** | — | — | **91** | **172** | **265** | — |
+| **`.api` 合计** | — | — | **92** | **173** | **267** | — |
 
-> media-service 的总计另含 2 个 Provider 回调，因此 265 比 C 端与管理台两列之和多 2。另有 14 条由服务直接注册、未写入 `.api` 的路由：finance-service 商城报表 1 条、message-service 通用 OpenIM 回调 2 条、booking-service OpenIM 强制权限回调 2 条，以及信仰/心愿动态主数据 9 条；完整唯一运行时 HTTP 契约为 279 条。执行 `node scripts/audit-api-reference.mjs` 可复核源码与本文档。
+> `.api`、Provider 回调及服务直接注册路由去重后，完整运行时 HTTP 契约为 292 条。执行 `node scripts/audit-api-reference.mjs` 可复核源码与本文档，统计以机器扫描结果为准。
 
 > ⚠️ **鉴权缺口**：review / finance / audit / message(部分) / logistics / marketing 共 6 个服务的管理台接口在 .api 文件中未声明 `jwt: Auth`，完全依赖网关鉴权。绕过网关直连服务端口即可无鉴权访问。
 
@@ -1564,8 +1583,8 @@
 | 17 | ai-service | 8098 | 8 | 0 | 8 |
 | 18 | media-service | 8100 | 3 | 7 | 12 |
 | 19 | community-service | 8099 | 8 | 10 | 18 |
-| **`.api` 合计** | — | — | **91** | **172** | **265** |
+| **`.api` 合计** | — | — | **92** | **173** | **267** |
 
 ---
 
-**文档完成。本接口文档基于 2026-08-12 项目代码状态整理，覆盖 5 个正式客户端、备用 mobile-customer、Provider 回调与显式注册路由涉及的 279 个唯一运行时 HTTP 契约。**
+**文档完成。本接口文档基于 2026-08-14 项目代码状态整理，覆盖 5 个正式客户端、备用 mobile-customer、Provider 回调与显式注册路由涉及的 292 个唯一运行时 HTTP 契约。**

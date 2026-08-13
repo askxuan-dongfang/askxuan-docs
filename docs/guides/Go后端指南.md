@@ -2014,7 +2014,7 @@ etcdctl --endpoints=http://localhost:2379 get /zero/ --prefix
 
 涉及服务：
 - `temple-service` — 10 所寺院目录；基础 6 所之外增加九华山化城寺、北京雍和宫、青城山天师洞、湄洲妈祖祖庙演示条目
-- `master-service` — 6 法师数据（智海/清风/释延心/扎西多吉/慧明/真武）
+- `master-service` — 10 位虚构演示大师数据（明觉、玄和、延澄、嘉措、慧闻、守一等）
 - `booking-service` — 预约订单与状态流转（待确认→已确认→进行中→已完成 / 已取消）
 
 验证：
