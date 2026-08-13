@@ -274,6 +274,8 @@
 | GET | `/api/v1/files/presigned` | ios-customer ✓ | `fileName`, `objectType`(opt), `operate`(opt), `objectName`(opt) | Bearer | 预签名 URL |
 | POST | `/api/v1/files/upload` | ios-customer ✓ | multipart form | Bearer | 直接上传 |
 
+管理台上传同样使用 `/api/v1/files/upload`：寺院台维护寺院封面、图册和法师头像，平台台维护流派封面与运营图片，商城台维护商品与 DIY 素材图。返回的 `url` 必须是客户端可访问的公网 HTTPS 地址，容器内部 `minio:9000` 只用于服务端连接。
+
 ### 1.15 评价模块（review-service @ 8092）
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
@@ -448,6 +450,7 @@
 |------|------|-----------|---------|------|------|
 | GET | `/api/v1/admin/temples/info` | ✓ | — | Bearer | 寺院信息（JWT 推导 templeId） |
 | PUT | `/api/v1/admin/temples/info` | ✓ | `name`(opt), `region`(opt), `type`(opt), `beliefCode`(opt), `sect`(opt), `address`(opt), `coverImage`(opt) | Bearer | 更新寺院信息 |
+| GET | `/api/v1/admin/temples/images` | ✓ | — | Bearer | 当前寺院图册 |
 | POST | `/api/v1/admin/temples/images` | ✓ | `url`, `type`, `sort`(opt) | Bearer | 新增寺院图片 |
 | DELETE | `/api/v1/admin/temples/images/:id` | ✓ | — | Bearer | 删除寺院图片 |
 
@@ -863,6 +866,7 @@
 |------|------|---------|---------|------|-----------|------|
 | GET | `/api/v1/admin/temples/info` | adminTempleInfo | — | jwt:Auth | 🏛️ | 寺院信息 |
 | PUT | `/api/v1/admin/temples/info` | adminTempleUpdate | `name`(opt), `region`(opt), `address`(opt), `coverImage`(opt) | jwt:Auth | 🏛️ | 更新寺院信息 |
+| GET | `/api/v1/admin/temples/images` | adminImageList | — | jwt:Auth | 🏛️ | 当前寺院图册 |
 | POST | `/api/v1/admin/temples/images` | adminImageCreate | `url`, `type`, `sort`(opt) | jwt:Auth | 🏛️ | 新增寺院图片 |
 | DELETE | `/api/v1/admin/temples/images/:id` | adminImageDelete | — | jwt:Auth | 🏛️ | 删除寺院图片 |
 | GET | `/api/v1/admin/temples/services` | adminServiceList | — | jwt:Auth | 🏛️ | 寺院服务列表 |
