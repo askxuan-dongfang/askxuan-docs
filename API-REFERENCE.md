@@ -110,6 +110,7 @@
 |------|------|-----------|---------|------|------|
 | GET | `/api/v1/beliefs` | ios-customer ✓ / mobile-customer ✓ | — | 无 | 平台启用的一级流派，按 `sort/code` 排序；客户端首页和筛选项以此为准 |
 | GET | `/api/v1/beliefs/:code` | ios-customer ✓ | — | 无 | 一级流派详情；`code` 是平台维护的稳定业务编码 |
+| GET | `/api/v1/service-types` | ios-customer ✓ / mobile-customer ✓ / web-temple-admin ✓ | — | 无 | 固定 13 项标准服务类型，返回 `code/name/category/priceRange` |
 | GET | `/api/v1/temples` | ios-customer ✓ / mobile-customer ✓ | `beliefCode`(opt), `sect`(opt), `type`(opt), `region`(opt), `page`, `size` | 无 | 寺院列表 |
 | GET | `/api/v1/temples/:id` | ios-customer ✓ / mobile-customer ✓ | — | 无 | 寺院详情 |
 | GET | `/api/v1/temples/:id/services` | ios-customer ✓ | — | 无 | 寺院服务列表 |
@@ -458,9 +459,10 @@
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
+| GET | `/api/v1/service-types` | C端/寺院管理台 ✓ | — | 无 | 固定 13 项标准服务类型；返回 `code/name/category/priceRange` |
 | GET | `/api/v1/admin/temples/services` | ✓ | — | Bearer | 服务列表 |
-| POST | `/api/v1/admin/temples/services` | ✓ | `serviceCode`, `serviceName`, `price`, `slots[{code,label,startTime,endTime,capacity,status,sort}]`, `timeSlots`(compat), `intentTags`(opt) | Bearer | 新增服务 |
-| PUT | `/api/v1/admin/temples/services/:id` | ✓ | `serviceName`(opt), `price`(opt), `slots`(opt), `timeSlots`(compat), `intentTags`(opt) | Bearer | 更新服务 |
+| POST | `/api/v1/admin/temples/services` | ✓ | `serviceCode`, `price`, `slots[{code,label,startTime,endTime,capacity,status,sort}]`, `timeSlots`(compat), `intentTags`(opt) | Bearer | 从标准目录开通服务；名称由服务端写入 |
+| PUT | `/api/v1/admin/temples/services/:id` | ✓ | `price`(opt), `slots`(opt), `timeSlots`(compat), `intentTags`(opt) | Bearer | 更新寺院定价、时段和诉求映射；类型与名称不可修改 |
 | PUT | `/api/v1/admin/temples/services/:id/status` | ✓ | `status` | Bearer | 服务上下架 |
 
 > **注**：`service.ts` 与 `temple.ts` 都实现了此组接口，存在重复定义。
@@ -852,13 +854,14 @@
 **路径前缀**：`/api/v1/temples`（C 端）、`/api/v1/admin/temples`（寺院台）、`/api/v1/admin/platform/temples`（平台台）
 **职责**：寺院信息、寺院图片、寺院服务、加持任务分配、寺院入驻申请、寺院报表、平台审核
 
-### 8.1 C 端接口（3 个，均无鉴权）
+### 8.1 C 端接口（4 个，均无鉴权）
 
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
 | GET | `/api/v1/temples` | list | `sect`(opt), `type`(opt), `region`(opt), `page`, `size` | 无 | 📱 📲 🌐 | 寺院列表 |
 | GET | `/api/v1/temples/:id` | detail | — | 无 | 📱 📲 🌐 | 寺院详情 |
 | GET | `/api/v1/temples/:id/services` | serviceList | — | 无 | 📱 | 寺院服务列表 |
+| GET | `/api/v1/service-types` | serviceTypeList | — | 无 | 📱 📲 🏛️ | 固定标准服务类型列表 |
 
 ### 8.2 寺院管理台接口（13 个，jwt:Auth）
 
@@ -870,8 +873,8 @@
 | POST | `/api/v1/admin/temples/images` | adminImageCreate | `url`, `type`, `sort`(opt) | jwt:Auth | 🏛️ | 新增寺院图片 |
 | DELETE | `/api/v1/admin/temples/images/:id` | adminImageDelete | — | jwt:Auth | 🏛️ | 删除寺院图片 |
 | GET | `/api/v1/admin/temples/services` | adminServiceList | — | jwt:Auth | 🏛️ | 寺院服务列表 |
-| POST | `/api/v1/admin/temples/services` | adminServiceCreate | `serviceCode`, `serviceName`, `price`, `slots`, `timeSlots`(compat), `intentTags`(opt) | jwt:Auth | 🏛️ | 新增服务与容量时段 |
-| PUT | `/api/v1/admin/temples/services/:id` | adminServiceUpdate | `serviceName`(opt), `price`(opt), `slots`(opt), `timeSlots`(compat), `intentTags`(opt) | jwt:Auth | 🏛️ | 更新服务与容量时段 |
+| POST | `/api/v1/admin/temples/services` | adminServiceCreate | `serviceCode`, `price`, `slots`, `timeSlots`(compat), `intentTags`(opt) | jwt:Auth | 🏛️ | 从标准目录开通服务与容量时段 |
+| PUT | `/api/v1/admin/temples/services/:id` | adminServiceUpdate | `price`(opt), `slots`(opt), `timeSlots`(compat), `intentTags`(opt) | jwt:Auth | 🏛️ | 更新定价、时段与诉求映射 |
 | PUT | `/api/v1/admin/temples/services/:id/status` | adminServiceStatus | `status` | jwt:Auth | 🏛️ | 服务上下架 |
 | GET | `/api/v1/admin/temples/blessing-tasks` | adminBlessingTaskList | `status`(opt), `page`, `size` | jwt:Auth | 🏛️ | 加持任务列表 |
 | GET | `/api/v1/admin/temples/blessing-tasks/:id` | adminBlessingTaskDetail | — | jwt:Auth | 🏛️ | 加持任务详情 |
