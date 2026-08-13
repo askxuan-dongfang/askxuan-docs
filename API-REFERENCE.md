@@ -664,17 +664,18 @@
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
-| GET | `/api/v1/admin/platform/temples` | ✓ | `sect`(opt), `type`(opt), `region`(opt), `page`, `size` | Bearer | 平台寺院列表 |
-| GET | `/api/v1/admin/platform/temples/audits` | ✓ | `status`(opt), `page`, `size` | Bearer | 入驻审核列表 |
+| GET | `/api/v1/admin/platform/temples` | ✓ | `beliefCode`(opt), `sect`(opt), `type`(opt), `region`(opt), `page`, `size` | Bearer | 平台寺院列表，包含全状态寺院及真实上架服务摘要 |
+| GET | `/api/v1/admin/platform/temples/:id` | ✓ | — | Bearer | 平台寺院详情，可查看待审核/封禁寺院 |
+| GET | `/api/v1/admin/platform/temples/audits` | ✓ | `templeCode`(opt), `status`(opt), `page`, `size` | Bearer | 入驻审核列表 |
 | PUT | `/api/v1/admin/platform/temples/audits/:id/first-pass` | ✓ | `auditRemark`(opt) | Bearer | 初审通过 |
 | PUT | `/api/v1/admin/platform/temples/audits/:id/final-pass` | ✓ | `auditRemark`(opt) | Bearer | 终审通过 |
 | PUT | `/api/v1/admin/platform/temples/audits/:id/reject` | ✓ | `auditRemark`(opt) | Bearer | 驳回申请 |
-| PUT | `/api/v1/admin/platform/temples/:id/status` | ✓ | `status` | Bearer | 寺院状态（normal/banned/recommended） |
+| PUT | `/api/v1/admin/platform/temples/:id/status` | ✓ | `status` (`normal/banned/recommended`) | Bearer | 寺院运营状态；待审核寺院不可用此接口绕过入驻审核 |
 | GET | `/api/v1/admin/platform/beliefs` | ✓ | — | Bearer | 一级流派列表，包含停用项 |
 | POST | `/api/v1/admin/platform/beliefs` | ✓ | `code`, `name`, `summary`(opt), `description`, `coverImage`(opt), `icon`(opt), `sort`(opt) | Bearer | 新增一级流派运营资料 |
 | PUT | `/api/v1/admin/platform/beliefs/:code` | ✓ | `name`, `summary`(opt), `description`, `coverImage`(opt), `icon`(opt), `sort`(opt) | Bearer | 编辑一级流派运营资料 |
 | PUT | `/api/v1/admin/platform/beliefs/:code/status` | ✓ | `status` (`enabled/disabled`) | Bearer | 启用或停用一级流派入口 |
-| GET | `/api/v1/temples/:id` | ✓ | — | 无 | 寺院详情（**复用 C 端接口**） |
+| GET | `/api/v1/temples/:id` | ✓ | — | 无 | C 端寺院详情，仅正常/推荐状态可见 |
 
 ### 5.3.1 首页心愿分类（product-service @ 8086）
 
@@ -878,12 +879,13 @@
 
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
-| GET | `/api/v1/admin/platform/temples` | platformTempleList | `sect`(opt), `type`(opt), `region`(opt), `page`, `size` | jwt:Auth | 🌐 | 平台寺院列表 |
-| GET | `/api/v1/admin/platform/temples/audits` | platformAuditList | `status`(opt), `page`, `size` | jwt:Auth | 🌐 | 入驻审核列表 |
+| GET | `/api/v1/admin/platform/temples` | platformTempleList | `beliefCode`(opt), `sect`(opt), `type`(opt), `region`(opt), `page`, `size` | jwt:Auth | 🌐 | 平台寺院列表，含上架服务摘要 |
+| GET | `/api/v1/admin/platform/temples/:id` | platformTempleDetail | — | jwt:Auth | 🌐 | 平台寺院详情，含待审核/封禁数据 |
+| GET | `/api/v1/admin/platform/temples/audits` | platformAuditList | `templeCode`(opt), `status`(opt), `page`, `size` | jwt:Auth | 🌐 | 入驻审核列表 |
 | PUT | `/api/v1/admin/platform/temples/audits/:id/first-pass` | platformAuditFirstPass | `auditRemark`(opt) | jwt:Auth | 🌐 | 初审通过 |
 | PUT | `/api/v1/admin/platform/temples/audits/:id/final-pass` | platformAuditFinalPass | `auditRemark`(opt) | jwt:Auth | 🌐 | 终审通过 |
 | PUT | `/api/v1/admin/platform/temples/audits/:id/reject` | platformAuditReject | `auditRemark`(opt) | jwt:Auth | 🌐 | 驳回申请 |
-| PUT | `/api/v1/admin/platform/temples/:id/status` | platformTempleStatus | `status` | jwt:Auth | 🌐 | 寺院状态变更 |
+| PUT | `/api/v1/admin/platform/temples/:id/status` | platformTempleStatus | `status` (`normal/banned/recommended`) | jwt:Auth | 🌐 | 寺院运营状态变更，不可绕过入驻审核 |
 
 ---
 
