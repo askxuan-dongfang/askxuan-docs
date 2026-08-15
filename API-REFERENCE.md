@@ -1588,3 +1588,32 @@
 ---
 
 **文档完成。本接口文档基于 2026-08-14 项目代码状态整理，覆盖 5 个正式客户端、备用 mobile-customer、Provider 回调与显式注册路由涉及的 292 个唯一运行时 HTTP 契约。**
+
+---
+
+## 附录 E：大师双轨制接口（2026-08-16）
+
+### E.1 大师分类
+- `master.manage_by`：temple=寺庙绑定 / platform=野生（平台管理）
+- `GET /api/v1/masters?manageBy=platform`：找师傅专栏（仅野生大师）
+- `GET /api/v1/masters/:id`：详情含 `manageBy` + `serviceTags[{serviceCode,price,status}]`
+
+### E.2 大师服务标签（法师端，JWT=master）
+| 接口 | 说明 |
+|---|---|
+| `GET /api/v1/admin/masters/service-tags` | 我的服务标签 |
+| `PUT /api/v1/admin/masters/service-tags` | 覆盖式更新 `{tags:[{serviceCode,price}]}`（目录 S001-S013 内置校验） |
+
+### E.3 大师直约（C端，JWT）
+| 接口 | 说明 |
+|---|---|
+| `POST /api/v1/master-bookings/:id` | 大师直约 `{serviceCode,bookingDate,requestId,note?}`；强制先付费咨询（40415）；标签未上架拒绝（40910） |
+
+### E.4 平台管理（JWT=platform_super）
+| 接口 | 说明 |
+|---|---|
+| `POST /api/v1/admin/platform/masters` | 创建野生大师（W 编码，初始待审核，无寺庙） |
+
+### E.5 分账
+- 野生大师单按 `commission_config.biz_type=wild_master`（默认 10% 平台 / 90% 大师，平台可调）
+- 寺庙绑定单维持 booking 费率
