@@ -258,12 +258,12 @@
 | POST | `/api/v1/community/masters/:id/follow` | ios-customer ✓ | — | Bearer | 幂等关注大师 |
 | DELETE | `/api/v1/community/masters/:id/follow` | ios-customer ✓ | — | Bearer | 取消关注大师 |
 
-### 1.15 诉求聚合（product-service @ 8086）
+### 1.15 心愿聚合（product-service @ 8086）
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
 | GET | `/api/v1/intentions/tags` | ios-customer ✓ / mobile-customer ✓ | — | 无 | 平台启用的心愿分类，含图标、落地类型、落地值、按钮文案和排序 |
-| GET | `/api/v1/intentions` | ios-customer ✓ | `code`(opt), `page`, `size` | 无 | 混合返回商品与寺院服务；含 `resourceType/sourceId/price/image/orderTarget/templeCode/serviceCode` |
+| GET | `/api/v1/intentions` | ios-customer ✓ / web-h5 ✓ | `code`(opt), `page`, `size` | 无 | 仅返回寺院服务与大师服务；`resourceType` 为 `service/master`，含 `sourceId/price/image/orderTarget/templeCode/serviceCode/masterCode` |
 
 ### 1.16 营销模块（marketing-service @ 8096）
 
@@ -553,9 +553,9 @@
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
 | GET | `/api/v1/admin/products` | ✓ | `categoryId`(opt), `keyword`(opt), `status`(opt), `page`, `size` | Bearer | 商品列表 |
-| POST | `/api/v1/admin/products` | ✓ | `name`, `categoryId`, `description`(opt), `mainImage`, `price`, `intentTags`(opt) | Bearer | 创建商品 |
+| POST | `/api/v1/admin/products` | ✓ | `name`, `categoryId`, `description`(opt), `mainImage`, `price` | Bearer | 创建商品；商品不参与心愿聚合 |
 | GET | `/api/v1/admin/products/:id` | ✓ | — | Bearer | 商品详情 |
-| PUT | `/api/v1/admin/products/:id` | ✓ | `name`, `categoryId`, `description`(opt), `mainImage`, `intentTags`(opt) | Bearer | 更新商品 |
+| PUT | `/api/v1/admin/products/:id` | ✓ | `name`, `categoryId`, `description`(opt), `mainImage` | Bearer | 更新商品 |
 | DELETE | `/api/v1/admin/products/:id` | ✓ | — | Bearer | 删除商品 |
 | PUT | `/api/v1/admin/products/:id/status` | ✓ | `status` | Bearer | 上下架 |
 
@@ -1041,9 +1041,9 @@
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
 | GET | `/api/v1/admin/products` | adminProductList | `categoryId`(opt), `keyword`(opt), `status`(opt), `page`, `size` | jwt:Auth | 🛒 | 商品列表 |
-| POST | `/api/v1/admin/products` | adminProductCreate | `name`, `categoryId`, `description`(opt), `mainImage`, `price`, `intentTags`(opt) | jwt:Auth | 🛒 | 创建商品 |
+| POST | `/api/v1/admin/products` | adminProductCreate | `name`, `categoryId`, `description`(opt), `mainImage`, `price` | jwt:Auth | 🛒 | 创建商品；不参与心愿聚合 |
 | GET | `/api/v1/admin/products/:id` | adminProductDetail | — | jwt:Auth | 🛒 | 商品详情 |
-| PUT | `/api/v1/admin/products/:id` | adminProductUpdate | `name`, `categoryId`, `description`(opt), `mainImage`, `intentTags`(opt) | jwt:Auth | 🛒 | 更新商品 |
+| PUT | `/api/v1/admin/products/:id` | adminProductUpdate | `name`, `categoryId`, `description`(opt), `mainImage` | jwt:Auth | 🛒 | 更新商品 |
 | DELETE | `/api/v1/admin/products/:id` | adminProductDelete | — | jwt:Auth | 🛒 | 删除商品 |
 | PUT | `/api/v1/admin/products/:id/status` | adminProductStatus | `status` | jwt:Auth | 🛒 | 上下架 |
 | POST | `/api/v1/admin/products/:id/skus` | adminSkuCreate | `specName`, `specValue`, `price`, `stock` | jwt:Auth | — | 新增 SKU |
@@ -1431,9 +1431,41 @@
 | 24 | community-service | 8099 | 8 | 10 | 18 | ✅ 所有权/角色/审核事务 |
 | **`.api` 合计** | — | — | **92** | **173** | **267** | — |
 
-> `.api`、Provider 回调及服务直接注册路由去重后，完整运行时 HTTP 契约为 292 条。执行 `node scripts/audit-api-reference.mjs` 可复核源码与本文档，统计以机器扫描结果为准。
+> `.api`、Provider 回调及服务直接注册路由去重后，完整运行时 HTTP 契约为 315 条。执行 `node scripts/audit-api-reference.mjs` 可复核源码与本文档，统计以机器扫描结果为准。
 
 > ⚠️ **鉴权缺口**：review / finance / audit / message(部分) / logistics / marketing 共 6 个服务的管理台接口在 .api 文件中未声明 `jwt: Auth`，完全依赖网关鉴权。绕过网关直连服务端口即可无鉴权访问。
+
+---
+
+## 补充运行时契约
+
+> 以下为服务在 `routes.go` 中直接注册、但不在早期 `.api` 统计中的正式路由。它们与上文分域契约共同构成 315 条运行时 HTTP 契约。
+
+| 方法 | 路径 | 归属 | 请求字段 | 鉴权 | 说明 |
+|------|------|------|---------|------|------|
+| POST | `/api/v1/auth/im-token` | auth-service | 无，用户由 JWT 确定 | Bearer | 签发/续签 OpenIM token |
+| POST | `/api/v1/products/:id/favorite` | product-service | `id`(path) | Bearer | 幂等收藏商品 |
+| DELETE | `/api/v1/products/:id/favorite` | product-service | `id`(path) | Bearer | 取消收藏商品 |
+| GET | `/api/v1/favorites/products` | product-service | `page`, `size` | Bearer | 当前用户的商品收藏 |
+| POST | `/api/v1/temples/:id/favorite` | temple-service | `id`(path) | Bearer | 幂等收藏寺院 |
+| DELETE | `/api/v1/temples/:id/favorite` | temple-service | `id`(path) | Bearer | 取消收藏寺院 |
+| GET | `/api/v1/favorites/temples` | temple-service | `page`, `size` | Bearer | 当前用户的寺院收藏 |
+| GET | `/api/v1/diy/my-designs` | diy-service | `page`, `size` | Bearer | 当前用户的 DIY 设计及最新订单摘要 |
+| GET | `/api/v1/community/masters/following` | community-service | `page`, `size` | Bearer | 当前用户已关注的大师 |
+| POST | `/api/v1/master-bookings/:id` | booking-service | `serviceCode`, `bookingDate`, `requestId`, `note`(opt) | Bearer | 按大师编码直约固定服务，服务端校验价格与归属 |
+| GET | `/api/v1/admin/temples/services/:id` | temple-service | `id`(path) | Bearer | 寺院管理台服务详情（含结构化时段） |
+| GET | `/api/v1/admin/temples/masters/:id` | master-service | `id`(path) | Bearer | 寺院归属大师详情 |
+| GET | `/api/v1/admin/masters/service-tags` | master-service | 无，大师由 JWT 确定 | Master | 法师端查看自己已开通的 S001-S013 服务 |
+| PUT | `/api/v1/admin/masters/service-tags` | master-service | `tags[{serviceCode,price,status}]` | Master | 法师端提交固定服务配置 |
+| POST | `/api/v1/admin/platform/masters` | master-service | `dharmaName`, `beliefCode`, `sect`, `type`, 咨询配置(可选) | Platform | 平台创建无寺院归属的大师资料 |
+| GET | `/api/v1/admin/platform/masters/:id` | master-service | `id`(path) | Platform | 平台大师详情 |
+| PUT | `/api/v1/admin/platform/masters/:id` | master-service | 资料、流派、头像与咨询配置可选字段 | Platform | 平台编辑大师资料 |
+| GET | `/api/v1/admin/platform/masters/:id/service-tags` | master-service | `id`(path) | Platform | 查看大师的固定服务配置 |
+| PUT | `/api/v1/admin/platform/masters/:id/service-tags` | master-service | `tags[{serviceCode,price,status}]` | Platform | 平台从 S001-S013 目录配置大师服务 |
+| GET | `/api/v1/admin/diy/materials/:id` | diy-service | `id`(path) | Bearer | DIY 材料详情 |
+| GET | `/api/v1/admin/diy/blessing-services/:id` | diy-service | `id`(path) | Bearer | DIY 加持服务详情 |
+| GET | `/api/v1/admin/orders/report` | order-service | 无 | Bearer | 商城订单概览和状态统计 |
+| GET | `/api/v1/admin/orders/returns/:id` | order-service | `id`(path) | Bearer | 退换货申请详情 |
 
 ---
 
