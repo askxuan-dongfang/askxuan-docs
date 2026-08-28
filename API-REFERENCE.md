@@ -162,7 +162,7 @@
 | POST | `/api/v1/diy/designs` | ios-customer ✓ | `userId`, `name`, `designData`(v1/v2 JSON 字符串), `totalPrice`(展示预估), `status`, `blessServiceCode`(opt) | Bearer | 保存设计，响应 `{id}`；不锁库存 |
 | GET | `/api/v1/diy/designs/:id` | ios-customer ✓ | — | 无 | 设计详情 |
 | POST | `/api/v1/diy/designs/:id/order` | ios-customer ✓ | `userId`, `blessServiceCode`(opt), `addressId` | Bearer | 服务端按材料/SKU重定价并创建订单，返回最终金额、明细、`paymentStatus`和快照 |
-| GET | `/api/v1/diy/materials` | ios-customer ✓ | `category`(opt), `page`, `size` | 无 | 材料库列表 |
+| GET | `/api/v1/diy/materials` | ios-customer ✓ | `category`(opt), `page`, `size` | 无 | 仅返回已上架材料；下架记录不计入 C 端分页总数 |
 | GET | `/api/v1/diy/blessing-services` | ios-customer ✓ | `page`, `size` | 无 | 可选加持服务列表 |
 | POST | `/api/v1/diy/orders` | ios-customer ✓ | `userId`, `designId`, `items`, `blessServiceCode`(opt), `addressId` | Bearer | 创建 DIY 订单 |
 | GET | `/api/v1/diy/orders` | ios-customer ✓ | `userId`, `status`(opt), `page`, `size` | Bearer | DIY 订单列表 |
@@ -1070,7 +1070,7 @@
 | POST | `/api/v1/diy/designs` | designSave | `userId`, `name`, `designData`(v1/v2 JSON 字符串), `totalPrice`(展示预估), `status`, `blessServiceCode`(opt) | Bearer | 📱 | 保存设计，响应 `{id}`；不锁库存 |
 | GET | `/api/v1/diy/designs/:id` | designDetail | — | 无 | 📱 | 设计详情 |
 | POST | `/api/v1/diy/designs/:id/order` | diyDesignOrderCreate | `userId`, `blessServiceCode`(opt), `addressId` | Bearer | 📱 | 服务端重定价，返回最终金额、材料明细、设计与计价快照 |
-| GET | `/api/v1/diy/materials` | materialList | `category`(opt), `page`, `size` | 无 | 📱 | 材料库列表 |
+| GET | `/api/v1/diy/materials` | materialList | `category`(opt), `page`, `size` | 无 | 📱 | 仅返回 `on_shelf` 材料 |
 | GET | `/api/v1/diy/blessing-services` | blessingServiceList | `page`, `size` | 无 | 📱 | 可选加持服务列表 |
 | POST | `/api/v1/diy/orders` | diyOrderCreate | `userId`, `designId`, `items`, `blessServiceCode`(opt), `addressId` | Bearer | 📱 | 创建 DIY 订单 |
 | GET | `/api/v1/diy/orders` | diyOrderList | `userId`, `status`(opt), `page`, `size` | Bearer | 📱 | DIY 订单列表 |
