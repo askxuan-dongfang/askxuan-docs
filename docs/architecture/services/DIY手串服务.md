@@ -152,9 +152,18 @@ graph TB
 | unit | VARCHAR(16) | 单位（颗/个/根） |
 | category | VARCHAR(32) | main_bead/spacer/buddha_head/pendant/tassel/three_way/cord |
 | five_elements | VARCHAR(16) | 五行属性 |
+| material_type | VARCHAR(32) | 材质大类：crystal/jade/gemstone/wood/seed/organic/metal/ceramic/glass/textile/cord |
+| shape | VARCHAR(32) | 圆珠、切面、桶珠、隔片、三通、佛头、吊坠、流苏或绳线造型 |
+| diameter_mm | DECIMAL(5,2) | 前端渲染直径，单位 mm |
+| color_hex | VARCHAR(16) | 无图片或 3D 渲染使用的主色 |
+| texture_key | VARCHAR(32) | 晶体、玉纹、木纹、菩提、玛瑙、琥珀、青花、景泰蓝等纹理键 |
+| finish | VARCHAR(32) | 抛光、哑光、切面、自然面、雕刻、拉丝、编织或釉面 |
+| translucency | DECIMAL(4,3) | 通透度，范围 0~1 |
 | image | VARCHAR(512) | 图片URL |
 | stock | INT | 库存 |
 | status | VARCHAR(16) | on_shelf/off_shelf |
+
+商城管理台是材料名称、图片、样式、上下架、价格和库存的唯一运营入口。创建或更新材料会在同一事务中同步默认 `material_sku`；H5 与 iOS 读取材料接口后按上述字段渲染，并把样式保存到设计快照。当前目录初始化为 45 项东方材料和配件，不限于水晶。
 
 ### 3.5 material_sku（材料规格表）
 

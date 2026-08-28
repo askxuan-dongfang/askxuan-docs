@@ -573,9 +573,11 @@
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
 | GET | `/api/v1/admin/diy/materials` | ✓ | `category`(opt), `keyword`(opt), `page`, `size` | Bearer | 材料列表 |
-| POST | `/api/v1/admin/diy/materials` | ✓ | `name`, `spec`, `unitPrice`, `unit`, `category` | Bearer | 新增材料 |
-| PUT | `/api/v1/admin/diy/materials/:id` | ✓ | `name`, `spec`, `unitPrice`, `unit` | Bearer | 更新材料 |
+| POST | `/api/v1/admin/diy/materials` | ✓ | `name`, `spec`, `unitPrice`, `unit`, `category`, `fiveElements`, `materialType`, `shape`, `diameterMm`, `colorHex`, `textureKey`, `finish`, `translucency`, `image`, `stock` | Bearer | 新增材料并创建默认 SKU；H5/iOS 直接读取渲染参数 |
+| PUT | `/api/v1/admin/diy/materials/:id` | ✓ | 同新增字段 | Bearer | 更新材料及默认 SKU 的权威价格、库存和渲染样式 |
 | PUT | `/api/v1/admin/diy/materials/:id/status` | ✓ | `status` | Bearer | 材料上下架 |
+
+材料目录由商城管理台维护，当前初始化包含 45 项东方材料与配件，覆盖水晶、玉石、天然宝石、木质、菩提籽、有机宝石、金属、陶瓷、琉璃、织物及绳线。客户端不得内置生产材料清单；下单时服务端仍以 `material_sku` 重新计价并校验库存。
 
 ### 4.5 DIY 加持服务（diy-service @ 8088）
 
