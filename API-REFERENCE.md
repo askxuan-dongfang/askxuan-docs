@@ -91,7 +91,7 @@
 | POST | `/api/v1/auth/login` | ios-customer ✓ / mobile-customer ✓ | `phone`, `code`(opt), `account`(opt), `password`(opt) | 无 | 手机号验证码 或 账号密码登录 |
 | POST | `/api/v1/auth/refresh` | ios-customer ✓ / mobile-customer ✓ | `refreshToken` | 无 | Token 续期 |
 | POST | `/api/v1/auth/logout` | ios-customer ✓ | `accessToken`(opt) | 无 | 登出（mobile-customer 仅本地清理） |
-| POST | `/api/v1/users/register` | ios-customer ✓ | `mobile`, `code`, `nickname`(opt) | 无 | 用户注册（路径在 user 域） |
+| POST | `/api/v1/users/register` | ios-customer ✓ / H5 ✓ / mobile-customer 契约 ✓ | `mobile`, `nickname`(opt), `code`(opt, 兼容字段且不校验) | 无 | 演示手机号注册；不发送真实短信，注册后客户端自动登录 |
 
 ### 1.2 用户模块（user-service @ 8082）
 
@@ -840,7 +840,7 @@
 
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
-| POST | `/api/v1/users/register` | register | `mobile`, `code`, `nickname`(opt) | 无 | 📱 | 用户注册 |
+| POST | `/api/v1/users/register` | register | `mobile`, `nickname`(opt), `code`(opt, 兼容字段且不校验) | 无 | 📱 📲 | 演示手机号注册；响应含 `userId/mobile/nickname/imReady` |
 | GET | `/api/v1/users/profile` | profile | — | Bearer | 📱 | 获取个人资料 |
 | PUT | `/api/v1/users/profile` | updateProfile | `nickname`(opt), `avatar`(opt), `gender`(opt), `birthday`(opt), `region`(opt) | Bearer | 📱 | 更新资料 |
 | GET | `/api/v1/users/addresses` | addressList | — | Bearer | 📱 | 地址列表 |
@@ -1619,7 +1619,7 @@
 
 ---
 
-**文档完成。本接口文档基于 2026-08-14 项目代码状态整理，覆盖 5 个正式客户端、备用 mobile-customer、Provider 回调与显式注册路由涉及的 292 个唯一运行时 HTTP 契约。**
+**文档完成。本接口文档基于 2026-08-28 项目代码状态整理，覆盖 5 个正式客户端、H5、备用 mobile-customer、Provider 回调与显式注册路由涉及的 315 个唯一运行时 HTTP 契约。**
 
 ---
 
