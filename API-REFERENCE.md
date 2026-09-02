@@ -1379,17 +1379,18 @@
 **路径前缀**：`/api/v1/ai`（C 端）
 **职责**：AI 技能、会话管理、消息发送
 
-### 22.1 C 端接口（10 个，均经生产网关 Bearer 鉴权）
+### 22.1 C 端接口（11 个，均经生产网关 Bearer 鉴权）
 
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
 | GET | `/api/v1/ai/skills` | skillList | `status`(opt) | Bearer | 📱 📲 | 动态技能、输入 schema、能力和顺序 |
-| POST | `/api/v1/ai/sessions` | sessionCreate | `skillCode`(opt), `question`(opt), `inputs`(opt) | Bearer | 📱 📲 | 按 JWT 用户创建会话，默认 general |
+| POST | `/api/v1/ai/sessions` | sessionCreate | `skillCode`(opt/auto), `question`(opt), `inputs`(opt), `attachments[]`(opt, 最多3张) | Bearer | 📱 📲 | 按 JWT 用户创建会话，确定性自动路由弱匹配回退 general |
 | GET | `/api/v1/ai/sessions` | sessionList | `userId`(兼容可选), `status`(opt), `page`, `size` | Bearer | 📱 📲 | 会话列表 |
 | GET | `/api/v1/ai/sessions/:id` | sessionDetail | — | Bearer | 📱 | 会话详情 |
 | GET | `/api/v1/ai/sessions/:id/messages` | messageList | `userId`(兼容可选), `page`, `size` | Bearer | 📱 📲 | 会话消息列表 |
-| POST | `/api/v1/ai/sessions/:id/messages` | messageSend | `content`, `inputs`(opt) | Bearer | 📱 📲 | 限流与安全校验后发送消息 |
+| POST | `/api/v1/ai/sessions/:id/messages` | messageSend | `content`(图片时可空), `inputs`(opt), `attachments[]`(opt) | Bearer | 📱 📲 | 限流、安全和图片白名单校验后发送消息 |
 | GET | `/api/v1/ai/sessions/:id/messages/:messageId/stream` | messageStream | — | Bearer | 📱 📲 | SSE 增量输出，仅会话所有者可订阅 |
+| GET | `/api/v1/ai/sessions/:id/messages/:messageId/trace` | messageTrace | — | Bearer | 📱 📲 | 公开阶段、技能版本与脱敏工具轨迹；不含思考链 |
 | POST | `/api/v1/ai/sessions/:id/messages/:messageId/retry` | messageRetry | — | Bearer | 📱 📲 | 重试失败的助手消息 |
 | GET | `/api/v1/ai/usage` | usageSummary | — | Bearer | 📱 📲 | 用户额度、token 和成本摘要 |
 | DELETE | `/api/v1/ai/sessions/:id` | sessionDelete | — | Bearer | 📱 | 删除会话 |
@@ -1432,12 +1433,12 @@
 | 19 | logistics-service | 8095 | 0 | 8 | 8 | ⚠️ 管理台未声明 jwt |
 | 20 | marketing-service | 8096 | 6 | 11 | 17 | ⚠️ 管理台未声明 jwt |
 | 21 | file-service | 8097 | 2 | 4 | 6 | ✅ 网关限制平台超管 |
-| 22 | ai-service | 8098 | 8 | 0 | 8 | ✅ 会话所有权校验 |
+| 22 | ai-service | 8098 | 11 | 0 | 11 | ✅ 会话所有权、附件来源和轨迹查询校验 |
 | 23 | media-service | 8100 | 3 | 7 | 12 | ✅ 所有权/角色/回调令牌 |
 | 24 | community-service | 8099 | 8 | 10 | 18 | ✅ 所有权/角色/审核事务 |
-| **`.api` 合计** | — | — | **92** | **173** | **267** | — |
+| **`.api` 合计** | — | — | **95** | **173** | **270** | — |
 
-> `.api`、Provider 回调及服务直接注册路由去重后，完整运行时 HTTP 契约为 315 条。执行 `node scripts/audit-api-reference.mjs` 可复核源码与本文档，统计以机器扫描结果为准。
+> `.api`、Provider 回调及服务直接注册路由去重后，完整运行时 HTTP 契约为 318 条。执行 `node scripts/audit-api-reference.mjs` 可复核源码与本文档，统计以机器扫描结果为准。
 
 > ⚠️ **鉴权缺口**：review / finance / audit / message(部分) / logistics / marketing 共 6 个服务的管理台接口在 .api 文件中未声明 `jwt: Auth`，完全依赖网关鉴权。绕过网关直连服务端口即可无鉴权访问。
 
@@ -1445,7 +1446,7 @@
 
 ## 补充运行时契约
 
-> 以下为服务在 `routes.go` 中直接注册、但不在早期 `.api` 统计中的正式路由。它们与上文分域契约共同构成 315 条运行时 HTTP 契约。
+> 以下为服务在 `routes.go` 中直接注册、但不在早期 `.api` 统计中的正式路由。它们与上文分域契约共同构成 318 条运行时 HTTP 契约。
 
 | 方法 | 路径 | 归属 | 请求字段 | 鉴权 | 说明 |
 |------|------|------|---------|------|------|
@@ -1618,14 +1619,14 @@
 | 14 | logistics-service | 8095 | 0 | 8 | 8 |
 | 15 | marketing-service | 8096 | 6 | 11 | 17 |
 | 16 | file-service | 8097 | 2 | 4 | 6 |
-| 17 | ai-service | 8098 | 8 | 0 | 8 |
+| 17 | ai-service | 8098 | 11 | 0 | 11 |
 | 18 | media-service | 8100 | 3 | 7 | 12 |
 | 19 | community-service | 8099 | 8 | 10 | 18 |
-| **`.api` 合计** | — | — | **92** | **173** | **267** |
+| **`.api` 合计** | — | — | **95** | **173** | **270** |
 
 ---
 
-**文档完成。本接口文档基于 2026-08-28 项目代码状态整理，覆盖 5 个正式客户端、H5、备用 mobile-customer、Provider 回调与显式注册路由涉及的 315 个唯一运行时 HTTP 契约。**
+**文档完成。本接口文档基于 2026-09-02 项目代码状态整理，覆盖 5 个正式客户端、H5、备用 mobile-customer、Provider 回调与显式注册路由涉及的 318 个唯一运行时 HTTP 契约。**
 
 ---
 

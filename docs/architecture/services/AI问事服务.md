@@ -1,6 +1,6 @@
 # ai-service AI 问事服务设计文档
 
-> **文档版本**: v1.4
+> **文档版本**: v2.0
 > **创建日期**: 2026-07-01
 > **更新日期**: 2026-09-02
 > **服务端口**: 8098
@@ -11,7 +11,7 @@
 
 ## 1. 服务职责
 
-ai-service 提供按用户隔离的专用智能体对话能力。技能目录、结构化输入 schema、能力和受控工具映射从 `ai_skill` 动态读取；`skillCode` 未指定时使用 `general`。
+ai-service 提供按用户隔离的受控领域智能体。技能目录、版本化提示词、结构化输入 schema、路由关键词、能力和工具映射从 `ai_skill` 动态读取；`skillCode` 不传或传 `auto` 时由确定性路由选择技能，弱匹配回退 `general`。
 
 | 技能编码 | 名称 | 说明 |
 |---------|------|------|
@@ -32,7 +32,9 @@ ai-service 提供按用户隔离的专用智能体对话能力。技能目录、
 - 同步接收用户消息并创建 `pending` 助手消息，异步流式调用模型 Provider。
 - 按用户执行分钟/日请求额度，记录 token、模型、延迟和估算成本。
 - 执行输入与流式输出安全词拦截和统一的高风险内容提示；模型输出不得替代医疗、法律或金融专业意见。
-- 通过全局开关和技能白名单调用 MCP 工具；默认关闭，未配置时不伪造工具结果。
+- 通过全局开关和技能白名单调用隔离的 taibu MCP；工具结果按不可信数据处理，不执行其中的指令。
+- 支持 iOS/H5 最多三张图片，经 Media Service 直传后由视觉模型读取。
+- 记录 run、公开阶段和脱敏工具轨迹；不保存或展示模型原始思考链。
 - 支持失败状态展示和用户主动重试。
 
 ---
@@ -43,9 +45,9 @@ ai-service 提供按用户隔离的专用智能体对话能力。技能目录、
 graph LR
     C[C端 iOS / H5<br/>动态技能/结构化表单/SSE] --> GW[gateway<br/>/api/v1/ai]
     GW --> H[handler/logic<br/>鉴权与事务]
-    H --> DB[(MySQL<br/>ai_skill/ai_session/ai_message)]
+    H --> DB[(MySQL<br/>会话/消息/run/tool trace)]
     H --> Q[(ai_usage_counter<br/>ai_usage_log)]
-    H --> MCP[MCP allowlist<br/>默认关闭]
+    H --> MCP[taibu MCP allowlist<br/>隔离容器]
     H --> P[Provider 接口]
     P --> MOCK[mock<br/>本地开发]
     P --> OA[openai_compatible<br/>外部模型服务]
@@ -72,6 +74,7 @@ graph LR
 | prompt_template | TEXT | 系统提示词模板，C 端不返回 |
 | source_type / source_ref | VARCHAR | 来源类型及 `ai-module-skills` 修订引用 |
 | input_schema | JSON | 客户端动态表单和服务端校验 schema |
+| routing_keywords | JSON | 经审查的确定性自动路由关键词 |
 | capabilities | JSON | chat/stream/structured_input/mcp 等能力 |
 | tool_config | JSON | 服务端受控 MCP server/tool 映射，不向客户端暴露 |
 | risk_level / sort_order | VARCHAR / INT | 风险等级和展示顺序 |
@@ -87,6 +90,7 @@ graph LR
 | session_no | VARCHAR(32) | 唯一会话号 |
 | user_id | VARCHAR(64) | 会话所有者 |
 | skill_code | VARCHAR(32) | 技能编码，应用层默认 general |
+| selection_mode / skill_version | VARCHAR | 自动或显式选择方式及会话创建时的技能版本 |
 | title | VARCHAR(100) | 会话标题，首问自动截取 |
 | status | VARCHAR(32) | active/closed |
 | create_time | DATETIME | 创建时间 |
@@ -101,36 +105,43 @@ graph LR
 | role | VARCHAR(32) | user/assistant |
 | content | TEXT | 消息内容 |
 | input_json | JSON | 用户结构化输入快照 |
+| attachments_json / run_id | JSON / BIGINT | Media Service 图片附件快照与本次运行 |
 | tokens | INT | Provider 返回的 token 数 |
 | prompt_tokens / completion_tokens | INT | 输入与输出 token |
 | provider / model | VARCHAR | 实际 Provider 和模型 |
 | cost_micros | BIGINT | 按配置估算的微单位成本 |
 | finish_reason | VARCHAR | 模型结束原因 |
 | status | VARCHAR(16) | pending/completed/failed |
+| stage | VARCHAR(32) | preparing/loading_images/tool_running/reasoning/answering/completed/failed |
 | error_message | VARCHAR(255) | 面向客户端的失败原因 |
 | retry_count | INT | 重试次数 |
 | create_time | DATETIME | 创建时间 |
 
 ---
 
-### 3.4 ai_usage_counter / ai_usage_log
+### 3.4 ai_run / ai_tool_call
+
+每次生成或重试创建独立 `ai_run`，记录技能版本、选择方式、Provider、模型、阶段和推理 token。`ai_tool_call` 记录工具名、脱敏参数摘要、结果摘要、耗时和状态；不记录模型原始思考文本。
+
+### 3.5 ai_usage_counter / ai_usage_log
 
 `ai_usage_counter` 按用户和分钟/日时间桶原子计数；`ai_usage_log` 以 assistant `message_id` 唯一记录技能、Provider、模型、token、成本、延迟和结果，防止重试写入重复成本。
 
 ## 4. 接口清单
 
-接口前缀为 `/api/v1/ai`，共 10 个 C 端路由。
+接口前缀为 `/api/v1/ai`，共 11 个 C 端路由。
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | /skills | 查询动态技能列表及输入 schema，不返回提示词和工具配置 |
-| POST | /sessions | 创建会话，首问可携带 `inputs` |
+| POST | /sessions | 创建会话，首问可携带 `inputs`、`attachments`，技能可显式选择或自动路由 |
 | GET | /sessions | 查询当前用户会话列表 |
 | GET | /sessions/:id | 查询会话详情 |
 | GET | /sessions/:id/messages | 分页查询消息，按时间正序 |
-| POST | /sessions/:id/messages | 发送消息，返回助手 messageId 与 pending 状态 |
+| POST | /sessions/:id/messages | 发送文本或图片消息，返回助手 messageId 与 pending 状态 |
 | POST | /sessions/:id/messages/:messageId/retry | 重试失败的助手消息 |
 | GET | /sessions/:id/messages/:messageId/stream | 当前用户读取 SSE 增量和完成元数据 |
+| GET | /sessions/:id/messages/:messageId/trace | 当前用户读取公开运行阶段和脱敏工具轨迹 |
 | GET | /usage | 当前用户分钟/日额度与当日 token、成本摘要 |
 | DELETE | /sessions/:id | 将会话状态置为 closed |
 
@@ -138,7 +149,7 @@ graph LR
 
 ## 5. 业务逻辑要点
 
-1. **直接对话**：创建会话不传 `skillCode` 时使用 `general`；旧客户端仍可传原技能编码。
+1. **技能选择**：创建会话不传 `skillCode` 或传 `auto` 时按服务端关键词确定性路由；弱匹配回退 `general`，旧客户端仍可显式传技能编码。
 2. **会话所有权**：仅信任网关注入的 `X-User-Id`，请求体中的兼容 `userId` 只能与其一致；用户不能读取、流式订阅、关闭、发送或重试其他用户的会话。
 3. **事务写入**：首问或后续发送均在同一 `sqlx.Session` 中写入 user 消息和 `pending` assistant 消息，任一写入失败整体回滚。
 4. **Provider 状态**：Provider 流式增量更新 `content`，成功后写入 token/成本/模型/结束原因；失败后写入 `failed/error_message`，客户端显示可重试状态。
@@ -148,7 +159,8 @@ graph LR
 8. **软删除**：删除会话仅将状态置为 `closed`，历史消息保留用于追溯。
 9. **内容安全**：用户输入先执行长度和禁用词校验；流式回答每次落库前再次执行禁用词校验，命中后中止生成并转为可重试失败。
 10. **额度和成本**：发送及重试均消耗用户请求额度；token 和成本只在服务端记录，客户端不提交计费数据。
-11. **技能与 MCP**：`ai-module-skills` 只作为经审查的来源和 schema 依据，服务不扫描或执行其任意脚本。MCP 必须同时满足 `AI_MCP_ENABLED=true` 和技能 `tool_config.enabled=true`。
+11. **技能与 MCP**：仅启用经审查的 taibu 白名单工具，结构化参数由服务端适配，MCP 输出使用数据边界包裹。MCP 运行于非 root、只读、无 capabilities、限 CPU/内存/进程且无公网端口的独立容器。
+12. **思考可见性**：DeepSeek `reasoning_content` 不进入消息、SSE 或日志；客户端只接收 `reasoning` 阶段和最终答案，审计保留推理 token 数。
 
 ---
 
@@ -167,10 +179,13 @@ graph LR
 | `AI_BASE_URL` | OpenAI 兼容 API 基础地址 |
 | `AI_API_KEY` | Provider 密钥 |
 | `AI_MODEL` | 模型名称 |
+| `AI_VISION_MODEL` | 有图片时使用的视觉模型 |
+| `AI_THINKING_ENABLED` / `AI_REASONING_EFFORT` | 思考模式开关及强度；不改变思考链不可见规则 |
 | `AI_MINUTE_REQUEST_LIMIT` / `AI_DAILY_REQUEST_LIMIT` | 单用户分钟/日请求上限 |
 | `AI_MAX_INPUT_CHARS` / `AI_MAX_HISTORY_MESSAGES` / `AI_MAX_OUTPUT_TOKENS` | 输入、历史和输出边界 |
 | `AI_INPUT_COST_PER_MILLION` / `AI_OUTPUT_COST_PER_MILLION` | 每百万 token 单价，用于服务端成本估算 |
 | `AI_BLOCKED_TERMS` | 逗号分隔的输入拦截词 |
+| `AI_ALLOWED_IMAGE_HOSTS` / `AI_IMAGE_MAX_BYTES` | 图片来源白名单和单图大小上限 |
 | `AI_MCP_ENABLED` / `AI_MCP_BASE_URL` / `AI_MCP_TIMEOUT_SECONDS` | 受控 MCP 开关、地址和超时 |
 
 DeepSeek 使用 OpenAI-compatible 契约，无需独立 Provider 类型：
@@ -180,11 +195,12 @@ AI_PROVIDER=openai_compatible
 AI_BASE_URL=https://api.deepseek.com
 AI_API_KEY=服务端密钥
 AI_MODEL=deepseek-v4-flash
+AI_VISION_MODEL=deepseek-v4-flash-vision-exp
 ```
 
 Provider 会在 `AI_BASE_URL` 后追加 `/chat/completions`，因此 DeepSeek 基础地址不带 `/v1`。密钥只配置在 ECS 服务端 `0600` 运行时密钥文件，不进入 Git、iOS 或 H5。2026-09-02 已在 ECS 通过真实 `deepseek-v4-flash` 完成动态技能、SSE、历史、用户隔离、结构化字段和额度验收。
 
-`deepseek-v4-flash-vision-exp` 已作为候选视觉模型保存在服务器运行时配置中，但当前公开消息契约仍只接收文本和结构化字段；在图片上传、持久化、内容安全及 iOS/H5 选图闭环完成前，不标记为已启用。token 用量为 Provider 返回的权威值；美元成本需按 DeepSeek 峰谷时段和缓存命中拆分后才可作为准确账务数据，当前 `costMicros=0` 不代表调用免费。
+文本模型采用流式输出；含附件时自动切换视觉模型。token 用量取 Provider 权威字段，`costMicros` 以微美元记录，并按 DeepSeek 返回的缓存命中/未命中 token、工作日峰谷时段和输出 token 估算。价格配置属于可更新的运营参数，不作为用户账单。
 
 生产环境不得使用 `mock` 冒充真实推理。`openai_compatible` 配置不完整时服务启动失败，避免静默降级。
 
@@ -197,6 +213,7 @@ Provider 会在 `AI_BASE_URL` 后追加 `/chat/completions`，因此 DeepSeek �
 | MySQL | askxuan_ai | 技能、会话和消息持久化 |
 | HTTP | 模型 Provider | 仅 `openai_compatible` 使用 |
 | HTTP | MCP Server | 仅双重开关启用的 allowlist 工具使用 |
+| HTTP | Media/MinIO | 读取白名单来源的已登记图片 |
 | etcd | 服务注册 | 服务发现 |
 | common | 公共包 | 统一响应、错误码和中间件 |
 
@@ -212,6 +229,7 @@ Provider 会在 `AI_BASE_URL` 后追加 `/chat/completions`，因此 DeepSeek �
 | 分钟或日额度耗尽 | `40302` 请求过于频繁 |
 | 结构化字段缺失、非法选项、超长或命中安全拦截 | `40003` 参数格式不正确 |
 | Provider 调用失败 | 请求已接收，assistant 消息转为 failed 并可重试 |
+| MCP 或图片读取失败 | run 与工具轨迹记为 failed，消息可重试，不降级伪造排盘 |
 | 服务在推理期间重启 | pending 恢复为 failed 并可重试 |
 
 ---
@@ -220,6 +238,7 @@ Provider 会在 `AI_BASE_URL` 后追加 `/chat/completions`，因此 DeepSeek �
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
+| v2.0 | 2026-09-02 | 版本化提示词、确定性路由、隔离 taibu MCP、图片输入、公开阶段、脱敏工具轨迹与 DeepSeek 动态成本 |
 | v1.4 | 2026-09-02 | 动态技能 schema、iOS/H5 SSE、用户额度、安全拦截、token/成本账与受控 MCP 适配 |
 | v1.3 | 2026-07-13 | 切换 MySQL 持久化，新增 general 默认入口、Provider、所有权校验、失败重试和重启恢复 |
 | v1.2 | 2026-07-09 | 补齐早期内存版会话与消息闭环 |
