@@ -216,14 +216,16 @@
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
-| GET | `/api/v1/ai/skills` | — | `status`(opt) | 无 | AI 入口列表（general + 7 个兼容技能） |
-| POST | `/api/v1/ai/sessions` | ios-customer ✓ | `userId`, `skillCode`(opt), `question`(opt) | Bearer | 创建会话，默认 general |
-| GET | `/api/v1/ai/sessions` | ios-customer ✓ | `userId`, `status`(opt), `page`, `size` | Bearer | 会话列表 |
-| GET | `/api/v1/ai/sessions/:id` | ios-customer ✓ | — | Bearer | 会话详情 |
-| GET | `/api/v1/ai/sessions/:id/messages` | ios-customer ✓ | `userId`, `page`, `size` | Bearer | 会话消息列表 |
-| POST | `/api/v1/ai/sessions/:id/messages` | ios-customer ✓ | `userId`, `content` | Bearer | 发送消息 |
-| POST | `/api/v1/ai/sessions/:id/messages/:messageId/retry` | ios-customer ✓ | `userId` | Bearer | 重试失败的助手消息 |
-| DELETE | `/api/v1/ai/sessions/:id` | ios-customer ✓ | — | Bearer | 删除会话 |
+| GET | `/api/v1/ai/skills` | ios-customer ✓ / H5 C端 ✓ | `status`(opt) | Bearer | 动态技能、输入 schema、能力和顺序；不返回提示词与工具配置 |
+| POST | `/api/v1/ai/sessions` | ios-customer ✓ / H5 C端 ✓ | `userId`(兼容), `skillCode`(opt), `question`(opt), `inputs`(opt) | Bearer | 按 JWT 用户创建会话，默认 general；结构化字段由技能 schema 校验 |
+| GET | `/api/v1/ai/sessions` | ios-customer ✓ / H5 C端 ✓ | `userId`(兼容), `status`(opt), `page`, `size` | Bearer | 当前用户会话列表 |
+| GET | `/api/v1/ai/sessions/:id` | ios-customer ✓ / H5 C端 ✓ | — | Bearer | 当前用户会话详情 |
+| GET | `/api/v1/ai/sessions/:id/messages` | ios-customer ✓ / H5 C端 ✓ | `userId`(兼容), `page`, `size` | Bearer | 消息、结构化输入快照及 Provider/token/成本元数据 |
+| POST | `/api/v1/ai/sessions/:id/messages` | ios-customer ✓ / H5 C端 ✓ | `userId`(兼容), `content`, `inputs`(opt) | Bearer | 用户限流与安全校验后创建 pending assistant 消息 |
+| GET | `/api/v1/ai/sessions/:id/messages/:messageId/stream` | ios-customer ✓ / H5 C端 ✓ | — | Bearer | 会话所有权校验后的 SSE：delta/done/error/timeout |
+| POST | `/api/v1/ai/sessions/:id/messages/:messageId/retry` | ios-customer ✓ / H5 C端 ✓ | `userId`(兼容) | Bearer | 计入额度的状态重试 |
+| GET | `/api/v1/ai/usage` | ios-customer 可用 / H5 C端可用 | — | Bearer | 当前用户分钟/日请求数、额度、当日 token 与成本摘要 |
+| DELETE | `/api/v1/ai/sessions/:id` | ios-customer ✓ / H5 C端 ✓ | — | Bearer | 关闭本人的会话 |
 
 ### 1.13 媒体与直播（media-service @ 8100）
 
@@ -970,7 +972,7 @@
 
 **内部 gRPC**：`temple.rpc:9083`、`master.rpc:9084`、`payment.rpc:9090`，均通过 etcd 发现；booking-service 不运行时跨库查询寺院、法师或支付库。
 
-**OpenIM 强制权限**：OpenIM 的 `beforeSendSingleMsg` 同步回调指向 booking-service，`failedContinue=false`。新消息使用 `ex=askxuan-chat:<sourceType>:<sourceId>:<clientMessageId>`；旧预约标记继续兼容。服务端按精确来源核验咨询支付/有效期或预约支付/未取消状态以及双方归属，`afterSendSingleMsg` 按来源落库。客户端持有 IMToken 也不能绕过 REST 直接发送。
+**统一聊天事实源与 OpenIM 强制权限**：iOS C 端、H5 C 端、iOS 法师端和 H5 法师端均通过 `/chats` 读取会话/历史并通过 `/chats/:id/messages` 发送，`booking_chat_message` 是四端共同事实源；OpenIM SDK 负责实时收件事件和在线状态，断线时 H5 以短轮询刷新。OpenIM 的 `beforeSendSingleMsg` 同步回调仍指向 booking-service 且 `failedContinue=false`，防止持有 IMToken 的客户端绕过 REST；`afterSendSingleMsg` 按精确来源幂等落库。
 
 ### 10.1 C 端接口（6 个，Bearer 鉴权）
 
@@ -1377,17 +1379,19 @@
 **路径前缀**：`/api/v1/ai`（C 端）
 **职责**：AI 技能、会话管理、消息发送
 
-### 22.1 C 端接口（8 个，其中技能列表无需鉴权）
+### 22.1 C 端接口（10 个，均经生产网关 Bearer 鉴权）
 
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
-| GET | `/api/v1/ai/skills` | skillList | `status`(opt) | 无 | 📱 | AI 入口列表（general + 7 个兼容技能） |
-| POST | `/api/v1/ai/sessions` | sessionCreate | `userId`, `skillCode`(opt), `question`(opt) | Bearer | 📱 | 创建会话，默认 general |
-| GET | `/api/v1/ai/sessions` | sessionList | `userId`, `status`(opt), `page`, `size` | Bearer | 📱 | 会话列表 |
+| GET | `/api/v1/ai/skills` | skillList | `status`(opt) | Bearer | 📱 📲 | 动态技能、输入 schema、能力和顺序 |
+| POST | `/api/v1/ai/sessions` | sessionCreate | `skillCode`(opt), `question`(opt), `inputs`(opt) | Bearer | 📱 📲 | 按 JWT 用户创建会话，默认 general |
+| GET | `/api/v1/ai/sessions` | sessionList | `userId`(兼容可选), `status`(opt), `page`, `size` | Bearer | 📱 📲 | 会话列表 |
 | GET | `/api/v1/ai/sessions/:id` | sessionDetail | — | Bearer | 📱 | 会话详情 |
-| GET | `/api/v1/ai/sessions/:id/messages` | messageList | `userId`, `page`, `size` | Bearer | 📱 | 会话消息列表 |
-| POST | `/api/v1/ai/sessions/:id/messages` | messageSend | `userId`, `content` | Bearer | 📱 | 发送消息 |
-| POST | `/api/v1/ai/sessions/:id/messages/:messageId/retry` | messageRetry | `userId` | Bearer | 📱 | 重试失败的助手消息 |
+| GET | `/api/v1/ai/sessions/:id/messages` | messageList | `userId`(兼容可选), `page`, `size` | Bearer | 📱 📲 | 会话消息列表 |
+| POST | `/api/v1/ai/sessions/:id/messages` | messageSend | `content`, `inputs`(opt) | Bearer | 📱 📲 | 限流与安全校验后发送消息 |
+| GET | `/api/v1/ai/sessions/:id/messages/:messageId/stream` | messageStream | — | Bearer | 📱 📲 | SSE 增量输出，仅会话所有者可订阅 |
+| POST | `/api/v1/ai/sessions/:id/messages/:messageId/retry` | messageRetry | — | Bearer | 📱 📲 | 重试失败的助手消息 |
+| GET | `/api/v1/ai/usage` | usageSummary | — | Bearer | 📱 📲 | 用户额度、token 和成本摘要 |
 | DELETE | `/api/v1/ai/sessions/:id` | sessionDelete | — | Bearer | 📱 | 删除会话 |
 
 ---
