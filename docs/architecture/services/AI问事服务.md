@@ -177,12 +177,14 @@ DeepSeek 使用 OpenAI-compatible 契约，无需独立 Provider 类型：
 
 ```env
 AI_PROVIDER=openai_compatible
-AI_BASE_URL=https://模型服务地址/v1
+AI_BASE_URL=https://api.deepseek.com
 AI_API_KEY=服务端密钥
-AI_MODEL=模型或Endpoint名称
+AI_MODEL=deepseek-v4-flash
 ```
 
-密钥只配置在 ECS 服务端环境，不进入 Git、iOS 或 H5。参数提供并完成真实模型验收前，系统保持明确标识的 `mock`。
+Provider 会在 `AI_BASE_URL` 后追加 `/chat/completions`，因此 DeepSeek 基础地址不带 `/v1`。密钥只配置在 ECS 服务端 `0600` 运行时密钥文件，不进入 Git、iOS 或 H5。2026-09-02 已在 ECS 通过真实 `deepseek-v4-flash` 完成动态技能、SSE、历史、用户隔离、结构化字段和额度验收。
+
+`deepseek-v4-flash-vision-exp` 已作为候选视觉模型保存在服务器运行时配置中，但当前公开消息契约仍只接收文本和结构化字段；在图片上传、持久化、内容安全及 iOS/H5 选图闭环完成前，不标记为已启用。token 用量为 Provider 返回的权威值；美元成本需按 DeepSeek 峰谷时段和缓存命中拆分后才可作为准确账务数据，当前 `costMicros=0` 不代表调用免费。
 
 生产环境不得使用 `mock` 冒充真实推理。`openai_compatible` 配置不完整时服务启动失败，避免静默降级。
 
