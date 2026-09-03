@@ -198,7 +198,7 @@ AI_MODEL=deepseek-v4-flash
 AI_VISION_MODEL=deepseek-v4-flash-vision-exp
 ```
 
-Provider 会在 `AI_BASE_URL` 后追加 `/chat/completions`，因此 DeepSeek 基础地址不带 `/v1`。密钥只配置在 ECS 服务端 `0600` 运行时密钥文件，不进入 Git、iOS 或 H5。2026-09-02 已在 ECS 通过真实 `deepseek-v4-flash` 完成动态技能、SSE、历史、用户隔离、结构化字段和额度验收。
+Provider 会在 `AI_BASE_URL` 后追加 `/chat/completions`，因此 DeepSeek 基础地址不带 `/v1`。密钥只配置在 ECS 服务端 `0600` 运行时密钥文件，不进入 Git、iOS 或 H5。2026-09-03 已在 ECS 通过真实 `deepseek-v4-flash` 文本/MCP 闭环和 `deepseek-v4-flash-vision-exp` 图片闭环；验收覆盖 HTTPS 媒体上传/回读、SSE、用户隔离、脱敏轨迹、token 与动态成本。
 
 文本模型采用流式输出；含附件时自动切换视觉模型。token 用量取 Provider 权威字段，`costMicros` 以微美元记录，并按 DeepSeek 返回的缓存命中/未命中 token、工作日峰谷时段和输出 token 估算。价格配置属于可更新的运营参数，不作为用户账单。
 
