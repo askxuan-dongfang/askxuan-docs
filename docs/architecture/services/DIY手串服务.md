@@ -208,6 +208,7 @@ graph TB
 | POST | /api/v1/diy/designs/:id/order | 从设计广场作品直接下单，返回最终计价与快照 | customer |
 | GET | /api/v1/diy/materials | 材料库列表 | customer |
 | POST | /api/v1/diy/orders | 创建DIY订单 | customer |
+| POST | /api/v1/diy/orders/availability | 按实时材料、SKU、库存和价格执行下单预检（不扣库存） | customer |
 | GET | /api/v1/diy/orders | 我的DIY订单列表 | customer |
 | GET | /api/v1/diy/orders/:id | DIY订单详情（含加持进度） | customer |
 | GET | /api/v1/diy/blessing-services | 当前已上架加持服务和展示价格 | customer |
@@ -277,6 +278,7 @@ stateDiagram-v2
 3. **加持服务**：商城台可维护 `extra_service`；C 端只展示已上架项，下单时服务端再次按服务编码锁定并计价
 4. **订单创建**：用户提交设计 → status=pending_review → 等待商城审核
    - 自主设计下单走 `POST /api/v1/diy/orders`，请求体必须带 `items`
+   - H5 与 iOS 在进入结算和提交前调用 `POST /api/v1/diy/orders/availability`；失效材料需返回具体材料名与原因并禁用下单，最终创建订单时仍在事务内再次校验和扣减库存
    - 设计广场直接下单走 `POST /api/v1/diy/designs/:id/order`，后端从 `diy_design.design_data` 解析材料 ID/规格/数量，仅允许 `public` / `approved` 设计
    - 服务端在同一数据库事务中锁定材料与 SKU，重新查询价格、上下架状态和库存；客户端 `unitPrice` 与设计展示价不参与最终计费
    - 订单、明细、库存扣减和不可变设计/计价快照同事务提交，任一失败完整回滚

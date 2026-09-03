@@ -165,6 +165,7 @@
 | GET | `/api/v1/diy/materials` | ios-customer ✓ | `category`(opt), `page`, `size` | 无 | 仅返回已上架材料；下架记录不计入 C 端分页总数 |
 | GET | `/api/v1/diy/blessing-services` | ios-customer ✓ | `page`, `size` | 无 | 可选加持服务列表 |
 | POST | `/api/v1/diy/orders` | ios-customer ✓ | `userId`, `designId`, `items`, `blessServiceCode`(opt), `addressId` | Bearer | 创建 DIY 订单 |
+| POST | `/api/v1/diy/orders/availability` | ios-customer / H5 ✓ | `designId`，自主设计可附 `items` | Bearer | 结算前按实时材料、SKU 与库存预检并返回当前材料价；不占用库存 |
 | GET | `/api/v1/diy/orders` | ios-customer ✓ | `userId`, `status`(opt), `page`, `size` | Bearer | DIY 订单列表 |
 | GET | `/api/v1/diy/orders/:id` | ios-customer ✓ | — | Bearer | DIY 订单详情 |
 
@@ -1077,6 +1078,7 @@
 | GET | `/api/v1/diy/materials` | materialList | `category`(opt), `page`, `size` | 无 | 📱 | 仅返回 `on_shelf` 材料 |
 | GET | `/api/v1/diy/blessing-services` | blessingServiceList | `page`, `size` | 无 | 📱 | 可选加持服务列表 |
 | POST | `/api/v1/diy/orders` | diyOrderCreate | `userId`, `designId`, `items`, `blessServiceCode`(opt), `addressId` | Bearer | 📱 | 创建 DIY 订单 |
+| POST | `/api/v1/diy/orders/availability` | diyOrderAvailability | `designId`，`items`(自主设计可选) | Bearer | 📱 | 实时材料/SKU/库存与价格预检，不扣库存 |
 | GET | `/api/v1/diy/orders` | diyOrderList | `userId`, `status`(opt), `page`, `size` | Bearer | 📱 | DIY 订单列表 |
 | GET | `/api/v1/diy/orders/:id` | diyOrderDetail | — | Bearer | 📱 | DIY 订单详情 |
 
