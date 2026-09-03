@@ -185,6 +185,9 @@ X-Client-Version: 1.0.0
 | POST/GET | `/api/v1/bookings/:id/review` | 完成预约提交/查看评价，校验所有权 |
 | GET | `/api/v1/diy/blessing-services` | 登录用户读取当前已上架加持服务 |
 | POST | `/api/v1/diy/designs/:id/order` | 设计广场下单；服务端重新查价和库存 |
+| GET | `/api/v1/admin/bookings/report` | 寺院维度已支付预约、功德金、服务分布与大师排行 |
+| GET | `/api/v1/admin/orders/report` | 已支付商城订单、销售趋势、商品排行与退货率 |
+| GET | `/api/v1/admin/finance/reports` | 平台总账收款减退款、结算净额、成功提现和收款订单数 |
 | GET/POST | `/api/v1/admin/files/backups` | 平台超管列出/创建手动全量备份 |
 
 ## 5. 接口分组规范

@@ -490,6 +490,7 @@
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
+| GET | `/api/v1/admin/bookings/report` | ✓ | `templeId`, `startTime`(opt), `endTime`(opt) | Bearer | 已支付未取消预约的功德金、趋势、服务分布和大师排行 |
 | GET | `/api/v1/admin/bookings` | ✓ | `templeId`, `status`(opt), `masterId`(opt), `page`, `size` | Bearer | 预约列表 |
 | GET | `/api/v1/admin/bookings/:id` | ✓ | — | Bearer | 预约详情 |
 | PUT | `/api/v1/admin/bookings/:id/confirm` | ✓ | `remark`(opt) | Bearer | 确认预约 |
@@ -1000,10 +1001,11 @@
 | POST | `/openim/booking-chat-webhook` | bookingChatWebhook | OpenIM callback payload | OpenIM 内网 | OpenIM | 发送前付费资格校验或发送后消息落库 |
 | POST | `/openim/booking-chat-webhook/:command` | bookingChatWebhook | 同上 | OpenIM 内网 | OpenIM | 命令式兼容入口 |
 
-### 10.2 寺院管理台接口（8 个，jwt:Auth）
+### 10.2 寺院管理台接口（9 个，jwt:Auth）
 
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
+| GET | `/api/v1/admin/bookings/report` | adminBookingReport | `templeId`, `startTime`(opt), `endTime`(opt) | jwt:Auth + temple/platform role | 🏛️ | 寺院预约经营报表，temple_admin 不可跨寺院 |
 | GET | `/api/v1/admin/bookings` | adminBookingList | `templeId`, `status`(opt), `masterId`(opt), `page`, `size` | jwt:Auth | 🏛️ | 预约列表 |
 | GET | `/api/v1/admin/bookings/:id` | adminBookingDetail | — | jwt:Auth | 🏛️ | 预约详情 |
 | PUT | `/api/v1/admin/bookings/:id/confirm` | adminBookingConfirm | `remark`(opt) | jwt:Auth | 🏛️ | 确认预约 |
@@ -1471,7 +1473,7 @@
 | PUT | `/api/v1/admin/platform/masters/:id/service-tags` | master-service | `tags[{serviceCode,price,status}]` | Platform | 平台从 S001-S013 目录配置大师服务 |
 | GET | `/api/v1/admin/diy/materials/:id` | diy-service | `id`(path) | Bearer | DIY 材料详情 |
 | GET | `/api/v1/admin/diy/blessing-services/:id` | diy-service | `id`(path) | Bearer | DIY 加持服务详情 |
-| GET | `/api/v1/admin/orders/report` | order-service | 无 | Bearer | 商城订单概览和状态统计 |
+| GET | `/api/v1/admin/orders/report` | order-service | `startTime`(opt), `endTime`(opt) | Bearer | 已支付订单销售趋势、商品 Top 10 与退货率 |
 | GET | `/api/v1/admin/orders/returns/:id` | order-service | `id`(path) | Bearer | 退换货申请详情 |
 
 ---

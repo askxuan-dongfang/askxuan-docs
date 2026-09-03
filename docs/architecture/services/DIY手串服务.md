@@ -19,6 +19,7 @@ diy-service 负责DIY手串全流程管理，包括：
 - 加持任务派发（MQ通知寺院/法师）
 - 加持服务管理（4项加持服务，对应 extra_service 表）
 - 与 temple-service / master-service 通过 MQ 协同完成加持
+- 加持派单与发货事件通过持久化 outbox 投递，事实表补偿扫描修复进程崩溃窗口
 
 ---
 
@@ -210,6 +211,8 @@ graph TB
 | GET | /api/v1/diy/orders | 我的DIY订单列表 | customer |
 | GET | /api/v1/diy/orders/:id | DIY订单详情（含加持进度） | customer |
 | GET | /api/v1/diy/blessing-services | 当前已上架加持服务和展示价格 | customer |
+
+> C 端当前没有 DIY 用户手动确认收货和 DIY 专属退货/退款接口。发货后由 logistics-service 签收事件自动进入 completed；详见 [DIY 手串全流程能力审计](../../product/DIY手串全流程能力审计.md)。
 
 ### 4.2 商城台接口（需鉴权）
 
