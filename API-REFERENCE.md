@@ -497,6 +497,7 @@
 | PUT | `/api/v1/admin/bookings/:id/confirm` | ✓ | `remark`(opt) | Bearer | 确认预约 |
 | PUT | `/api/v1/admin/bookings/:id/cancel` | ✓ | `remark`(opt) | Bearer | 取消预约 |
 | GET | `/api/v1/admin/bookings/:id/status-log` | ✓ | — | Bearer | 状态流转日志 |
+| GET | `/api/v1/admin/bookings/:id/review` | ✓ | — | Bearer | 预约评价详情 |
 | PUT | `/api/v1/admin/bookings/:id/review/reply` | ✓ | `masterReply` | Bearer | 法师回复评价 |
 
 ### 3.6 加持任务（temple-service @ 8083）
@@ -1014,6 +1015,7 @@
 | PUT | `/api/v1/admin/bookings/:id/cancel` | adminBookingCancel | `remark`(opt) | jwt:Auth | 🏛️ | 取消预约 |
 | PUT | `/api/v1/admin/bookings/:id/timeout-cancel` | adminBookingTimeoutCancel | `remark`(opt) | jwt:Auth | — | 超时取消 |
 | GET | `/api/v1/admin/bookings/:id/status-log` | adminBookingStatusLog | — | jwt:Auth | 🏛️ | 状态流转日志 |
+| GET | `/api/v1/admin/bookings/:id/review` | adminReviewDetail | — | jwt:Auth | 🏛️ | 预约评价详情 |
 | PUT | `/api/v1/admin/bookings/:id/review/reply` | adminReviewReply | `masterReply` | jwt:Auth | 🏛️ | 法师回复评价 |
 
 ### 10.3 法师工作台接口（5 个，jwt:Auth）
