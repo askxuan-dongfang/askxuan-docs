@@ -1662,3 +1662,31 @@
 ### E.5 分账
 - 野生大师单按 `commission_config.biz_type=wild_master`（默认 10% 平台 / 90% 大师，平台可调）
 - 寺庙绑定单维持 booking 费率
+
+## 消费积分与独立积分商城（2026-09-07）
+
+服务：payment-service，前缀 `/api/v1/points` 和 `/api/v1/admin/points`。所有接口要求 access JWT；用户接口仅 `customer`，管理接口仅 `shop_admin` / `platform_super`。分页 `page` 从 1 起，每页 20 条，列表 data 直接为数组。
+
+| 方法 | 路径 | 用途 |
+| --- | --- | --- |
+| GET | /points | 当前用户余额 `{balance}` |
+| GET | /points/ledger | 当前用户积分明细：id/kind/delta/balanceAfter/referenceNo/createdAt |
+| GET | /points/products | 独立积分商品，仅返回上架商品 |
+| GET | /points/orders | 当前用户兑换订单 |
+| POST | /points/orders | 积分兑换；事务内扣余额与库存 |
+| POST | /points/orders/:id/cancel | 取消待发货兑换，幂等退回积分与库存 |
+| POST | /points/orders/:id/complete | 已发货订单确认收货 |
+| GET / POST | /admin/points/products | 商品列表 / 新建 |
+| PUT | /admin/points/products/:id | 编辑商品及上下架，必须提交当前 version |
+| GET | /admin/points/orders | 兑换订单列表 |
+| POST | /admin/points/orders/:id/ship | 发货，body：carrier/trackingNo |
+| POST | /admin/points/orders/:id/cancel | 运营取消待发货订单 |
+| GET | /admin/points/report | 独立商品数、订单数、净兑换积分、待发货数 |
+
+商品字段：`id/name/category/description/image/pointsPrice/stock/status/version`，积分价格为正整数，库存为非负整数，status 为 `draft/on_sale/off_sale`。不复用现金商品 ID、SKU、库存或订单。
+
+兑换请求：`{productId,quantity,expectedPrice,requestKey,receiver,mobile,address}`。quantity 1–99，expectedPrice 必须等于当前商品积分单价，requestKey 长度 16–80，同一用户重试必须保持相同编号和内容。商品金额与库存始终由服务端读取；客户端提交积分余额或总价无效。
+
+消费获积分：每笔实付金额按 `floor(实付分 / 10000)` 计算（100 元 1 积分），不累计小数。成功支付与积分变更在同一事务提交，适用于商城、DIY、预约和咨询；迁移前支付不补发。退款成功时按累计净实付重算，允许负余额，负余额用户不可兑换。兑换不会再次获积分。流水 kind 为 `earn/refund/redeem/return`。
+
+部署前执行 `scripts/db/20260907_points_mall.sql`。新建环境的 `db/init.sql` 已包含相同建表定义。必须先迁移数据库，再重建 payment-service（包含 RPC）及 gateway-service，再发布 H5 与商城管理台资源。现有支付 Provider 仍遵循系统原有配置；积分实现不代表第三方真实支付已开通。
