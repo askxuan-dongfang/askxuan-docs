@@ -1690,3 +1690,26 @@
 消费获积分：每笔实付金额按 `floor(实付分 / 10000)` 计算（100 元 1 积分），不累计小数。成功支付与积分变更在同一事务提交，适用于商城、DIY、预约和咨询；迁移前支付不补发。退款成功时按累计净实付重算，允许负余额，负余额用户不可兑换。兑换不会再次获积分。流水 kind 为 `earn/refund/redeem/return`。
 
 部署前执行 `scripts/db/20260907_points_mall.sql`。新建环境的 `db/init.sql` 已包含相同建表定义。必须先迁移数据库，再重建 payment-service（包含 RPC）及 gateway-service，再发布 H5 与商城管理台资源。现有支付 Provider 仍遵循系统原有配置；积分实现不代表第三方真实支付已开通。
+
+## 商城履约与多端运营升级（2026-09-08）
+
+新增接口沿用 `/api/v1` 前缀及统一 `{code,message,data}` 响应。用户身份从 access JWT 读取；跨用户操作返回禁止访问。
+
+| 方法 | 路径 | 权限 / 行为 |
+| --- | --- | --- |
+| GET | /orders/:id/returns | customer；仅订单本人，返回售后记录数组 |
+| PUT | /orders/returns/:id/ship | customer；`{carrier,trackingNo}`，审核通过后填写寄回物流 |
+| PUT | /admin/orders/returns/:id/receive | shop_admin / platform_super；确认退货收货 |
+| PUT | `/api/v1/diy/orders/:id/confirm` | customer；仅订单本人，已发货后确认收货，重复调用成功 |
+
+售后记录在原字段基础上新增 `carrier/trackingNo/reviewNote`。`POST /orders/:id/return` 接收 `{type:"return",reason}`，原因 1–255 字；只允许已支付、已发货或已完成订单，重复申请返回同一笔未拒绝售后单。商家拒绝时必须提供说明，并恢复申请前订单状态。
+
+已发货售后：`pending_review → approved → return_shipping → return_received → refunding → completed`。未发货订单通过审核后直接到 `return_received`，无需寄回。商家审核的 `reason` 作为 `reviewNote` 提供给用户，可填写退回地址、收件人与联系方式。物流公司上限 80 字，运单号上限 100 字；同一退货运单重试幂等，更换已提交运单被拒绝。
+
+`PUT /admin/orders/returns/:id/refund` 仅接受已收货售后单及有效退款金额；退款请求和状态同事务提交。订单服务提交真实 `orderNo`，支付服务据此查找支付单，不再依赖临时支付单号。mock 退款、支付状态、积分扣回在同一事务完成；相同退款重试返回原记录。当前每个支付单支持一次退款结算。成功事件到达后，幂等释放商品库存、完成售后并关闭订单；事件处理失败可重试，按订单定位退款记录。
+
+DIY `GET /diy/orders`、`GET /diy/orders/:id` 和管理台订单详情新增可选 `logistics:{expressCompany,trackingNo,shipTime}`。用户订单列表同时返回成交材料 `items` 与正确映射的设计/价格快照，材料明细使用订单成交价。发货要求 `awaiting_shipment`，运单与状态、消息同事务保存；相同发货重试成功。审核拒绝已付款订单时，恢复材料库存、提交退款，`paymentStatus` 经 `refunding` 变为 `refunded`，并取消尚未结算的创作者收益。收货只允许 `shipped → completed`。
+
+积分商品列表支持服务端 `keyword` 搜索；管理商品列表支持 `status` 筛选；用户与管理兑换订单支持 `status` 筛选，继续按用户及商城类型隔离。积分规则保持每笔实付满 100 元获得 1 个整数积分，退款按净实付重算。
+
+升级前先执行 `scripts/db/20260908_commerce_fulfillment.sql`，分别在 `askxuan_order`、`askxuan_diy` 创建履约补充表，脚本可重复执行。DIY 运行配置新增 `AuthSecret`，应与网关 access JWT 签名配置一致；保留生产数据库与消息配置。重建 order/diy/payment 三服务，发布 H5、商城管理台和平台总管理台；iOS 需重新构建安装。
