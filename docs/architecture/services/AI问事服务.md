@@ -244,3 +244,10 @@ Provider 会在 `AI_BASE_URL` 后追加 `/chat/completions`，因此 DeepSeek �
 | v1.2 | 2026-07-09 | 补齐早期内存版会话与消息闭环 |
 | v1.1 | 2026-07-09 | 对齐 App 直接问事与历史抽屉原型 |
 | v1.0 | 2026-07-01 | 初始版本 |
+
+
+## 9. 专题报告扩展（2026-09-09，本地实现待发布）
+
+新增七个专题入口，保留原有技能聊天。接口与订单／权益规则详见 [AI 专题报告规格](../../../specs/005-ai-topic-reports/README.md)。报告独立存储，先生成摘要及完整内容、后积分解锁；未购买正文不会下发。现金支付尚未开放。
+
+新增 GET /ai/topics，GET/POST /ai/reports，GET /ai/reports/:id，POST /ai/reports/:id/retry 与 /conversation。积分购买使用 payment-service 的 POST /payments/ai-report。路径均以 /api/v1 为前缀。正文导出与追问须在用户已获权益后进行。
