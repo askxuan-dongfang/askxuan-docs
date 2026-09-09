@@ -1715,7 +1715,7 @@ DIY `GET /diy/orders`、`GET /diy/orders/:id` 和管理台订单详情新增可�
 升级前先执行 `scripts/db/20260908_commerce_fulfillment.sql`，分别在 `askxuan_order`、`askxuan_diy` 创建履约补充表，脚本可重复执行。DIY 运行配置新增 `AuthSecret`，应与网关 access JWT 签名配置一致；保留生产数据库与消息配置。重建 order/diy/payment 三服务，发布 H5、商城管理台和平台总管理台；iOS 需重新构建安装。
 
 
-## 平台免费转盘、大奖池与实物履约（2026-09-09）
+## 积分转盘、大奖池与实物履约（2026-09-10）
 
 所有接口使用 access JWT；用户路由仅 customer，运营路由仅 platform_super，网关和营销服务分别校验。客户端提交 X-User-Id 不可替代 JWT；公开中奖结果不包含用户身份与地址。返回统一 `{code,message,data}`。
 
@@ -1724,7 +1724,7 @@ DIY `GET /diy/orders`、`GET /diy/orders/:id` 和管理台订单详情新增可�
 | GET | `/api/v1/marketing/rewards/campaigns` | 活动列表，page 从 1 开始，固定每页 20；kind=pool/wheel |
 | GET | `/api/v1/marketing/rewards/campaigns/:id` | 详情、本人参与码 mine 与公开中奖码 winners |
 | GET | `/api/v1/marketing/rewards/orders` | 奖品订单，用户仅本人；支持 page/status |
-| POST | `/api/v1/marketing/rewards/campaigns/:id/join` | 免费参与，重试返回原码与原结果 |
+| POST | `/api/v1/marketing/rewards/campaigns/:id/join` | 扣积分参与，body.expectedPoints 必填；重试返回原码与原结果，不重复扣分 |
 | GET | `/api/v1/marketing/rewards/entries` | 本人参与记录，page |
 | POST | `/api/v1/marketing/rewards/orders/:id/claim` | 本人提交 receiver/mobile/address |
 | POST | `/api/v1/marketing/rewards/orders/:id/complete` | 本人确认收货，幂等 |
@@ -1739,7 +1739,7 @@ DIY `GET /diy/orders`、`GET /diy/orders/:id` 和管理台订单详情新增可�
 | GET | `/api/v1/admin/marketing/rewards/campaigns/:id/audit` | 操作审计，page |
 | POST | `/api/v1/admin/marketing/rewards/orders/:id/ship` | 平台填写 carrier/trackingNo，幂等 |
 
-活动字段：`id/title/kind/prizeName/image/description/rules/prizeValue/budget/prizeQuantity/capacity/startsAt/endsAt/version`。`prizeValue` 与 `budget` 单位为人民币分，均为平台配置，非用户费用或真实付款凭证；预算须覆盖参考价值 × 奖品数量；参与费恒为 0。数量 1–1000，容量介于奖品数与 100000 之间，时间使用 Unix 秒，结束晚于开始和当前时间，跨度不超过 366 天。图片可空，非空须 HTTPS。
+活动字段：`id/title/kind/prizeName/image/description/rules/prizeValue/budget/pointsCost/prizeQuantity/capacity/startsAt/endsAt/version`。`prizeValue` 与 `budget` 单位为人民币分，均为平台配置，非用户费用或真实付款凭证；预算须覆盖参考价值 × 奖品数量；`pointsCost` 为每人每期整数积分（1–100000000），独立配置且发布后冻结，不从商品价值或预算推算。数量 1–1000，容量介于奖品数与 100000 之间，时间使用 Unix 秒，结束晚于开始和当前时间，跨度不超过 366 天。图片可空，非空须 HTTPS。
 
 `status` 持久化为 draft/published/drawn/cancelled；`phase` 根据服务端时间和参与数返回 draft/scheduled/open/full/awaiting_draw/drawn/cancelled。满额不提前开奖，截止拒绝新用户参与，已参与用户重试始终返回原记录。每 15 秒扫描到期活动，重启自动补偿，行锁与事务防止并发开奖。没有参与者也会生成结束公告。
 
@@ -1749,4 +1749,10 @@ DIY `GET /diy/orders`、`GET /diy/orders/:id` 和管理台订单详情新增可�
 
 实物订单独立于现金和积分订单：awaiting_address → pending → shipped → completed；收货信息与运单提交后不可覆盖，完全相同重试幂等。记录 createdAt/claimedAt/shippedAt/completedAt。取消活动仅限无人参与且未结束；取消原因保留，不删除参与和履约历史。
 
-部署先执行 `scripts/db/20260909_free_rewards.sql`（可重复，新库已同步 init.sql），为营销服务配置与网关一致的 `Auth.AccessSecret`，定向重建营销服务，发布 H5 和平台管理端。路径沿用现有网关 marketing 前缀，无需新增代理前缀。界面入口：H5 `/c/rewards`，平台 `/admin/marketing/rewards`；iOS 使用同一套接口。
+部署依次执行 `scripts/db/20260909_free_rewards.sql`、`20260910_points_rewards.sql`、`20260910_points_rewards_permissions.sql`（可重复，新库同步 init.sql），为营销服务配置与网关一致的 `Auth.AccessSecret`，定向重建营销服务，发布 H5 和平台管理端。路径沿用现有网关 marketing 前缀，无需新增代理前缀。界面入口：H5 `/c/points` 集中提供转盘/大奖池/参与记录/我的奖品，详情沿用 `/c/rewards`，平台 `/admin/marketing/rewards`；iOS 使用同一套接口。
+
+参与请求示例：`POST /api/v1/marketing/rewards/campaigns/2/join`，JSON `{"expectedPoints":20}`。旧客户端不传确认积分会被拒绝，不静默扣款。余额不足、价格未确认或请求失败不新增参与。成功后积分不因未中奖退回；已有参与的活动仍不允许取消。
+
+返回参与记录增加 `pointsSpent`，与积分流水 `referenceNo` 对应同一参与码；流水 `kind` 为 `reward_pool` 或 `reward_wheel`，`event_key=reward:{campaignId}:{userId}` 全局唯一。顾客详情增加 `pointsBalance`。现有 `/api/v1/points` 与 `/points/ledger` 直接反映扣减，无第二套积分账户。
+
+当前部署的营销库和支付库位于同一 MySQL 实例，账户余额、流水、参与码、人数、即时中奖和审计在单一 InnoDB 事务提交。账号行锁与现有兑换、退款共用，避免跨活动超扣；营销账号仅增加 points_account 的 SELECT/UPDATE(balance)、points_ledger 的 SELECT/INSERT 权限，不获得现金或功德权限。跨数据库拆机前必须重新设计此事务边界。增量迁移给历史记录补零，绝不追扣旧积分。
