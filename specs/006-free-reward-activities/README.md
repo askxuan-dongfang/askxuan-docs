@@ -1,20 +1,24 @@
 ---
-status: in-progress
+status: complete
 created: '2026-09-09'
 tags: []
 priority: medium
 created_at: '2026-09-09T14:52:05.507Z'
-updated_at: '2026-09-09T15:18:30.395Z'
+updated_at: '2026-09-09T16:38:16.214Z'
 transitions:
   - status: in-progress
     at: '2026-09-09T14:52:05.697Z'
+  - status: complete
+    at: '2026-09-09T16:38:16.214Z'
 depends_on:
   - 002-points-mall
+completed_at: '2026-09-09T16:38:16.214Z'
+completed: '2026-09-09'
 ---
 
 # 平台免费活动与实物领奖
 
-> **Status**: ⏳ In progress · **Priority**: Medium · **Created**: 2026-09-09
+> **Status**: ✅ Complete · **Priority**: Medium · **Created**: 2026-09-09
 
 
 ## 产品设计
@@ -42,7 +46,7 @@ depends_on:
 - [x] 后端与数据迁移
 - [x] H5、iOS 与平台运营界面
 - [x] H5 入口修复
-- [ ] 测试、文档、Git 推送及 ECS 部署验收
+- [x] 测试、文档、Git 推送及 ECS 部署验收
 
 
 ## 本地验收
@@ -62,10 +66,8 @@ depends_on:
 
 ## 交付提交与发布状态
 
-- 后端 main：`a402510`；H5 main：`2d686d9`；前端 master（iOS/平台管理）：`21f62db`。本地提交已完成。
-- 远端 fetch 已核实三个分支各只领先一个本次提交，无远端并发变动。
-- 2026-09-09 ECS 只读核验：当前 `/var/www/askxuan/releases/20260909-growth-cd3e3af/public`，营销服务 healthy。该版本尚不包含本次活动功能。
-- 自动审批分别拒绝默认分支推送和 ECS 源码/构建包上传；已向用户请求对具体提交、main/master 分支及 `root@101.96.228.71` 的明确授权。当前尚未推送、上传或部署；本地构建包、SHA-256 和带备份/回滚发布脚本已准备。
-- 发布脚本：后端 `scripts/ops/deploy-free-rewards.sh`。增量迁移、沿用网关签名密钥、保留旧镜像/数据库备份/旧页面目录，仅重启营销服务。发布后须再验证真实登录、草稿隔离、用户入口和线上资源版本。
-
-2026-09-10：用户已明确授权完整合并后台、推送现有分支并在 ECS 构建部署。此前审批阻塞已被本次具体授权覆盖；免费活动随统一后台发布，具体发布结果待线上验收补充。
+- 2026-09-10 已完成四仓库现有分支推送和 ECS 发布。应用构建来源：后端 main `60f7805`、H5 main `2d686d9`、前端 master `7fe154b`（含 iOS 与统一后台）。后续验收脚本提交不改变应用代码。
+- ECS 发布目录 `/var/www/askxuan/releases/20260910-unified-admin-7fe154b/public`；20 个 Go 应用容器均使用本次镜像且 healthy，四个 Web 入口与 ECS 构建产物逐字节一致。
+- 实际平台/信众登录验证通过：16 个管理接口正常；验收草稿 ID=1 创建、修改、取消成功，3 条审计记录保留，未发布且无参与，用户侧不可见、不可直接读取。
+- 线上浏览器验证旧商城入口、五个登录入口、真实平台登录后的 25 个管理页面及 H5 活动/搜索/退出位置。未在生产制造中奖或发货；开奖与完整领奖事务由此前隔离数据库测试证明。
+- 奖品管理已随商城合并进入统一后台，统一入口为 `/admin/`。发布脚本 `scripts/ops/deploy-unified-admin.sh` 保留完整数据库、镜像和旧页面备份；自动回退路径已在源码目录异常时实际触发并恢复，修复后完成发布。
