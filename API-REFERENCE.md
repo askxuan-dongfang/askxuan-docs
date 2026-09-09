@@ -1741,7 +1741,7 @@ DIY `GET /diy/orders`、`GET /diy/orders/:id` 和管理台订单详情新增可�
 
 活动字段：`id/title/kind/prizeName/image/description/rules/prizeValue/budget/pointsCost/prizeQuantity/capacity/startsAt/endsAt/version`。`prizeValue` 与 `budget` 单位为人民币分，均为平台配置，非用户费用或真实付款凭证；预算须覆盖参考价值 × 奖品数量；`pointsCost` 为每人每期整数积分（1–100000000），独立配置且发布后冻结，不从商品价值或预算推算。数量 1–1000，容量介于奖品数与 100000 之间，时间使用 Unix 秒，结束晚于开始和当前时间，跨度不超过 366 天。图片可空，非空须 HTTPS。
 
-`status` 持久化为 draft/published/drawn/cancelled；`phase` 根据服务端时间和参与数返回 draft/scheduled/open/full/awaiting_draw/drawn/cancelled。满额不提前开奖，截止拒绝新用户参与，已参与用户重试始终返回原记录。每 15 秒扫描到期活动，重启自动补偿，行锁与事务防止并发开奖。没有参与者也会生成结束公告。
+`status` 持久化为 draft/published/drawn/cancelled；`phase` 根据服务端时间和参与数返回 draft/scheduled/open/full/exhausted/awaiting_draw/drawn/cancelled。满额不提前开奖，截止拒绝新用户参与，已参与用户重试始终返回原记录。每 15 秒扫描到期活动，重启自动补偿，行锁与事务防止并发开奖。没有参与者也会生成结束公告。
 
 大奖池每人每期一个码；对 N 个有效码以 crypto/rand + 局部 Fisher–Yates 抽取 min(K,N) 个不同中奖码，每码概率 min(K,N)/N。转盘每人每期一次，即时无放回名额抽样，下一位概率 = 剩余奖品 / 剩余名额；页面扇区只表现动画。任何随机源异常均回滚，不降级到伪随机。
 
@@ -1756,3 +1756,5 @@ DIY `GET /diy/orders`、`GET /diy/orders/:id` 和管理台订单详情新增可�
 返回参与记录增加 `pointsSpent`，与积分流水 `referenceNo` 对应同一参与码；流水 `kind` 为 `reward_pool` 或 `reward_wheel`，`event_key=reward:{campaignId}:{userId}` 全局唯一。顾客详情增加 `pointsBalance`。现有 `/api/v1/points` 与 `/points/ledger` 直接反映扣减，无第二套积分账户。
 
 当前部署的营销库和支付库位于同一 MySQL 实例，账户余额、流水、参与码、人数、即时中奖和审计在单一 InnoDB 事务提交。账号行锁与现有兑换、退款共用，避免跨活动超扣；营销账号仅增加 points_account 的 SELECT/UPDATE(balance)、points_ledger 的 SELECT/INSERT 权限，不获得现金或功德权限。跨数据库拆机前必须重新设计此事务边界。增量迁移给历史记录补零，绝不追扣旧积分。
+
+转盘奖品抽完后 phase=exhausted，立即停止新的积分参与，不让用户为零中奖机会扣分；截止时仍生成结束公告。迁移还增加新参与必须匹配正整数积分的数据库触发器，即使回滚旧免费版本也不能漏扣参与，既有历史记录不改写。
