@@ -1,9 +1,9 @@
 # 问玄东方全栈接口文档（面向 5 个端侧客户端）
 
-**文档版本**：2026-09-03
+**文档版本**：2026-09-09
 **网关地址**：`http://localhost:8080`（本地开发）/ `https://api.askxuan.com`（生产）
 **网关模型**：自研 net/http + httputil.ReverseProxy，23 条公开业务路由 + 2 条 IM 路由 + 26 条管理台路由 = 51 条 Prefix；最长前缀匹配，动态服务发现优先、静态 Target 回退
-**接口总数**：318 个唯一运行时 HTTP 契约（由 `.api`、Provider、`routes.go` 与本文档机器对比）
+**接口总数**：339 个唯一运行时 HTTP 契约（由 `.api`、Provider、`routes.go` 与本文档机器对比）
 
 **文档结构**：
 
@@ -1713,3 +1713,40 @@ DIY `GET /diy/orders`、`GET /diy/orders/:id` 和管理台订单详情新增可�
 积分商品列表支持服务端 `keyword` 搜索；管理商品列表支持 `status` 筛选；用户与管理兑换订单支持 `status` 筛选，继续按用户及商城类型隔离。积分规则保持每笔实付满 100 元获得 1 个整数积分，退款按净实付重算。
 
 升级前先执行 `scripts/db/20260908_commerce_fulfillment.sql`，分别在 `askxuan_order`、`askxuan_diy` 创建履约补充表，脚本可重复执行。DIY 运行配置新增 `AuthSecret`，应与网关 access JWT 签名配置一致；保留生产数据库与消息配置。重建 order/diy/payment 三服务，发布 H5、商城管理台和平台总管理台；iOS 需重新构建安装。
+
+
+## 平台免费转盘、大奖池与实物履约（2026-09-09）
+
+所有接口使用 access JWT；用户路由仅 customer，运营路由仅 platform_super，网关和营销服务分别校验。客户端提交 X-User-Id 不可替代 JWT；公开中奖结果不包含用户身份与地址。返回统一 `{code,message,data}`。
+
+| 方法 | 路径 | 行为 |
+| --- | --- | --- |
+| GET | `/api/v1/marketing/rewards/campaigns` | 活动列表，page 从 1 开始，固定每页 20；kind=pool/wheel |
+| GET | `/api/v1/marketing/rewards/campaigns/:id` | 详情、本人参与码 mine 与公开中奖码 winners |
+| GET | `/api/v1/marketing/rewards/orders` | 奖品订单，用户仅本人；支持 page/status |
+| POST | `/api/v1/marketing/rewards/campaigns/:id/join` | 免费参与，重试返回原码与原结果 |
+| GET | `/api/v1/marketing/rewards/entries` | 本人参与记录，page |
+| POST | `/api/v1/marketing/rewards/orders/:id/claim` | 本人提交 receiver/mobile/address |
+| POST | `/api/v1/marketing/rewards/orders/:id/complete` | 本人确认收货，幂等 |
+| GET | `/api/v1/admin/marketing/rewards/campaigns` | 活动列表，page 从 1 开始，固定每页 20；kind=pool/wheel |
+| GET | `/api/v1/admin/marketing/rewards/campaigns/:id` | 详情、本人参与码 mine 与公开中奖码 winners |
+| GET | `/api/v1/admin/marketing/rewards/orders` | 奖品订单，用户仅本人；支持 page/status |
+| POST | `/api/v1/admin/marketing/rewards/campaigns` | 新建草稿 |
+| PUT | `/api/v1/admin/marketing/rewards/campaigns/:id` | 仅草稿编辑，携带 version |
+| POST | `/api/v1/admin/marketing/rewards/campaigns/:id/publish` | 校验预算与时间，发布后冻结规则 |
+| POST | `/api/v1/admin/marketing/rewards/campaigns/:id/cancel` | 仅无参与时允许，body.reason 必填 |
+| POST | `/api/v1/admin/marketing/rewards/campaigns/:id/draw` | 仅到期后补偿开奖，重复调用不重复发奖 |
+| GET | `/api/v1/admin/marketing/rewards/campaigns/:id/audit` | 操作审计，page |
+| POST | `/api/v1/admin/marketing/rewards/orders/:id/ship` | 平台填写 carrier/trackingNo，幂等 |
+
+活动字段：`id/title/kind/prizeName/image/description/rules/prizeValue/budget/prizeQuantity/capacity/startsAt/endsAt/version`。`prizeValue` 与 `budget` 单位为人民币分，均为平台配置，非用户费用或真实付款凭证；预算须覆盖参考价值 × 奖品数量；参与费恒为 0。数量 1–1000，容量介于奖品数与 100000 之间，时间使用 Unix 秒，结束晚于开始和当前时间，跨度不超过 366 天。图片可空，非空须 HTTPS。
+
+`status` 持久化为 draft/published/drawn/cancelled；`phase` 根据服务端时间和参与数返回 draft/scheduled/open/full/awaiting_draw/drawn/cancelled。满额不提前开奖，截止拒绝新用户参与，已参与用户重试始终返回原记录。每 15 秒扫描到期活动，重启自动补偿，行锁与事务防止并发开奖。没有参与者也会生成结束公告。
+
+大奖池每人每期一个码；对 N 个有效码以 crypto/rand + 局部 Fisher–Yates 抽取 min(K,N) 个不同中奖码，每码概率 min(K,N)/N。转盘每人每期一次，即时无放回名额抽样，下一位概率 = 剩余奖品 / 剩余名额；页面扇区只表现动画。任何随机源异常均回滚，不降级到伪随机。
+
+参与码 `WX{活动ID至少8位}-{序号至少6位}`，用户与期号有唯一键。结果 pending/won/lost；奖品订单与参与 ID 一对一。`poolDigest` 为按参与 ID 升序排列的码、每码以 LF 结尾后计算的 SHA-256；保留 algorithm、drawnAt、announcement、中奖码及操作审计。此摘要用于留档比对，不代表第三方公证或外部可验证随机。
+
+实物订单独立于现金和积分订单：awaiting_address → pending → shipped → completed；收货信息与运单提交后不可覆盖，完全相同重试幂等。记录 createdAt/claimedAt/shippedAt/completedAt。取消活动仅限无人参与且未结束；取消原因保留，不删除参与和履约历史。
+
+部署先执行 `scripts/db/20260909_free_rewards.sql`（可重复，新库已同步 init.sql），为营销服务配置与网关一致的 `Auth.AccessSecret`，定向重建营销服务，发布 H5 和平台管理端。路径沿用现有网关 marketing 前缀，无需新增代理前缀。界面入口：H5 `/c/rewards`，平台 `/admin/marketing/rewards`；iOS 使用同一套接口。
