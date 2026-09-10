@@ -4,12 +4,16 @@ created: '2026-09-10'
 tags: []
 priority: medium
 created_at: '2026-09-10T02:52:26.343Z'
-updated_at: '2026-09-10T03:29:49.060Z'
+updated_at: '2026-09-10T04:15:11.339Z'
 transitions:
   - status: in-progress
     at: '2026-09-10T02:52:27.057Z'
   - status: complete
     at: '2026-09-10T03:29:49.060Z'
+  - status: in-progress
+    at: '2026-09-10T04:12:19.775Z'
+  - status: complete
+    at: '2026-09-10T04:15:11.339Z'
 depends_on:
   - 011-wheel-page-focus
   - 008-points-reward-participation
@@ -67,3 +71,10 @@ completed: '2026-09-10'
 - 本轮改变 H5/iOS 源码及运营配置；Go 应用与统一后台沿用已部署版本。ECS 记录保留继承的 backend `5b09a46` / frontend `c3a4617`，H5 更新为 `13a35fc`；iOS 源码推送 `0dd4ee6`，不是设备安装状态。
 - 静态备份：`/opt/askxuan/backups/20260910-points-live-13a35fc/previous-public`。如需回退静态页面，原子恢复该目录；已发布的真实活动与真实参与记录不随页面回退删除。规则发布后冻结，有参与后不得取消活动。
 - 商城当前没有已确认的正式兑换库存，显示真实空态；已批准的 20+1 份实物用于这两期活动，不重复分配到商城。
+
+
+## 积分首页入口精简补充
+
+按用户浏览器批注，H5 积分首页删除活动卡片下方的“参与记录 → / 我的奖品 →”一行快捷入口，iOS 积分首页同步移除对应入口。积分首页活动区仅保留转盘、大奖池两个分类；参与记录和奖品管理仍可在活动中心访问。
+
+本次精简已完成：H5 `78a8cd1`、iOS `db4929e` 已推送，两端构建通过；ECS 发布 `20260910-points-entry-cleanup-78a8cd1`，在线浏览器重新加载后确认积分首页已无这行快捷入口。
