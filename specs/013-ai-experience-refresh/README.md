@@ -4,12 +4,16 @@ created: '2026-09-10'
 tags: []
 priority: medium
 created_at: '2026-09-10T04:30:46.490Z'
-updated_at: '2026-09-10T05:45:36.073Z'
+updated_at: '2026-09-10T06:13:53.708Z'
 transitions:
   - status: in-progress
     at: '2026-09-10T04:30:46.765Z'
   - status: complete
     at: '2026-09-10T05:45:36.073Z'
+  - status: in-progress
+    at: '2026-09-10T05:56:25.454Z'
+  - status: complete
+    at: '2026-09-10T06:13:53.708Z'
 depends_on:
   - 005-ai-topic-reports
 completed_at: '2026-09-10T05:45:36.073Z'
@@ -34,6 +38,9 @@ completed: '2026-09-10'
 - 删除报告追问会话保留已购报告；再次从报告追问时，事务创建新的会话而非恢复已删除会话。
 
 ## 七专题设计
+
+H5 统一使用 C 端既有的深棕背景、暖金强调和朱砂主按钮。专题页复用全局设计变量、48px 导航、768px 最大页面宽度与响应式边距；表单、阅读卡片、生成状态、报告列表及确认弹窗保持同一套表面层级、字体和控件样式。七个专题通过图形与少量装饰色区分，交互按钮和内容标题使用统一品牌色，避免进入专题时像切换到另一个产品。
+
 
 | 专题 | 视觉主题 | 问题引导方向 |
 | --- | --- | --- |
@@ -82,4 +89,14 @@ completed: '2026-09-10'
 - 回滚：AI 使用 `/opt/askxuan/backups/20260910-ai-experience-909e6f2/compose.rollback.json` 与 `ai-source-before.tar.gz`；H5 使用 `/opt/askxuan/backups/20260910-ai-experience-cdf614e/previous-public` 中的原静态路径。
 - H5 7 项 Playwright 测试通过，包含删除后迟到响应不会重现消息、真实动画变化及减少动画设置。
 
-视觉验收留档：H5 [问题引导](../../docs/assets/ai-experience/h5-question.png)、[七专题示例](../../docs/assets/ai-experience/h5-topic-tarot.png)；iOS [七专题组件](../../docs/assets/ai-experience/ios-topics.png)。截图使用隔离夹具，不作为真实模型回答质量证明。
+视觉验收留档：H5 统一主题后 [问题引导](../../docs/assets/ai-experience/h5-question.png)、[七专题示例](../../docs/assets/ai-experience/h5-topic-tarot.png)；iOS 保留上一版原生验收 [七专题组件](../../docs/assets/ai-experience/ios-topics.png)。截图使用隔离夹具，不作为真实模型回答质量证明。
+
+
+## H5 视觉统一修正（2026-09-10）
+
+- 原浅色专题页与 C 端深色主界面不协调，现按上述统一样式修正；保留七专题动效、两步引导、阅读和购买功能。入口卡片撑满内容区，光晕峰值降低到 12%，报告日期按本地时间格式显示。
+- H5 `main`：`359a52b`（包含 `fc4776c` 主题统一）。本地 TypeScript/Vite 构建及现有 7 项 Playwright 回归全部通过，覆盖 320～768 宽度、七专题、实际动画变化、减少动画、购买、阅读和会话删除。
+- 本次仅发布 H5，后端与 iOS 沿用上面的已发布/已构建版本；无新增业务接口或数据迁移。
+- ECS 静态发布：`20260910-ai-theme-359a52b`；已核对活动软链接、release.txt、网关健康与公网 H5 HTTP 200，其他服务版本和后台静态资源继承上一发布。
+- 线上浏览器核对问事入口、专题表单、报告列表和返回导航；入口填满内容宽度、深色样式生效、日期格式可读。验收未提交生成、扣分购买或删除原有会话。
+- H5 回滚目标记录于 `/opt/askxuan/backups/20260910-ai-theme-359a52b/previous-public`；修正前的版本记录仍保留在 `/opt/askxuan/backups/20260910-ai-theme-fc4776c/previous-public`。
