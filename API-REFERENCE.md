@@ -162,6 +162,10 @@
 | POST | `/api/v1/diy/designs` | ios-customer ✓ | `userId`, `name`, `designData`(v1/v2 JSON 字符串), `totalPrice`(展示预估), `status`, `blessServiceCode`(opt) | Bearer | 保存设计，响应 `{id}`；不锁库存 |
 | GET | `/api/v1/diy/designs/:id` | ios-customer ✓ | — | 无 | 设计详情 |
 | POST | `/api/v1/diy/designs/:id/order` | ios-customer ✓ | `userId`, `blessServiceCode`(opt), `addressId` | Bearer | 服务端按材料/SKU重定价并创建订单，返回最终金额、明细、`paymentStatus`和快照 |
+| POST | `/api/v1/diy/designs/:id/copy` | ios-customer / H5 | — | Bearer customer | 将可见作品复制为当前用户的独立草稿 |
+| PUT | `/api/v1/diy/designs/:id/status` | ios-customer / H5 | `revision`, `status` | Bearer customer | 作者更新自己作品的发布状态；发布进入审核 |
+| GET | `/api/v1/admin/diy/designs` | 平台管理台 | `page`, `size`, `status`, `keyword` | Bearer + DIY 管理权限 | 设计作品审核列表 |
+| PUT | `/api/v1/admin/diy/designs/:id/status` | 平台管理台 | `revision`, `status` | Bearer + DIY 管理权限 | 审核通过或驳回作品 |
 | GET | `/api/v1/diy/materials` | ios-customer ✓ | `category`(opt), `page`, `size` | 无 | 仅返回已上架材料；下架记录不计入 C 端分页总数 |
 | GET | `/api/v1/diy/blessing-services` | ios-customer ✓ | `page`, `size` | 无 | 可选加持服务列表 |
 | POST | `/api/v1/diy/orders` | ios-customer ✓ | `userId`, `designId`, `items`, `blessServiceCode`(opt), `addressId` | Bearer | 创建 DIY 订单 |
