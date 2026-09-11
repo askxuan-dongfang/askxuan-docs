@@ -1,6 +1,6 @@
 # 问玄东方全栈接口文档（面向 5 个端侧客户端）
 
-**文档版本**：2026-09-09
+**文档版本**：2026-09-11
 **网关地址**：`http://localhost:8080`（本地开发）/ `https://api.askxuan.com`（生产）
 **网关模型**：自研 net/http + httputil.ReverseProxy，23 条公开业务路由 + 2 条 IM 路由 + 26 条管理台路由 = 51 条 Prefix；最长前缀匹配，动态服务发现优先、静态 Target 回退
 **接口总数**：339 个唯一运行时 HTTP 契约（由 `.api`、Provider、`routes.go` 与本文档机器对比）
@@ -276,7 +276,7 @@
 
 | 方法 | 路径 | 客户端调用 | 请求字段 | 鉴权 | 说明 |
 |------|------|-----------|---------|------|------|
-| GET | `/api/v1/marketing/banners` | — | `status`(opt), `page`, `size` | 无 | Banner 列表 |
+| GET | `/api/v1/marketing/banners` | — | `placement`(opt), `page`, `size` | 无 | Banner 列表 |
 | GET | `/api/v1/marketing/recommends` | — | `type`(opt), `status`(opt), `page`, `size` | 无 | 推荐位 |
 | GET | `/api/v1/marketing/activities` | — | `status`(opt), `type`(opt), `page`, `size` | 无 | 活动列表 |
 | GET | `/api/v1/marketing/coupons` | — | `status`(opt), `type`(opt), `page`, `size` | 无 | 优惠券列表 |
@@ -1336,7 +1336,7 @@
 
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 客户端调用 | 说明 |
 |------|------|---------|---------|------|-----------|------|
-| GET | `/api/v1/marketing/banners` | customerBannerList | `status`(opt), `page`, `size` | 无 | — | Banner 列表 |
+| GET | `/api/v1/marketing/banners` | customerBannerList | `placement`(opt), `page`, `size` | 无 | — | Banner 列表 |
 | GET | `/api/v1/marketing/recommends` | customerRecommendList | `type`(opt), `status`(opt), `page`, `size` | 无 | — | 推荐位 |
 | GET | `/api/v1/marketing/activities` | customerActivityList | `status`(opt), `type`(opt), `page`, `size` | 无 | — | 活动列表 |
 | GET | `/api/v1/marketing/coupons` | customerCouponList | `status`(opt), `type`(opt), `page`, `size` | 无 | — | 优惠券列表 |
@@ -1762,3 +1762,17 @@ DIY `GET /diy/orders`、`GET /diy/orders/:id` 和管理台订单详情新增可�
 当前部署的营销库和支付库位于同一 MySQL 实例，账户余额、流水、参与码、人数、即时中奖和审计在单一 InnoDB 事务提交。账号行锁与现有兑换、退款共用，避免跨活动超扣；营销账号仅增加 points_account 的 SELECT/UPDATE(balance)、points_ledger 的 SELECT/INSERT 权限，不获得现金或功德权限。跨数据库拆机前必须重新设计此事务边界。增量迁移给历史记录补零，绝不追扣旧积分。
 
 转盘奖品抽完后 phase=exhausted，立即停止新的积分参与，不让用户为零中奖机会扣分；截止时仍生成结束公告。迁移还增加新参与必须匹配正整数积分的数据库触发器，即使回滚旧免费版本也不能漏扣参与，既有历史记录不改写。
+
+
+## 2026-09-11：首页活动与广告发布补充
+
+- 管理入口：平台后台 → 增长运营 → 首页活动与广告。展示位置固定为 `customer_home`。
+- `POST /api/v1/admin/marketing/banners`：必填 `title`；`placement` 默认 `customer_home`，图片、跳转、排序及起止时间可选；新建一律为 `draft`。
+- `PUT /api/v1/admin/marketing/banners/:id`：所有正文属性为可选部分更新，支持 `title/placement/imageUrl/linkType/linkValue/sort/status/startTime/endTime`。未提交字段保留；显式 `sort:0` 有效，时间传空字符串可清除。状态支持 `draft/enabled/disabled`。
+- 上架要求有效图片与目标、正确的北京时间投放区间。后台先保存草稿，再预览确认图片可加载后上架；编辑已上架内容保存回草稿，需再次上架。
+- `GET /api/v1/marketing/banners`：公开接口固定过滤已上架、有效期内的数据；状态、位置与日期过滤发生在分页之前。无有效内容时 H5 隐藏整个轮播区域。
+- 新增 `GET /api/v1/marketing/activities/:id`：仅公开上架且有效期内的营销活动，其他状态或不存在返回不可用。H5 路由 `/c/activities/:id` 展示活动介绍和投放时间。
+- 广告跳转类型：`temple/master/product/service/activity/reward` 对应实体编号，`ai/diy` 不需要编号，`ad_landing` 仅接受已实现的站内功能路径。图片接受站内绝对路径或 HTTPS URL。
+- 大师分类统一使用 `daoism`，公开查询兼容旧 `taoism` 参数与历史数据。保留在架 W001–W004 和原有下架 W005；新增 W006 明觉居士（演示，藏传佛教）、W007 守礼先生（演示，民间信仰）。
+
+本次只接通 H5 首页广告；iOS 本次同步大师类别文案。数据库执行记录见规格 023 与发布记录，不能把 CI 契约基线理解为全量 SQL 执行记录。
