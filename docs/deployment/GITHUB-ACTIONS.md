@@ -12,7 +12,7 @@
 
 流程：GitHub checkout 精确提交 → 严格检查 → GitHub Runner 编译 → 带 SHA256 清单的短期 artifact → production 环境 → 受限 SSH 上传 → ECS 全局发布锁 → 校验提交祖先/文件完整性 → 切换容器或静态目录 → 健康检查，失败回滚。
 
-ECS 不执行 git fetch/pull，也不接收开发电脑的未提交源码。Go 二进制和前端 dist 都在 GitHub 编译。ECS 只为二进制添加固定运行镜像层并启动容器；生产配置、数据库和卷维持原位置。
+ECS 不执行 git fetch/pull，也不接收开发电脑的未提交源码。Go 二进制和前端 dist 都在 GitHub 编译。ECS 只为二进制添加固定运行镜像层并启动容器；生产配置、数据库和卷维持原位置。`/opt/askxuan/backend` 中的历史源码不再作为发布输入；当前版本以 `/opt/askxuan/ci/state.json` 为准，旧 runtime/release.txt 只用于历史追溯。
 
 H5 是独立私有仓库且禁止 Deploy Key。管理端不读取私有 H5 源码。H5 自己的工作流读取公开 frontend/master 的共享包，发布清单记录两个仓库的确切 SHA；共享包单独变更后执行：
 
@@ -58,3 +58,7 @@ H5 是独立私有仓库且禁止 Deploy Key。管理端不读取私有 H5 源�
 该命令共用发布锁，只允许回滚最后一次全局发布，避免覆盖之后其他仓库的成果。重跑流水线前恢复变量。若 `transaction.json` 停留在 preparing/switching 阶段（例如进程被强制终止），后续发布会暂停；先检查日志、容器和 previous_public，完成恢复并核对状态，不能直接删除事务记录。
 
 旧人工部署脚本保留用于专项迁移和救援。使用这些脚本前暂停自动发布，执行时持有同一个 publish.lock，完成后核对 CI 组件状态；日常代码发布统一走 Actions。
+
+## 首次接管修正记录
+
+2026-09-11 首次后端接管时，Compose 对复制自容器的 `${BINARY}` 命令进行了提前插值，导致服务启动失败。已恢复原镜像和配置，随后在接收器提交 `679da48` 中对 Compose 字符串统一转义美元符号；真实 ECS Compose 容器往返验证和对应回归测试均通过。不要安装更早版本的服务器接收器。前端固定引用的后端工具提交仅用于构建与 SSH 客户端，不负责安装接收器。
