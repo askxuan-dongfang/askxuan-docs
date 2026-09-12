@@ -1,4 +1,4 @@
-# GitHub Actions 与 ECS 发布
+# 0.0.1 GitHub Actions 与 ECS 发布
 
 ## 日常开发
 
@@ -12,7 +12,7 @@
 
 流程：GitHub checkout 精确提交 → 严格检查 → GitHub Runner 编译 → 带 SHA256 清单的短期 artifact → production 环境 → 受限 SSH 上传 → ECS 全局发布锁 → 校验提交祖先/文件完整性 → 切换容器或静态目录 → 健康检查，失败回滚。
 
-ECS 不执行 git fetch/pull，也不接收开发电脑的未提交源码。Go 二进制和前端 dist 都在 GitHub 编译。ECS 只为二进制添加固定运行镜像层并启动容器；生产配置、数据库和卷维持原位置。`/opt/askxuan/backend` 中的历史源码不再作为发布输入；当前版本以 `/opt/askxuan/ci/state.json` 为准，旧 runtime/release.txt 只用于历史追溯。
+ECS 不执行 git fetch/pull，也不接收开发电脑的未提交源码。Go 二进制和前端 dist 都在 GitHub 编译。ECS 只为二进制添加固定运行镜像层并启动容器；生产配置、数据库和卷维持原位置。当前组件版本以 `/opt/askxuan/ci/state.json` 和相应发布 manifest 为准；服务器运行配置目录不作为源码发布输入。
 
 H5 是独立私有仓库且禁止 Deploy Key。管理端不读取私有 H5 源码。H5 自己的工作流读取公开 frontend/master 的共享包，发布清单记录两个仓库的确切 SHA；共享包单独变更后执行：
 
@@ -57,17 +57,16 @@ H5 是独立私有仓库且禁止 Deploy Key。管理端不读取私有 H5 源�
 
 该命令共用发布锁，只允许回滚最后一次全局发布，避免覆盖之后其他仓库的成果。重跑流水线前恢复变量。若 `transaction.json` 停留在 preparing/switching 阶段（例如进程被强制终止），后续发布会暂停；先检查日志、容器和 previous_public，完成恢复并核对状态，不能直接删除事务记录。
 
-旧人工部署脚本保留用于专项迁移和救援。使用这些脚本前暂停自动发布，执行时持有同一个 publish.lock，完成后核对 CI 组件状态；日常代码发布统一走 Actions。
+专项运维脚本用于迁移和恢复。使用这些脚本前暂停自动发布，执行时持有同一个 publish.lock，完成后核对 CI 组件状态；日常代码发布统一走 Actions。
 
-## 首次接管修正记录
+## 上传缓慢时中转原始 CI 产物
 
-2026-09-11 首次后端接管时，Compose 对复制自容器的 `${BINARY}` 命令进行了提前插值，导致服务启动失败。已恢复原镜像和配置，随后在接收器提交 `679da48` 中对 Compose 字符串统一转义美元符号；真实 ECS Compose 容器往返验证和对应回归测试均通过。不要安装更早版本的服务器接收器。前端固定引用的后端工具提交仅用于构建与 SSH 客户端，不负责安装接收器。
+先确认具体 build/tests 已成功、对应部署是否仍活跃及 ECS incoming 接收状态。确需中转时，停止该次自动上传并确认 CI 进入最终状态，再检查目标没有活跃接收器或未完成事务。使用 `gh run download` 下载**同一次运行与 attempt** 的 `ecs-release`，核对来源 SHA、scope、manifest 及每个文件 SHA256，然后经现有受限 SSH 接收器补发。不能从未提交本地源码重编译替代原包，也不能绕过发布锁、祖先校验、配置契约、哈希和健康检查。
 
+CI build/tests、最终 workflow 状态与实际 receiver 回执分别记录。若自动上传被取消、原包随后发布成功，必须保留 cancelled 与 deployed 两个真实结果，不写成 CI 全绿。该流程是有明确操作人的故障恢复方式，不是自动重试部署授权。
 
-## 2026-09-13 品牌发布与清单类型修正记录
+## Web manifest 与缓存配置
 
-Web `ci-web-34706515528-1-8df155727224`、H5 `ci-h5-34706677301-1-9e3a8457144c` 已由既有接收器发布；GitHub 构建和测试通过，自动上传因连接慢被取消。经校验转送的是同次 CI 原始包，实际 deployed 回执不将 workflow 的 cancelled 改写为 success。
+H5 的 `/manifest.webmanifest` 和 `/master.webmanifest` 应返回 `application/manifest+json`。源配置位于后端 `deploy/nginx/h5-html-cache.conf`，维护脚本为 `scripts/ops/refresh-h5-html-cache.sh`。应用前核对站点 root 和实际 include，备份线上配置；脚本执行 `nginx -t` 后 reload，失败恢复备份。配置变更与业务容器发布分别记录。
 
-发布后发现两角色 webmanifest 的 MIME 不正确，已在独立后端分支提交 `2c3c95c149c1f5c48bcdfcd34e8b498aae9ab0c0`，通过既有 `scripts/ops/refresh-h5-html-cache.sh` 备份、配置测试和 reload 应用；没有重发业务服务。两条精确 manifest location 返回 `application/manifest+json` 并禁止旧缓存。备份为 `/opt/askxuan/backups/20260913-brand-manifests-2c3c95c`。
-
-该次验收时[草稿 PR #1](https://github.com/askxuan-dongfang/askxuan-backend/pull/1)尚未合并；后续重装 Nginx 前必须核对实际合并状态和配置来源，不能假定 backend/main 已含修复。细分验证与限制见[产品与文档核验](../reports/2026-09-13-产品与文档核验.md)。本地清理保留原始发布包/回执，ECS 历史运行源码与本地副本不是互相替代的部署凭据。
+发布后同时检查状态码、响应 MIME、内容哈希、图片/字体解码及浏览器实际显示；仅返回 HTTP 200 不算静态资源验收。产品版本 0.0.1 与实际 Git SHA/部署来源见当前发布清单，不能由文档标题推断服务器已经更新。

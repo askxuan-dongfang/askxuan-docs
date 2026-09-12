@@ -3,7 +3,7 @@
 
 Requires reportlab, Pillow and pdftoppm. Example:
   python3 scripts/build-handbook-plates.py --frontend ../askXuan-frontend \
-    --screenshots /path/to/product-handbooks-20260913/assets
+    --screenshots /path/to/current-public-screenshots
 Only six PNG diagrams and optional byte-identical JPEG screenshot copies are
 delivered. Intermediate PDFs live in an automatically removed temporary folder.
 """
@@ -22,7 +22,7 @@ from reportlab.pdfgen import canvas
 
 W, H = 1400, 950
 PAPER, INK, MUTED, GOLD, LINE = '#F6F3EC', '#253E36', '#66736C', '#84673D', '#D5D9CE'
-CURRENT = '依据 frontend 8df1557 / H5 9e3a845 · 2026-09-13'
+CURRENT = '问玄东方 0.0.1 · 当前设计规范'
 
 
 class Plate:
@@ -231,7 +231,7 @@ def plate_order(path,tokens,frontend):
     p=Plate(path,'06 / DIY ORDERS','订单摘要与成交明细分层','合成演示数据，不对应真实订单；只说明当前卡片层次与金额语义。')
     p.rect(56,191,618,659,'#FFFDF8',18,LINE)
     p.rect(705,191,639,659,'#FFFDF8',18,LINE)
-    p.text('订单 DEMO-20260913-001',82,220,19,MUTED)
+    p.text('订单 DEMO-001',82,220,19,MUTED)
     p.rect(533,213,115,33,'#EFEDE3',16);p.text('待发货',558,221,19,GOLD)
     p.line(82,265,648,265)
     p.image(frontend/'packages/brand/assets/logo-atelier-light.png',80,292,106,106)
@@ -267,7 +267,7 @@ def main():
     args=parser.parse_args()
     frontend=args.frontend.resolve()
     docs=Path(__file__).resolve().parents[1]
-    output=docs/'docs/assets/handbooks-20260913'
+    output=docs/'docs/assets/0.0.1'
     output.mkdir(parents=True,exist_ok=True)
     pdfmetrics.registerFont(TTFont('Brand',str(frontend/'packages/design-tokens/fonts/AskXuanSerif-Semibold.ttf')))
     pdfmetrics.registerFont(TTFont('Body','/System/Library/Fonts/Supplemental/Arial Unicode.ttf'))
@@ -285,16 +285,25 @@ def main():
             print(f'{name}.png: {W}x{H}')
     if args.screenshots:
         # Temple navigation crops include account/business content: retain only
-        # their original audit evidence, never copy them into the handbook.
+        # public handbook, never copy account data into it.
         names=[f'{base}-{theme}' for base in ['h5-home','h5-diy','h5-materials','admin-login'] for theme in ['light','dark']]+['h5-master-login-light']
         for name in names:
-            source=args.screenshots/(name+'.png')
+            source=args.screenshots/(name+'.jpg')
             with Image.open(source) as im:
                 if im.format!='JPEG': raise ValueError(f'Expected original JPEG bytes: {source}')
             destination=output/(name+'.jpg')
-            shutil.copyfile(source,destination)
+            if source.resolve()!=destination.resolve():
+                shutil.copyfile(source,destination)
             assert destination.read_bytes()==source.read_bytes()
             print(f'{name}.jpg: byte-identical screenshot copy')
+
+    import hashlib
+    manifest=[]
+    for asset in sorted(output.iterdir()):
+        if asset.suffix.lower() not in ['.png','.jpg']: continue
+        with Image.open(asset) as image:
+            manifest.append({'file':asset.name,'format':image.format,'size':list(image.size),'sha256':hashlib.sha256(asset.read_bytes()).hexdigest()})
+    (output/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
 
 
 if __name__=='__main__':

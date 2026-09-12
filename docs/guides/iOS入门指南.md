@@ -1,5 +1,7 @@
 # 问玄东方 iOS 开发入门指南
 
+产品版本：**0.0.1**。技术示例用于学习，当前工程入口与限制见末章。
+
 > **面向读者**：从未接触过 iOS 开发的零基础工程师，目标是上手为「问玄东方」项目开发两款 iOS App：
 > - **C 端信众 App**（P01）：21 个页面，5 Tab 导航（首页 / 对话 / AI 问事 / 商城 / 我的）
 > - **法师工作台 App**（P03）：16 个页面，供法师接单、管理预约、查看收入
@@ -23,7 +25,7 @@
 9. [创建第一个页面实战](#9-创建第一个页面实战)
 10. [调试技巧](#10-调试技巧)
 11. [推荐学习资源](#11-推荐学习资源)
-12. [问玄东方项目开发路线图](#12-问玄东方项目开发路线图)
+12. [0.0.1 开发与验收入口](#12-001-开发与验收入口)
 
 ---
 
@@ -2494,114 +2496,13 @@ logger.error("加载失败：\(error.localizedDescription, privacy: .public)")
 
 ---
 
-## 12. 问玄东方项目开发路线图
+## 12. 0.0.1 开发与验收入口
 
-依据 `.trae/specs/scaffold-dongfang-fullstack/tasks.md`，C 端 App 的 iOS 开发分五步走。**强烈建议先通读本指南 + 跟着 100 Days of SwiftUI 做 30 天再开始第 1 步**。
+产品已具备 H5 两角色、两套原生 iOS 与统一运营/寺院管理能力，不再按从零搭建的阶段划分当前进度。教程示例用于解释技术概念，运行命令与依赖以对应源码 README、锁文件和构建脚本为准。
 
-### 第一步：跑通首页（Task 21）
+- [产品现状与能力边界](../product/产品现状与能力边界.md)：已实现功能、端差异和未验收项。
+- [当前需求](../../specs/README.md)：产品基线工作与仍进行中的聊天需求。
+- [本地目录与维护](本地项目目录与维护.md)：独立仓库、构建和文档检查。
+- [API Reference](../../API-REFERENCE.md)：当前业务契约。
 
-**目标**：完成首页（`home`），用户能看到 Banner、入口卡片、热门寺院/师傅横向滚动。
-
-**对应 Task**：`Task 21: 实现首页（home）`
-- SubTask 21.1：Banner 轮播（3 张广告图，自动播放 + 手势滑动）
-- SubTask 21.2：找寺院 / 找师傅双入口卡片
-- SubTask 21.3：热门服务 4x2 网格（DIY/祈福/供灯/上香/还愿/超度/开光/化太岁）
-- SubTask 21.4：热门寺院横向滚动
-- SubTask 21.5：热门师傅横向滚动
-- SubTask 21.6：接入 ViewModel 调用 `/temples`、`/masters` 接口
-- SubTask 21.7：视觉与 `问玄东方App/pages/home.html` 像素级对齐
-
-**前置依赖**：Task 18（工程初始化）+ Task 19（组件库）+ Task 20（网络层）必须先完成。
-
-**关键技能点**：ScrollView 横向滚动、LazyVGrid 网格、TabView 轮播、APIClient 调用。
-
-### 第二步：寺院列表与详情页（Task 22）
-
-**目标**：用户能浏览 6 座寺院、点击进入详情页。
-
-**对应 Task**：`Task 22: 实现寺院模块（temple-list + temple-detail）`
-- SubTask 22.1：`temple-list`：教派标签横滑 + 左侧地域筛选 + 寺院卡片列表
-- SubTask 22.2：`temple-detail`：Hero 大图 + 4 Tab（基础信息 / 公共服务 / 大师团队 / 文创）
-- SubTask 22.3：接入 `/temples`、`/temples/{id}` 接口
-- SubTask 22.4：卡片点击跳转、返回导航
-
-**关键技能点**：NavigationStack value-based 导航、Tab 切换、Hero 大图布局。
-
-> **本文档第 9 章已经演示了「寺院列表页」的完整实现**，可作为本步的起点。
-
-### 第三步：师傅列表与主页（Task 23）
-
-**目标**：用户能浏览法师列表、查看法师主页。
-
-**对应 Task**：`Task 23: 实现师傅模块（master-list + master-profile）`
-- SubTask 23.1：`master-list`：教派分类标签 + 4 维筛选（寺院 / 职位 / 宗派 / 价格）+ 师傅卡片列表
-- SubTask 23.2：`master-profile`：背景区 + 5 Tab（资质 / 预约 / 文创 / 视频 / 咨询）+ “立即咨询 / 预约服务”双入口；即时咨询按法师权威报价独立付费，不要求先预约服务
-- SubTask 23.3：接入 `/masters`、`/masters/{id}` 接口
-
-**关键技能点**：复杂筛选状态管理、ZStack 背景层、底部固定操作栏。
-
-### 第四步：预约下单流程（Task 24 + Task 25）
-
-**目标**：打通「寺院 / 师傅 → 选服务 → 选日期时段 → 提交预约」核心闭环。
-
-**对应 Task**：
-- `Task 24: 实现预约下单模块（booking）`
-  - SubTask 24.1：服务摘要卡 + 服务项单选 + 日期时段选择 + 备注输入
-  - SubTask 24.2：价格汇总（服务费 + 随喜功德 + 合计）
-  - SubTask 24.3：底部「确认预约并支付」朱砂按钮
-  - SubTask 24.4：接入 `POST /bookings` 提交预约
-  - SubTask 24.5：预约成功页与状态反馈
-- `Task 25: 实现 Tab 容器与导航拓扑`
-  - SubTask 25.1：5 Tab 容器（首页 / 对话 / AI 问事 / 商城 / 我的）
-  - SubTask 25.2：NavigationStack 路由管理
-  - SubTask 25.3：`home → temple-list → temple-detail → booking` 链路
-  - SubTask 25.4：`home → master-list → master-profile → booking` 链路
-  - SubTask 25.5：`home → ad-landing` 独立返回分支
-  - SubTask 25.6：底部 Dock 只在五个 Tab 根页面显示；进入二级及更深页面后隐藏，使用系统返回按钮和屏幕边缘返回手势
-
-**关键技能点**：多步表单状态管理、POST 请求、TabView + NavigationStack 嵌套、路由管理。
-
-> 至此 **MVP-1 核心闭环完成**：用户可浏览寺院 / 师傅并提交预约。下一步可与后端联调（Task 42）。
-
-### 第五步：补齐其他模块（Task 26-31）
-
-| Task | 模块 | 阶段 |
-| --- | --- | --- |
-| Task 26 | AI 问事（ai-divination） | MVP-2 |
-| Task 27 | DIY 手串（diy-bracelet / diy-design / diy-order） | 二期 |
-| Task 28 | 7 种服务列表页（service-*） | MVP-2 |
-| Task 29 | 对话（chat） | MVP-2 |
-| Task 30 | 商城（shop） | 二期 |
-| Task 31 | 我的（profile） | MVP-2 |
-
-法师工作台 App（P03）见 `Task 32-36`，复用 C 端设计系统组件库与网络层，可独立成另一条开发线。
-法师端同样只在工作台、预约、消息、我的四个根页面显示 Dock；预约详情、对话和其他二级页面隐藏 Dock。
-
-### 路线图小结
-
-```
-Task 18 (工程初始化)
-    ↓
-Task 19 (组件库)  ←─── 复用 Design Token
-    ↓
-Task 20 (网络层)
-    ↓
-Task 21 (首页)  ──→  Task 22 (寺院)  ──→  Task 23 (师傅)  ──→  Task 24 (预约)  ──→  Task 25 (导航拓扑)
-    │                                                                                       │
-    └───────────────────────────────── MVP-1 闭环 ─────────────────────────────────────────┘
-                                                                                             ↓
-                                                                              Task 26-31 (补齐其他模块)
-                                                                                             ↓
-                                                                              Task 42 (联调) → Task 43/44 (验收)
-```
-
-**建议节奏**：
-- 第 1 周：通读本指南 + 100 Days of SwiftUI 前 30 天
-- 第 2 周：完成 Task 18-20（工程/组件/网络层）
-- 第 3 周：完成 Task 21（首页）
-- 第 4 周：完成 Task 22-23（寺院 + 师傅）
-- 第 5 周：完成 Task 24-25（预约 + 导航），MVP-1 闭环
-
----
-
-> 本指南到此结束。如遇问题，先查阅第 11 章学习资源，再回看对应章节代码示例。Happy coding! 🙏
+代码、构建、设备和真实业务需分别验收。两套 iOS 无签名构建不代表签名安装或上架；模拟支付不代表真实资金闭环。

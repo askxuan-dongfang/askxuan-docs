@@ -1,6 +1,6 @@
 # diy-service DIY手串服务设计文档
 
-> **文档版本**: v1.3
+> **文档版本**: 0.0.1
 > **创建日期**: 2026-07-01
 > **服务端口**: 8088
 > **业务域**: 商城业务域
@@ -211,9 +211,10 @@ graph TB
 | POST | /api/v1/diy/orders/availability | 按实时材料、SKU、库存和价格执行下单预检（不扣库存） | customer |
 | GET | /api/v1/diy/orders | 我的DIY订单列表 | customer |
 | GET | /api/v1/diy/orders/:id | DIY订单详情（含加持进度） | customer |
+| PUT | /api/v1/diy/orders/:id/confirm | 本人已发货订单确认收货 | customer |
 | GET | /api/v1/diy/blessing-services | 当前已上架加持服务和展示价格 | customer |
 
-> C 端当前没有 DIY 用户手动确认收货和 DIY 专属退货/退款接口。发货后由 logistics-service 签收事件自动进入 completed；详见 [DIY 手串全流程能力审计](../../product/DIY手串全流程能力审计.md)。
+> H5 与原生信众 iOS 均支持本人已发货 DIY 订单确认收货，调用 `PUT /api/v1/diy/orders/:id/confirm`。顾客 DIY 取消、退货退款尚无完整链路；见[DIY 创作与定制](../../guides/manual/DIY创作与定制.md)。
 
 ### 4.2 商城台接口（需鉴权）
 
@@ -307,15 +308,6 @@ stateDiagram-v2
 
 ---
 
-## 版本记录
+## 8. 客户端与收货边界
 
-| 版本 | 日期 | 说明 |
-|------|------|------|
-| v1.2 | 2026-07-13 | 设计广场下单服务端重定价、事务快照、支付校验与作者收益 |
-| v1.1 | 2026-07-09 | 对齐 App 改进原型：新增设计广场作品直接下单接口 |
-| v1.0 | 2026-07-01 | 初始版本：DIY设计/材料/订单/加持任务 骨架设计 |
-
-
-## 2026-09-13 客户端与收货补充
-
-两端当前都有 DIY 历史订单与用户确认收货。`PUT /api/v1/diy/orders/:id/confirm` 校验本人且订单已发货，推进至 completed；订单列表和详情以服务端快照/付款状态/生产状态为准。后台审核拒绝可以触发取消返库存及已付款订单的异步退款请求；这不表示顾客已有 DIY 退换货申请。完整差异与来源见[DIY 当前审计](../../product/DIY手串全流程能力审计.md)。
+两端当前都有 DIY 历史订单与用户确认收货。`PUT /api/v1/diy/orders/:id/confirm` 校验本人且订单已发货，推进至 completed；订单列表和详情以服务端快照/付款状态/生产状态为准。后台审核拒绝可以触发取消返库存及已付款订单的异步退款请求；这不表示顾客已有 DIY 退换货申请。完整差异与来源见[DIY 当前操作](../../guides/manual/DIY创作与定制.md)。

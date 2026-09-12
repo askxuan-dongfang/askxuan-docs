@@ -5,7 +5,8 @@ import argparse,json,hashlib,subprocess
 from pypdf import PdfReader
 import pdfplumber
 from PIL import Image,ImageDraw
-ap=argparse.ArgumentParser();ap.add_argument('--input',type=Path,default=Path('output/pdf'));ap.add_argument('--output',type=Path,default=Path('tmp/pdfs/review'));ap.add_argument('--poppler',default='pdftoppm');ap.add_argument('--name',default='');args=ap.parse_args();args.output.mkdir(parents=True,exist_ok=True)
+ROOT=Path(__file__).resolve().parents[1]
+ap=argparse.ArgumentParser();ap.add_argument('--input',type=Path,default=ROOT/'output/pdf');ap.add_argument('--output',type=Path,default=ROOT/'tmp/pdfs/0.0.1-review');ap.add_argument('--poppler',default='pdftoppm');ap.add_argument('--name',default='');args=ap.parse_args();args.output.mkdir(parents=True,exist_ok=True)
 summary=[]
 for pdf in sorted(args.input.glob('*.pdf')):
  if args.name and args.name not in pdf.name:continue

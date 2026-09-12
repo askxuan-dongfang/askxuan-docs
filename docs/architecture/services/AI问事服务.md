@@ -1,6 +1,6 @@
 # ai-service AI 问事服务设计文档
 
-> **文档版本**: v2.0
+> **文档版本**: 0.0.1
 > **创建日期**: 2026-07-01
 > **更新日期**: 2026-09-02
 > **服务端口**: 8098
@@ -198,7 +198,7 @@ AI_MODEL=deepseek-v4-flash
 AI_VISION_MODEL=deepseek-v4-flash-vision-exp
 ```
 
-Provider 会在 `AI_BASE_URL` 后追加 `/chat/completions`，因此 DeepSeek 基础地址不带 `/v1`。密钥只配置在 ECS 服务端 `0600` 运行时密钥文件，不进入 Git、iOS 或 H5。2026-09-03 已在 ECS 通过真实 `deepseek-v4-flash` 文本/MCP 闭环和 `deepseek-v4-flash-vision-exp` 图片闭环；验收覆盖 HTTPS 媒体上传/回读、SSE、用户隔离、脱敏轨迹、token 与动态成本。
+Provider 会在 `AI_BASE_URL` 后追加 `/chat/completions`，因此 DeepSeek 基础地址不带 `/v1`。密钥只配置在 ECS 服务端 `0600` 运行时密钥文件，不进入 Git、iOS 或 H5。接入验收需覆盖 HTTPS 媒体上传/回读、SSE、用户隔离、脱敏轨迹、token 与动态成本；模型名称、价格及可用性以实际 Provider 配置为准。
 
 文本模型采用流式输出；含附件时自动切换视觉模型。token 用量取 Provider 权威字段，`costMicros` 以微美元记录，并按 DeepSeek 返回的缓存命中/未命中 token、工作日峰谷时段和输出 token 估算。价格配置属于可更新的运营参数，不作为用户账单。
 
@@ -234,20 +234,8 @@ Provider 会在 `AI_BASE_URL` 后追加 `/chat/completions`，因此 DeepSeek �
 
 ---
 
-## 版本记录
+## 9. 专题报告与权益
 
-| 版本 | 日期 | 说明 |
-|------|------|------|
-| v2.0 | 2026-09-02 | 版本化提示词、确定性路由、隔离 taibu MCP、图片输入、公开阶段、脱敏工具轨迹与 DeepSeek 动态成本 |
-| v1.4 | 2026-09-02 | 动态技能 schema、iOS/H5 SSE、用户额度、安全拦截、token/成本账与受控 MCP 适配 |
-| v1.3 | 2026-07-13 | 切换 MySQL 持久化，新增 general 默认入口、Provider、所有权校验、失败重试和重启恢复 |
-| v1.2 | 2026-07-09 | 补齐早期内存版会话与消息闭环 |
-| v1.1 | 2026-07-09 | 对齐 App 直接问事与历史抽屉原型 |
-| v1.0 | 2026-07-01 | 初始版本 |
-
-
-## 9. 专题报告扩展（2026-09-09，本地实现待发布）
-
-新增七个专题入口，保留原有技能聊天。接口与订单／权益规则详见 [AI 专题报告规格](../../../specs/005-ai-topic-reports/README.md)。报告独立存储，先生成摘要及完整内容、后积分解锁；未购买正文不会下发。现金支付尚未开放。
+新增七个专题入口，保留原有技能聊天。接口与订单／权益规则详见 [AI 报告使用与权益](../../guides/manual/咨询与交流.md)。报告独立存储，先生成摘要及完整内容、后积分解锁；未购买正文不会下发。现金支付尚未开放。
 
 新增 GET /ai/topics，GET/POST /ai/reports，GET /ai/reports/:id，POST /ai/reports/:id/retry 与 /conversation。积分购买使用 payment-service 的 POST /payments/ai-report。路径均以 /api/v1 为前缀。正文导出与追问须在用户已获权益后进行。

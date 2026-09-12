@@ -14,10 +14,9 @@ from reportlab.platypus.tableofcontents import TableOfContents
 from PIL import Image as PILImage
 
 ROOT=Path(__file__).resolve().parents[1]
-ASSETS=ROOT/'docs/assets/handbooks-20260913'
+VERSION=(ROOT/'VERSION').read_text().strip()
+ASSETS=ROOT/'docs/assets'/VERSION
 FRONTEND=Path(os.environ.get('ASKXUAN_FRONTEND', str(ROOT.parent/'askXuan-frontend')))
-if not FRONTEND.exists():
-    FRONTEND=ROOT.parents[2]/'askXuan-frontend'
 BODY=Path(os.environ.get('HANDBOOK_BODY_FONT','/System/Library/Fonts/Supplemental/Arial Unicode.ttf'))
 BRAND=Path(os.environ.get('HANDBOOK_BRAND_FONT',str(FRONTEND/'packages/design-tokens/fonts/AskXuanSerif-Semibold.ttf')))
 for name,path in [('Body',BODY),('Brand',BRAND)]:
@@ -40,8 +39,8 @@ ST={
 BOOKS=[
  {'id':'01','title':'产品使用手册','subtitle':'从初次使用到创作、交流与履约','audience':'用户 · 法师 · 平台与寺院运营','file':'问玄东方_产品使用手册.pdf','sections':['产品使用手册.md','manual/DIY创作与定制.md','manual/咨询与交流.md','manual/订单积分与活动.md','manual/法师与后台操作.md','manual/代码核对索引.md'],'intro':'按任务查阅当前入口与操作，区分保存、发布、支付和履约。覆盖 H5、两款 iOS 与管理入口，并明确端差异和演示功能边界。'},
  {'id':'02','title':'视觉设计与交互手册','subtitle':'东方色调 · 现代秩序 · 克制动效','audience':'产品 · 设计 · 开发 · 测试','file':'问玄东方_视觉设计与交互手册.pdf','sections':['视觉设计与交互手册.md'],'intro':'完整收录浅深主题、六枚品牌标识、字体层级、布局、组件状态与动效。当前页面截图与规范示意分开标注，供设计及实现共同使用。','chapter_breaks':True},
- {'id':'03','title':'运营与合作手册','subtitle':'从合作准备到可核验的交付','audience':'平台运营 · 供给伙伴 · 项目负责人','file':'问玄东方_运营与合作手册.pdf','sections':['运营与合作手册.md'],'intro':'将原宣传与战略材料归并为可执行的工作手册：角色、供给、审核、履约、售后、指标、试点与合作约定。目标和假设不作为既有经营结果。'},
- {'id':'04','title':'竞品研究与产品决策手册','subtitle':'天机阁 / 佑愿天机 / 佑愿好物','audience':'产品 · 设计 · 运营 · 商业决策','file':'天机阁与佑愿天机_竞品研究与产品决策手册.pdf','sections':['竞品研究与产品决策手册.md'],'intro':'归并五份历史研究，补充官方公开页面核验，重新检查账户和费用模型。以证据状态组织观察，并转化为问玄东方可执行的产品取舍。','chapter_breaks':True},
+ {'id':'03','title':'运营与合作手册','subtitle':'从合作准备到可核验的交付','audience':'平台运营 · 供给伙伴 · 项目负责人','file':'问玄东方_运营与合作手册.pdf','sections':['运营与合作手册.md'],'intro':'面向实际交付的工作手册：角色、供给、审核、履约、售后、指标、试点与合作约定。目标和假设不作为既有经营结果。'},
+ {'id':'04','title':'竞品研究与产品决策手册','subtitle':'天机阁 / 佑愿天机 / 佑愿好物','audience':'产品 · 设计 · 运营 · 商业决策','file':'天机阁与佑愿天机_竞品研究与产品决策手册.pdf','sections':['竞品研究与产品决策手册.md'],'intro':'核对官方页面与通用规则，区分可见事实和费用模型。以证据状态组织观察，并转化为问玄东方可执行的产品取舍。','chapter_breaks':True},
 ]
 
 def clean(s):
@@ -84,19 +83,19 @@ class Cover(Flowable):
         c.setStrokeColor(GOLD);c.line(0,270,WIDTH,270)
         p=Paragraph(b['intro'],ST['body']);_,h=p.wrap(395,120);p.drawOn(c,0,231-h)
         c.setFont('Body',9.3);c.setFillColor(MUTED);c.drawString(0,94,b['audience'])
-        c.setFont('Body',10);c.drawString(0,66,'2026.09.13  /  产品手册系列')
+        c.setFont('Body',10);c.drawString(0,66,VERSION+'  /  产品手册系列')
         c.setFont('Body',8.5);c.drawString(0,41,'当前实现、操作说明与证据边界')
 
 class HandbookDoc(BaseDocTemplate):
     def __init__(self,path,book):
-        super().__init__(str(path),pagesize=PAGE,rightMargin=50,leftMargin=50,topMargin=61,bottomMargin=54,title='问玄东方 · '+book['title'],author='问玄东方',subject=book['subtitle'],pageCompression=1)
+        super().__init__(str(path),pagesize=PAGE,rightMargin=50,leftMargin=50,topMargin=61,bottomMargin=54,title='问玄东方 · '+book['title'],author='问玄东方',subject=VERSION+' · '+book['subtitle'],pageCompression=1)
         self.book=book;self.addPageTemplates(PageTemplate(id='body',frames=[Frame(50,54,WIDTH,727,leftPadding=0,rightPadding=0,topPadding=0,bottomPadding=0)],onPage=self.page))
     def page(self,c,d):
         c.saveState();c.setFillColor(CREAM);c.rect(0,0,*PAGE,fill=1,stroke=0)
         if d.page>1:
             c.setFillColor(MUTED);c.setFont('Body',8);c.drawString(50,807,'问玄东方  /  '+self.book['title'])
             c.setStrokeColor(LINE);c.line(50,797,545.276,797)
-        c.setFont('Body',8);c.setFillColor(MUTED);c.drawString(50,29,'2026.09.13    ·    '+self.book['id'])
+        c.setFont('Body',8);c.setFillColor(MUTED);c.drawString(50,29,VERSION+'    ·    '+self.book['id'])
         c.drawRightString(545.276,29,f'{d.page:02d}');c.restoreState()
     def afterFlowable(self,f):
         if hasattr(f,'toc_info'):
@@ -224,4 +223,4 @@ if __name__=='__main__':
         previous=json.loads((args.output/'manifest.json').read_text())['books']
         updated={x['file']:x for x in previous+result}
         result=[updated[b['file']] for b in BOOKS if b['file'] in updated]
-    (args.output/'manifest.json').write_text(json.dumps({'edition':'2026-09-13','books':result},ensure_ascii=False,indent=2)+'\n');print(json.dumps(result,ensure_ascii=False,indent=2))
+    (args.output/'manifest.json').write_text(json.dumps({'edition':VERSION,'books':result},ensure_ascii=False,indent=2)+'\n');print(json.dumps(result,ensure_ascii=False,indent=2))
