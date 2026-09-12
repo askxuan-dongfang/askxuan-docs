@@ -1,0 +1,42 @@
+{
+  "edition": "2026-09-13",
+  "books": [
+    {
+      "file": "问玄东方_产品使用手册.pdf",
+      "bytes": 620836,
+      "sha256": "6f6576bf6a25c0dd7527eae8a2489d0c5b3f98784d4837a9d1720b262f397156",
+      "source_files": [
+        "产品使用手册.md",
+        "manual/DIY创作与定制.md",
+        "manual/咨询与交流.md",
+        "manual/订单积分与活动.md",
+        "manual/法师与后台操作.md",
+        "manual/代码核对索引.md"
+      ]
+    },
+    {
+      "file": "问玄东方_视觉设计与交互手册.pdf",
+      "bytes": 1865577,
+      "sha256": "3e3d902326873cab2e23dfa32b4860a8fb2b3fa165ca6f961391a4a120086db4",
+      "source_files": [
+        "视觉设计与交互手册.md"
+      ]
+    },
+    {
+      "file": "问玄东方_运营与合作手册.pdf",
+      "bytes": 433922,
+      "sha256": "96b8b28ff45c373a3da239899f1f811bf0f280281748a92ad8f1532846a31ea9",
+      "source_files": [
+        "运营与合作手册.md"
+      ]
+    },
+    {
+      "file": "天机阁与佑愿天机_竞品研究与产品决策手册.pdf",
+      "bytes": 657844,
+      "sha256": "f63625b21d22a6ca02214566a0d194e6d55ed16357f7bf7e8943b3f63601c5d4",
+      "source_files": [
+        "竞品研究与产品决策手册.md"
+      ]
+    }
+  ]
+}

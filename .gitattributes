@@ -1,0 +1,4 @@
+# Treat rendered handbooks and visual assets as binary review artifacts.
+*.pdf binary
+*.png binary
+*.jpg binary

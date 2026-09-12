@@ -1,0 +1,162 @@
+{
+  "reviewDate": "2026-09-13",
+  "pdf": "docs/output/pdf/天机阁与佑愿天机_竞品研究与产品决策手册.pdf",
+  "reviewedSha256": "f63625b21d22a6ca02214566a0d194e6d55ed16357f7bf7e8943b3f63601c5d4",
+  "pageCount": 18,
+  "contactSheetVisualReviewPages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+  ],
+  "fullPageVisualReviewPages": [
+    6,
+    8,
+    9,
+    11
+  ],
+  "toc": {
+    "annotations": 18,
+    "chapterDestinations": [
+      4,
+      5,
+      6,
+      8,
+      11,
+      13,
+      14,
+      15,
+      16
+    ],
+    "titlesAndPageNumbersLinked": true,
+    "status": "passed"
+  },
+  "externalLinks": {
+    "annotations": 44,
+    "uniqueHttpsTargets": 20
+  },
+  "imagePages": [
+    1,
+    6,
+    8
+  ],
+  "checks": {
+    "noTextClippingOrOverlap": true,
+    "noBlackSquareGlyphs": true,
+    "brandTypographyAndPageNumbersConsistent": true,
+    "threeBranchMembershipTableNotSplit": true,
+    "fourIntegerThresholdFormulasSeparate": true,
+    "fourCalculationRowsCorrect": true,
+    "screenshotsNotStretched": true,
+    "screenshotScopeAndDateCaptions": true,
+    "existingSessionAccessConditionVisibleOnPage9": true
+  },
+  "findings": [
+    {
+      "severity": "minor",
+      "pages": [
+        6,
+        8
+      ],
+      "problem": "Literal Markdown single asterisks visible at beginning/end of detailed image captions; alt caption also auto-rendered. Root notified, waiting corrected render.",
+      "status": "resolved_in_final_render",
+      "resolution": "Single-star markup no longer visible; detailed captions use smaller consistent style and remain grouped with image. Verified at full-page size."
+    }
+  ],
+  "status": "passed",
+  "scope": "Prior full 18-page visual review plus byte-comparison of unchanged page renders; final affected pages inspected at full size; final PDF page count and all TOC targets independently rechecked. No source changes.",
+  "priorReview": {
+    "sha256": "303f77e3f4ea73fc68a7642df8a415d5c62c1524fece8886e7c07341d3961612",
+    "pageCount": 18,
+    "contactSheetVisualReviewPages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18
+    ],
+    "fullPageVisualReviewPages": [
+      6,
+      8,
+      9,
+      11
+    ],
+    "finding": "literal caption asterisks on pages 6 and 8"
+  },
+  "approvedAt": "2026-09-13T02:33:03+08:00",
+  "finalChangedRenderedPages": [
+    6,
+    8
+  ],
+  "finalFullPageVisualReviewPages": [
+    6,
+    8
+  ],
+  "unchangedPagesRetainPriorVisualReview": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    7,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+  ],
+  "finalCaptionChecks": {
+    "literalAsterisksRemoved": true,
+    "sourceAndDateReadable": true,
+    "imageAndCaptionStayOnSamePage": true,
+    "titleAndDetailedCaptionDistinct": true,
+    "noClippingOrStretch": true
+  },
+  "finalTocRecheck": {
+    "annotations": 18,
+    "chapterDestinations": [
+      4,
+      5,
+      6,
+      8,
+      11,
+      13,
+      14,
+      15,
+      16
+    ],
+    "status": "passed"
+  }
+}

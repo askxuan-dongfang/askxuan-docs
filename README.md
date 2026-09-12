@@ -2,6 +2,17 @@
 
 本仓库统一维护产品现状、使用手册、接口、研发规范和验收记录。2026-09-13 以当前已推送源码重新核对；历史报告保留原始日期和适用范围，不等同于当前能力。
 
+## 产品手册
+
+本次把旧产品方案、宣传提案和竞品研究整理为四册手册，PDF 已更新为统一视觉排版。[进入手册目录](docs/guides/手册目录.md) 查看正文、下载与旧版对应关系。
+
+| 册别 | 当前手册 |
+| --- | --- |
+| 01 | [产品使用手册](docs/guides/产品使用手册.md) |
+| 02 | [视觉设计与交互手册](docs/guides/视觉设计与交互手册.md) |
+| 03 | [运营与合作手册](docs/guides/运营与合作手册.md) |
+| 04 | [竞品研究与产品决策手册](docs/guides/竞品研究与产品决策手册.md) |
+
 ## 按需阅读
 
 | 目的 | 入口 |
@@ -11,9 +22,9 @@
 | 核对本次整理结果与发布证据 | [2026-09-13 产品与文档核验](docs/reports/2026-09-13-产品与文档核验.md) |
 | 查找之前的报告 | [报告目录与历史口径](docs/reports/README.md) |
 | 接入接口 | [API Reference](API-REFERENCE.md) · [API 规范](docs/architecture/API规范.md) |
-| 了解 DIY 全流程 | [DIY 能力审计](docs/product/DIY手串全流程能力审计.md) |
-| 了解后台权限和入口 | [管理端架构](docs/product/管理端架构.md) |
-| 统一视觉与验证 | [视觉蓝图](docs/product/五端UI重绘蓝图.md) · [页面映射](docs/product/五端页面-模板-组件映射表.md) · [回归用例](docs/product/五端视觉回归与业务闭环用例.md) |
+| 了解 DIY 全流程 | [DIY 创作与定制](docs/guides/manual/DIY创作与定制.md) |
+| 了解后台权限和入口 | [法师与后台操作](docs/guides/manual/法师与后台操作.md) |
+| 统一视觉与验证 | [视觉设计与交互手册](docs/guides/视觉设计与交互手册.md) |
 | 本地研发、目录维护 | [本地项目目录与维护](docs/guides/本地项目目录与维护.md) · [Go 后端](docs/guides/Go后端指南.md) · [iOS](docs/guides/iOS入门指南.md) |
 | 部署和恢复 | [GitHub Actions 与 ECS](docs/deployment/GITHUB-ACTIONS.md) · [聊天运维](docs/deployment/CHAT.md) · [MQ 故障演练](docs/guides/MQ可靠投递监控与故障演练.md) |
 | 查询架构与数据 | [技术架构](docs/architecture/技术架构.md) · [业务流程](docs/architecture/业务流程.md) · [状态机](docs/architecture/状态机.md) · [字段字典](docs/standards/字段字典.md) · [统一字典](docs/standards/统一数据字典.md) |

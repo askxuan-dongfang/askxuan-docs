@@ -1,0 +1,711 @@
+{
+  "version": "2026-09-13",
+  "basis": {
+    "frontend": "8df155727224fcbdbfe67d3eeb3695003eaf24e1",
+    "h5": "9e3a8457144cbfd9fde07a8342f059b0f990d45f"
+  },
+  "policy": "当前截图/正式母版优先。旧图只作明确标注参考；假数据必须标注；不暴露账户和业务敏感值；截图不证明E2E。",
+  "items": [
+    {
+      "id": "V02-brand-sheet",
+      "path": "/Users/gaofeng/develop/DongFang/askXuan-frontend/packages/brand/brand-sheet.png",
+      "exists": true,
+      "topic": "六身份浅深总览",
+      "theme": null,
+      "dimensions": [
+        1440,
+        880
+      ],
+      "bytes": 95165,
+      "sha256": "411c6a678c31d69bf5a9c255c95562c405aa96528b45108e05450962be3132d0",
+      "decision": "use-current",
+      "reason": "正式母包品牌对照板，与当前六SVG一致；图板深底为品牌展示底，非产品页面底。",
+      "sourceEvidence": "askXuan-frontend/packages/brand/generate.mjs",
+      "mimeType": "image/png"
+    },
+    {
+      "id": "V02-optical-review",
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/brand-identity-20260913/brand-raster-review.png",
+      "exists": true,
+      "topic": "Logo/AppIcon/favicon光学尺寸",
+      "theme": null,
+      "dimensions": [
+        960,
+        680
+      ],
+      "bytes": 78943,
+      "sha256": "fd367aad74580a41796a3aecb7e56dd5077e6675d11d80ace284f4c7383da141",
+      "decision": "reference-current",
+      "reason": "独立资产审阅板，显示16/24/32px；适合附录或裁切技术图，不当作应用界面。",
+      "sourceEvidence": "artifacts/brand-identity-20260913/asset-independent-review.md",
+      "mimeType": "image/png"
+    },
+    {
+      "id": "logo-customer-light",
+      "path": "/Users/gaofeng/develop/DongFang/askXuan-frontend/packages/brand/assets/logo-customer-light.svg",
+      "exists": true,
+      "topic": "正式矢量可组成图版",
+      "theme": "light",
+      "dimensions": "0 0 96 96",
+      "bytes": 583,
+      "sha256": "fbea7e2e83f6ca6e1de0339e8575d1947627d2a34878165409c2863c0bca6256",
+      "decision": "use-current",
+      "reason": "透明96视框完整放置，不裁切、不额外包底。",
+      "sourceEvidence": "askXuan-frontend/packages/brand/generate.mjs",
+      "mimeType": "image/svg+xml"
+    },
+    {
+      "id": "logo-customer-dark",
+      "path": "/Users/gaofeng/develop/DongFang/askXuan-frontend/packages/brand/assets/logo-customer-dark.svg",
+      "exists": true,
+      "topic": "正式矢量可组成图版",
+      "theme": "dark",
+      "dimensions": "0 0 96 96",
+      "bytes": 583,
+      "sha256": "dd3821664522351a6a13d41d02aa35270ddb98574cdc83e8397f6f888a2fc8b8",
+      "decision": "use-current",
+      "reason": "透明96视框完整放置，不裁切、不额外包底。",
+      "sourceEvidence": "askXuan-frontend/packages/brand/generate.mjs",
+      "mimeType": "image/svg+xml"
+    },
+    {
+      "id": "logo-master-light",
+      "path": "/Users/gaofeng/develop/DongFang/askXuan-frontend/packages/brand/assets/logo-master-light.svg",
+      "exists": true,
+      "topic": "正式矢量可组成图版",
+      "theme": "light",
+      "dimensions": "0 0 96 96",
+      "bytes": 707,
+      "sha256": "7f1366a82f531d067b62e484c31717e90dbf10d71055c90b8cc4edad67d79859",
+      "decision": "use-current",
+      "reason": "透明96视框完整放置，不裁切、不额外包底。",
+      "sourceEvidence": "askXuan-frontend/packages/brand/generate.mjs",
+      "mimeType": "image/svg+xml"
+    },
+    {
+      "id": "logo-master-dark",
+      "path": "/Users/gaofeng/develop/DongFang/askXuan-frontend/packages/brand/assets/logo-master-dark.svg",
+      "exists": true,
+      "topic": "正式矢量可组成图版",
+      "theme": "dark",
+      "dimensions": "0 0 96 96",
+      "bytes": 707,
+      "sha256": "e766e491e1b99751e7fab5fea0a0b2514b843928076efc28c2b3cb881ad84ad2",
+      "decision": "use-current",
+      "reason": "透明96视框完整放置，不裁切、不额外包底。",
+      "sourceEvidence": "askXuan-frontend/packages/brand/generate.mjs",
+      "mimeType": "image/svg+xml"
+    },
+    {
+      "id": "logo-temple-light",
+      "path": "/Users/gaofeng/develop/DongFang/askXuan-frontend/packages/brand/assets/logo-temple-light.svg",
+      "exists": true,
+      "topic": "正式矢量可组成图版",
+      "theme": "light",
+      "dimensions": "0 0 96 96",
+      "bytes": 526,
+      "sha256": "03f9c61d55ac6b1b4ff73879a62f3d00a3741594c24f94fb3446710843f942b1",
+      "decision": "use-current",
+      "reason": "透明96视框完整放置，不裁切、不额外包底。",
+      "sourceEvidence": "askXuan-frontend/packages/brand/generate.mjs",
+      "mimeType": "image/svg+xml"
+    },
+    {
+      "id": "logo-temple-dark",
+      "path": "/Users/gaofeng/develop/DongFang/askXuan-frontend/packages/brand/assets/logo-temple-dark.svg",
+      "exists": true,
+      "topic": "正式矢量可组成图版",
+      "theme": "dark",
+      "dimensions": "0 0 96 96",
+      "bytes": 526,
+      "sha256": "55534ee5d4e6fd0fdebd9965d6bbbfee9678c4bec8fe50f51c593931aa9f9da7",
+      "decision": "use-current",
+      "reason": "透明96视框完整放置，不裁切、不额外包底。",
+      "sourceEvidence": "askXuan-frontend/packages/brand/generate.mjs",
+      "mimeType": "image/svg+xml"
+    },
+    {
+      "id": "logo-shop-light",
+      "path": "/Users/gaofeng/develop/DongFang/askXuan-frontend/packages/brand/assets/logo-shop-light.svg",
+      "exists": true,
+      "topic": "正式矢量可组成图版",
+      "theme": "light",
+      "dimensions": "0 0 96 96",
+      "bytes": 573,
+      "sha256": "3f0f07f36806965b254333cebcf3ba7ed4ae2b4c7764e445544c9a6d21de9c29",
+      "decision": "use-current",
+      "reason": "透明96视框完整放置，不裁切、不额外包底。",
+      "sourceEvidence": "askXuan-frontend/packages/brand/generate.mjs",
+      "mimeType": "image/svg+xml"
+    },
+    {
+      "id": "logo-shop-dark",
+      "path": "/Users/gaofeng/develop/DongFang/askXuan-frontend/packages/brand/assets/logo-shop-dark.svg",
+      "exists": true,
+      "topic": "正式矢量可组成图版",
+      "theme": "dark",
+      "dimensions": "0 0 96 96",
+      "bytes": 573,
+      "sha256": "d5bbe01292bc3c4dba2d48022f6f944533938a8cc8d89d4dc2f5d11604205eff",
+      "decision": "use-current",
+      "reason": "透明96视框完整放置，不裁切、不额外包底。",
+      "sourceEvidence": "askXuan-frontend/packages/brand/generate.mjs",
+      "mimeType": "image/svg+xml"
+    },
+    {
+      "id": "logo-platform-light",
+      "path": "/Users/gaofeng/develop/DongFang/askXuan-frontend/packages/brand/assets/logo-platform-light.svg",
+      "exists": true,
+      "topic": "正式矢量可组成图版",
+      "theme": "light",
+      "dimensions": "0 0 96 96",
+      "bytes": 489,
+      "sha256": "8eb557e7e9351a537becff0be2acd3af9f186fd319044f55fc07af986a684f8a",
+      "decision": "use-current",
+      "reason": "透明96视框完整放置，不裁切、不额外包底。",
+      "sourceEvidence": "askXuan-frontend/packages/brand/generate.mjs",
+      "mimeType": "image/svg+xml"
+    },
+    {
+      "id": "logo-platform-dark",
+      "path": "/Users/gaofeng/develop/DongFang/askXuan-frontend/packages/brand/assets/logo-platform-dark.svg",
+      "exists": true,
+      "topic": "正式矢量可组成图版",
+      "theme": "dark",
+      "dimensions": "0 0 96 96",
+      "bytes": 489,
+      "sha256": "6f9940c714a04fc25da312070fa0f1c9bdbd182d11acbdd8333eef4518d3b6c0",
+      "decision": "use-current",
+      "reason": "透明96视框完整放置，不裁切、不额外包底。",
+      "sourceEvidence": "askXuan-frontend/packages/brand/generate.mjs",
+      "mimeType": "image/svg+xml"
+    },
+    {
+      "id": "logo-atelier-light",
+      "path": "/Users/gaofeng/develop/DongFang/askXuan-frontend/packages/brand/assets/logo-atelier-light.svg",
+      "exists": true,
+      "topic": "正式矢量可组成图版",
+      "theme": "light",
+      "dimensions": "0 0 96 96",
+      "bytes": 614,
+      "sha256": "54e795e1bd54ac23cb593687fb6330b18028631ee9a1a4d0ac856db48eb9abff",
+      "decision": "use-current",
+      "reason": "透明96视框完整放置，不裁切、不额外包底。",
+      "sourceEvidence": "askXuan-frontend/packages/brand/generate.mjs",
+      "mimeType": "image/svg+xml"
+    },
+    {
+      "id": "logo-atelier-dark",
+      "path": "/Users/gaofeng/develop/DongFang/askXuan-frontend/packages/brand/assets/logo-atelier-dark.svg",
+      "exists": true,
+      "topic": "正式矢量可组成图版",
+      "theme": "dark",
+      "dimensions": "0 0 96 96",
+      "bytes": 614,
+      "sha256": "ae59b811fb3de4067bbfd3f9edc96e42e18d984697396d467051d6012efbe6ef",
+      "decision": "use-current",
+      "reason": "透明96视框完整放置，不裁切、不额外包底。",
+      "sourceEvidence": "askXuan-frontend/packages/brand/generate.mjs",
+      "mimeType": "image/svg+xml"
+    },
+    {
+      "id": "current-h5-home-light",
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/assets/h5-home-light.png",
+      "exists": true,
+      "topic": "信众首页",
+      "theme": "light",
+      "dimensions": [
+        390,
+        844
+      ],
+      "bytes": 45602,
+      "sha256": "afce82b93255af8a300a94016887c3f655437a63be2a154c95bded1ebb30132c",
+      "decision": "use-current",
+      "reason": "本轮root实际访问已部署版本截图。页面数据及主题以截图时状态为准，不能视为业务E2E完成。",
+      "sourceEvidence": "root本轮截图说明；对应发布基准frontend8df1557/H59e3a845",
+      "mimeType": "image/jpeg",
+      "extensionMismatch": true,
+      "ingestionNote": "原文件扩展名.png但内容JPEG；正式图版请按.jpg复制或规范转码，不仅修改MIME。",
+      "recapture": {
+        "reason": "等待首页底栏动画稳定后重拍；修复旧浅色图底栏模糊。",
+        "previousSha256": "6c35bec0a01e34d2155a8abe29e3f89dfaae34044a0eff8fa2c5f35762725007",
+        "review": "最终 PDF 第 5 页浅色底栏图标与文字清晰。"
+      }
+    },
+    {
+      "id": "current-h5-home-dark",
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/assets/h5-home-dark.png",
+      "exists": true,
+      "topic": "信众首页",
+      "theme": "dark",
+      "dimensions": [
+        390,
+        844
+      ],
+      "bytes": 46654,
+      "sha256": "ae975601e1d1899822979a10486d993767f1fa04e5e0eed3d36c7a5a407f5067",
+      "decision": "use-current",
+      "reason": "本轮root实际访问已部署版本截图。页面数据及主题以截图时状态为准，不能视为业务E2E完成。",
+      "sourceEvidence": "root本轮截图说明；对应发布基准frontend8df1557/H59e3a845",
+      "mimeType": "image/jpeg",
+      "extensionMismatch": true,
+      "ingestionNote": "原文件扩展名.png但内容JPEG；正式图版请按.jpg复制或规范转码，不仅修改MIME。"
+    },
+    {
+      "id": "current-h5-diy-light",
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/assets/h5-diy-light.png",
+      "exists": true,
+      "topic": "DIY编辑工作台",
+      "theme": "light",
+      "dimensions": [
+        390,
+        844
+      ],
+      "bytes": 31569,
+      "sha256": "ad54fc2d8764e21a0fdef6d2e32612f88761f3be8fcd20564008f9de78540152",
+      "decision": "use-current",
+      "reason": "本轮root实际访问已部署版本截图。页面数据及主题以截图时状态为准，不能视为业务E2E完成。",
+      "sourceEvidence": "root本轮截图说明；对应发布基准frontend8df1557/H59e3a845",
+      "mimeType": "image/jpeg",
+      "extensionMismatch": true,
+      "ingestionNote": "原文件扩展名.png但内容JPEG；正式图版请按.jpg复制或规范转码，不仅修改MIME。"
+    },
+    {
+      "id": "current-h5-diy-dark",
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/assets/h5-diy-dark.png",
+      "exists": true,
+      "topic": "DIY编辑工作台",
+      "theme": "dark",
+      "dimensions": [
+        390,
+        844
+      ],
+      "bytes": 32870,
+      "sha256": "98f7daecde52fd569685805daecaecb6018091739068286ca0cca5b30d78aa1f",
+      "decision": "use-current",
+      "reason": "本轮root实际访问已部署版本截图。页面数据及主题以截图时状态为准，不能视为业务E2E完成。",
+      "sourceEvidence": "root本轮截图说明；对应发布基准frontend8df1557/H59e3a845",
+      "mimeType": "image/jpeg",
+      "extensionMismatch": true,
+      "ingestionNote": "原文件扩展名.png但内容JPEG；正式图版请按.jpg复制或规范转码，不仅修改MIME。"
+    },
+    {
+      "id": "current-h5-materials-light",
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/assets/h5-materials-light.png",
+      "exists": true,
+      "topic": "DIY左分类与上方五行",
+      "theme": "light",
+      "dimensions": [
+        390,
+        844
+      ],
+      "bytes": 38757,
+      "sha256": "fc78a8458020d69aaf7df49b6954683a7a7cd3e99a2bcef13be8bac301eac3a9",
+      "decision": "use-current",
+      "reason": "本轮root实际访问已部署版本截图。页面数据及主题以截图时状态为准，不能视为业务E2E完成。",
+      "sourceEvidence": "root本轮截图说明；对应发布基准frontend8df1557/H59e3a845",
+      "mimeType": "image/jpeg",
+      "extensionMismatch": true,
+      "ingestionNote": "原文件扩展名.png但内容JPEG；正式图版请按.jpg复制或规范转码，不仅修改MIME。"
+    },
+    {
+      "id": "current-h5-materials-dark",
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/assets/h5-materials-dark.png",
+      "exists": true,
+      "topic": "DIY左分类与上方五行",
+      "theme": "dark",
+      "dimensions": [
+        390,
+        844
+      ],
+      "bytes": 36342,
+      "sha256": "43ccf65dee852a01ec8b1e872fdb98e006bf42cc067821742d5d2310d799a945",
+      "decision": "use-current",
+      "reason": "本轮root实际访问已部署版本截图。页面数据及主题以截图时状态为准，不能视为业务E2E完成。",
+      "sourceEvidence": "root本轮截图说明；对应发布基准frontend8df1557/H59e3a845",
+      "mimeType": "image/jpeg",
+      "extensionMismatch": true,
+      "ingestionNote": "原文件扩展名.png但内容JPEG；正式图版请按.jpg复制或规范转码，不仅修改MIME。"
+    },
+    {
+      "id": "current-admin-login-light",
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/assets/admin-login-light.png",
+      "exists": true,
+      "topic": "统一后台登录",
+      "theme": "light",
+      "dimensions": [
+        1280,
+        900
+      ],
+      "bytes": 41779,
+      "sha256": "bb9c2a8cac5e71c7c53108eaf3f061af65bd7f83876a7d0cba87693f60d7df0f",
+      "decision": "use-current",
+      "reason": "本轮root实际访问已部署版本截图。页面数据及主题以截图时状态为准，不能视为业务E2E完成。",
+      "sourceEvidence": "root本轮截图说明；对应发布基准frontend8df1557/H59e3a845",
+      "mimeType": "image/jpeg",
+      "extensionMismatch": true,
+      "ingestionNote": "原文件扩展名.png但内容JPEG；正式图版请按.jpg复制或规范转码，不仅修改MIME。"
+    },
+    {
+      "id": "current-admin-login-dark",
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/assets/admin-login-dark.png",
+      "exists": true,
+      "topic": "统一后台登录",
+      "theme": "dark",
+      "dimensions": [
+        1280,
+        900
+      ],
+      "bytes": 41194,
+      "sha256": "70149f41830ee01c6b66fb4fb5d2c5f0042be85d42191d8ad5fe283b1a795577",
+      "decision": "use-current",
+      "reason": "本轮root实际访问已部署版本截图。页面数据及主题以截图时状态为准，不能视为业务E2E完成。",
+      "sourceEvidence": "root本轮截图说明；对应发布基准frontend8df1557/H59e3a845",
+      "mimeType": "image/jpeg",
+      "extensionMismatch": true,
+      "ingestionNote": "原文件扩展名.png但内容JPEG；正式图版请按.jpg复制或规范转码，不仅修改MIME。"
+    },
+    {
+      "id": "current-temple-navigation-light",
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/assets/temple-navigation-light.png",
+      "exists": true,
+      "topic": "寺院导航裁切",
+      "theme": "light",
+      "dimensions": [
+        240,
+        620
+      ],
+      "bytes": 9439,
+      "sha256": "cf5828fbb121e9b4c7351e10fa82200af81fd0a98810960158914640c4c0742f",
+      "decision": "exclude",
+      "reason": "root目视复核发现裁切仍含右侧经营卡片和底部账号，不适合发布。保留原始证据；正文及发布目录不收录。",
+      "sourceEvidence": "root 2026-09-13 最终视觉复核消息",
+      "mimeType": "image/jpeg",
+      "extensionMismatch": true,
+      "ingestionNote": "原文件扩展名.png但内容JPEG；正式图版请按.jpg复制或规范转码，不仅修改MIME。"
+    },
+    {
+      "id": "current-temple-navigation-dark",
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/assets/temple-navigation-dark.png",
+      "exists": true,
+      "topic": "寺院导航裁切",
+      "theme": "dark",
+      "dimensions": [
+        240,
+        620
+      ],
+      "bytes": 8980,
+      "sha256": "429532fc39babf976989a73967e7ae4179e928825b1febd3c2f8aa3ff93358c4",
+      "decision": "exclude",
+      "reason": "root目视复核发现裁切仍含右侧经营卡片和底部账号，不适合发布。保留原始证据；正文及发布目录不收录。",
+      "sourceEvidence": "root 2026-09-13 最终视觉复核消息",
+      "mimeType": "image/jpeg",
+      "extensionMismatch": true,
+      "ingestionNote": "原文件扩展名.png但内容JPEG；正式图版请按.jpg复制或规范转码，不仅修改MIME。"
+    },
+    {
+      "id": "current-h5-master-login",
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/assets/h5-master-login-light.png",
+      "exists": true,
+      "topic": "法师登录",
+      "theme": "light",
+      "dimensions": [
+        390,
+        844
+      ],
+      "bytes": 15658,
+      "sha256": "6f1ca0092800a31870ec0c2de4e2ed73b3d09e9a4024ff5eb67764039103e721",
+      "decision": "use-current",
+      "reason": "本轮root实际访问截图，可说明master身份与浅色外观；尚无对应深色图。",
+      "sourceEvidence": "root本轮截图说明",
+      "mimeType": "image/jpeg",
+      "extensionMismatch": true,
+      "ingestionNote": "原文件扩展名.png但内容JPEG；正式图版请按.jpg复制或规范转码，不仅修改MIME。"
+    },
+    {
+      "id": "old-admin-desktop",
+      "path": "/Users/gaofeng/develop/DongFang/askXuan-docs/assets/product-typography/admin-desktop.png",
+      "exists": true,
+      "topic": "后台旧字体布局",
+      "theme": null,
+      "dimensions": [
+        1440,
+        1000
+      ],
+      "bytes": 131457,
+      "sha256": "bb6417dfd298681206ce40dd10f97446719c495135c553695a7c6f96c2a3f53a",
+      "decision": "do-not-use-as-current",
+      "reason": "早于本轮新品牌和最新交互。已有旧logo/旧配色或旧控件；当前手册优先本轮新截图。",
+      "sourceEvidence": "askXuan-docs/specs/014-product-typography/README.md",
+      "mimeType": "image/png"
+    },
+    {
+      "id": "old-admin-320",
+      "path": "/Users/gaofeng/develop/DongFang/askXuan-docs/assets/product-typography/admin-320.png",
+      "exists": true,
+      "topic": "后台窄屏旧字体布局",
+      "theme": null,
+      "dimensions": [
+        320,
+        2011
+      ],
+      "bytes": 94747,
+      "sha256": "274f065713cd5ace001482aa834ffa9a9830ab0dbf2b283888c991c1cf05b3be",
+      "decision": "do-not-use-as-current",
+      "reason": "早于本轮新品牌和最新交互。已有旧logo/旧配色或旧控件；当前手册优先本轮新截图。",
+      "sourceEvidence": "askXuan-docs/specs/014-product-typography/README.md",
+      "mimeType": "image/png"
+    },
+    {
+      "id": "old-temple-desktop",
+      "path": "/Users/gaofeng/develop/DongFang/askXuan-docs/assets/product-typography/temple-desktop.png",
+      "exists": true,
+      "topic": "寺院旧布局",
+      "theme": null,
+      "dimensions": [
+        1440,
+        1000
+      ],
+      "bytes": 108486,
+      "sha256": "5ee66dfafc1868bc014ead4d57638761a1f6f3f37d793af7b928c5e8f1854ab7",
+      "decision": "do-not-use-as-current",
+      "reason": "早于本轮新品牌和最新交互。已有旧logo/旧配色或旧控件；当前手册优先本轮新截图。",
+      "sourceEvidence": "askXuan-docs/specs/014-product-typography/README.md",
+      "mimeType": "image/png"
+    },
+    {
+      "id": "old-h5-ai-topic-375",
+      "path": "/Users/gaofeng/develop/DongFang/askXuan-docs/assets/product-typography/h5-ai-topic-375.png",
+      "exists": true,
+      "topic": "旧AI主题页",
+      "theme": null,
+      "dimensions": [
+        375,
+        900
+      ],
+      "bytes": 58562,
+      "sha256": "fffcaa43157498cb9fb8b91542d8fdba9c4ce2b36d929855acd7547f67880cc2",
+      "decision": "do-not-use-as-current",
+      "reason": "早于本轮新品牌和最新交互。已有旧logo/旧配色或旧控件；当前手册优先本轮新截图。",
+      "sourceEvidence": "askXuan-docs/specs/014-product-typography/README.md",
+      "mimeType": "image/png"
+    },
+    {
+      "id": "old-ios-type-390",
+      "path": "/Users/gaofeng/develop/DongFang/askXuan-docs/assets/product-typography/ios-type-390.png",
+      "exists": true,
+      "topic": "原生字体样张",
+      "theme": null,
+      "dimensions": [
+        1170,
+        2100
+      ],
+      "bytes": 366784,
+      "sha256": "e19a5838bd74c2f3abaa25048492442a2922912154530a312fe839b4f5cfa25b",
+      "decision": "do-not-use-as-current",
+      "reason": "早于本轮新品牌和最新交互。这是字体测试板、有黑色上下留白，不是真实原生业务页；只能明确标注字形样张。",
+      "sourceEvidence": "askXuan-docs/specs/014-product-typography/README.md",
+      "mimeType": "image/png"
+    },
+    {
+      "id": "excluded-concept",
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/brand-identity-20260913/concept-exploration.png",
+      "exists": true,
+      "topic": "品牌概念探索",
+      "theme": null,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 1609101,
+      "sha256": "f808cb56e9cba583973972922463ca2537814e41b09394f0a1eeda436715982b",
+      "decision": "exclude",
+      "reason": "AI概念方向，正式SVG已重新编写，不是正式标识来源图。",
+      "sourceEvidence": "artifacts/brand-identity-20260913/verification.md",
+      "mimeType": "image/png"
+    },
+    {
+      "id": "excluded-springboard",
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/brand-identity-20260913/ios/ios-logo-unaccepted-simulator-springboard.png",
+      "exists": true,
+      "topic": "模拟器未完成验收",
+      "theme": null,
+      "dimensions": [
+        1206,
+        2622
+      ],
+      "bytes": 145695,
+      "sha256": "d3ff83520e72d8136b6eb2b5fcd1a7e74d1926ebdbd385e434b132bf1f5e37ec",
+      "decision": "exclude",
+      "reason": "文件明确unaccepted；不能暗示两款原生完整外观或真机验证。",
+      "sourceEvidence": "artifacts/brand-identity-20260913/ios/ios-logo.md",
+      "mimeType": "image/png"
+    }
+  ],
+  "captureGaps": [
+    {
+      "figure": "V01",
+      "subject": "完整语义色色板",
+      "method": "由手册色表生成，标明界面色与Logo专用色"
+    },
+    {
+      "figure": "V03-desktop",
+      "subject": "DIY 557px和桌面5:4画布",
+      "method": "按本轮当前代码新截图；390px已有"
+    },
+    {
+      "figure": "V04",
+      "subject": "DIY订单长名称/物流/展开/第二页为空",
+      "method": "复用本地隔离假数据夹具，标注演示数据，禁止真实支付/收货"
+    },
+    {
+      "figure": "V05-table",
+      "subject": "后台静态骨架/空态/错误/固定操作列",
+      "method": "本地假数据真实组件截图，不能从历史经营页面抽取敏感数据"
+    },
+    {
+      "figure": "V06",
+      "subject": "H5 busy与嵌套弹层焦点状态",
+      "method": "本地实际组件夹具，不提交真实业务"
+    },
+    {
+      "figure": "V07",
+      "subject": "原生实屏与Dynamic Type",
+      "method": "设备证据未全具备前不用旧字体板冒充；可放清晰标注的规范示意"
+    }
+  ],
+  "recordsWithoutReusablePng": [
+    "artifacts/global-ui-20260912/verification/browser-after-release.json",
+    "artifacts/product-motion-20260912/verification/browser-local.json",
+    "artifacts/diy-review-20260912/browser-local.json",
+    "artifacts/diy-orders-20260912/local-browser-verification.json"
+  ],
+  "notes": [
+    "以上记录证明当时执行过检查，但检查中显示的截图未作为相应独立PNG归档，不伪造图片路径。",
+    "本清单不复制或修改图像；root负责正式排版、必要裁切及PDF生成。",
+    "本轮root原始截图11张实际为JPEG/JFIF，原文件后缀.png；清单按文件头校验并记录真实MIME、像素尺寸与SHA。",
+    "最终图版白名单排除寺院导航两图，实际可发布当日截图为9张；原始证据保留。",
+    "最终 PDF 修订时重拍浅色首页；源 .png 与发布 .jpg 均为同一 JPEG 原始字节，最新 SHA 已同步，底部导航清晰。"
+  ],
+  "deliveredFigures": [
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/docs/assets/handbooks-20260913/h5-home-light.jpg",
+      "caption": "信众首页，东方浅色",
+      "width": 390,
+      "height": 844,
+      "sha256": "afce82b93255af8a300a94016887c3f655437a63be2a154c95bded1ebb30132c"
+    },
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/docs/assets/handbooks-20260913/h5-home-dark.jpg",
+      "caption": "信众首页，深棕朱砂",
+      "width": 390,
+      "height": 844,
+      "sha256": "ae975601e1d1899822979a10486d993767f1fa04e5e0eed3d36c7a5a407f5067"
+    },
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/docs/assets/handbooks-20260913/plate-01-colors.png",
+      "caption": "双主题完整语义色板",
+      "width": 1400,
+      "height": 950,
+      "sha256": "888f6ca96433ac96fa1fe1d565d8315c53e7208ff30a1239581cdd94473feb66"
+    },
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/docs/assets/handbooks-20260913/plate-02-logos.png",
+      "caption": "六枚品牌标识的浅深配对",
+      "width": 1400,
+      "height": 950,
+      "sha256": "938c219e390a8eb783b55b089cf2d73d1fb80349a48b2fa2e4dc05301220e33c"
+    },
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/docs/assets/handbooks-20260913/admin-login-light.jpg",
+      "caption": "统一运营管理台浅色登录",
+      "width": 1280,
+      "height": 900,
+      "sha256": "bb9c2a8cac5e71c7c53108eaf3f061af65bd7f83876a7d0cba87693f60d7df0f"
+    },
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/docs/assets/handbooks-20260913/admin-login-dark.jpg",
+      "caption": "统一运营管理台深色登录",
+      "width": 1280,
+      "height": 900,
+      "sha256": "70149f41830ee01c6b66fb4fb5d2c5f0042be85d42191d8ad5fe283b1a795577"
+    },
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/docs/assets/handbooks-20260913/plate-03-typography.png",
+      "caption": "文字层级与 Web、iOS 字号角色差异",
+      "width": 1400,
+      "height": 950,
+      "sha256": "e4f9d52ae7620d7b7763a44fdb532b4936fd121a1626af9dd972b42c35c6ae93"
+    },
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/docs/assets/handbooks-20260913/plate-05-components.png",
+      "caption": "按钮、输入、选择、数据加载和空错状态",
+      "width": 1400,
+      "height": 950,
+      "sha256": "9da592722ab563061f88f7074f744e1938059370e39ee197abe09cf9c4b7109f"
+    },
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/docs/assets/handbooks-20260913/plate-04-motion.png",
+      "caption": "Web 与 iOS 动效节奏及减少动态效果",
+      "width": 1400,
+      "height": 950,
+      "sha256": "fdb7ab7efe53bb081e108050f9d4b9f47a55e8f8e44953ff7a72476ec11fef1d"
+    },
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/docs/assets/handbooks-20260913/h5-diy-light.jpg",
+      "caption": "东方珠作浅色编辑工作台",
+      "width": 390,
+      "height": 844,
+      "sha256": "ad54fc2d8764e21a0fdef6d2e32612f88761f3be8fcd20564008f9de78540152"
+    },
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/docs/assets/handbooks-20260913/h5-diy-dark.jpg",
+      "caption": "东方珠作深色编辑工作台",
+      "width": 390,
+      "height": 844,
+      "sha256": "98f7daecde52fd569685805daecaecb6018091739068286ca0cca5b30d78aa1f"
+    },
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/docs/assets/handbooks-20260913/h5-materials-light.jpg",
+      "caption": "东方珠作浅色选材区",
+      "width": 390,
+      "height": 844,
+      "sha256": "fc78a8458020d69aaf7df49b6954683a7a7cd3e99a2bcef13be8bac301eac3a9"
+    },
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/docs/assets/handbooks-20260913/h5-materials-dark.jpg",
+      "caption": "东方珠作深色选材区",
+      "width": 390,
+      "height": 844,
+      "sha256": "43ccf65dee852a01ec8b1e872fdb98e006bf42cc067821742d5d2310d799a945"
+    },
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/docs/assets/handbooks-20260913/plate-06-diy-orders.png",
+      "caption": "DIY 订单摘要和成交明细规范示意",
+      "width": 1400,
+      "height": 950,
+      "sha256": "cadf4ebb18f6283f607ba64d09b0d21f4e1518bf976a0b014fb0e85c97efc7e8"
+    },
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/docs/assets/handbooks-20260913/h5-master-login-light.jpg",
+      "caption": "法师 H5 浅色登录页",
+      "width": 390,
+      "height": 844,
+      "sha256": "6f1ca0092800a31870ec0c2de4e2ed73b3d09e9a4024ff5eb67764039103e721"
+    }
+  ],
+  "plateBuilder": "docs/scripts/build-handbook-plates.py",
+  "plateVerification": {
+    "count": 6,
+    "size": [
+      1400,
+      950
+    ],
+    "renderEngine": "ReportLab → Poppler at 72 dpi",
+    "visualInspection": "6/6 inspected; no overlapping text or clipped content; final color alpha verified",
+    "screenshotCopies": "9/9 byte-identical JPEGs with corrected extension; 2 temple crops excluded",
+    "imageReferences": "15/15 resolve; 4 screenshot pairs use consecutive Markdown image lines",
+    "intermediatePdfs": "TemporaryDirectory removed after rendering",
+    "mockOrder": "DEMO only; 180+72+26+20=298 materials; plus30=328; quantities10+6+1+1=18"
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "reviewedAt": "2026-09-12T18:33:48.266817+00:00",
+  "reviewer": "/root/admin_motion_type",
+  "document": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/output/pdf/问玄东方_视觉设计与交互手册.pdf",
+  "sha256": "3e3d902326873cab2e23dfa32b4860a8fb2b3fa165ca6f961391a4a120086db4",
+  "pageCount": 29,
+  "sourceBasis": {
+    "frontend": "8df155727224fcbdbfe67d3eeb3695003eaf24e1",
+    "h5": "9e3a8457144cbfd9fde07a8342f059b0f990d45f"
+  },
+  "result": "PASS",
+  "scope": "前版后半全页审阅，加最终版指定修复与受影响后续页复核；此记录不把其他代理的审阅当成本代理独立目视。",
+  "reviewPasses": [
+    {
+      "version": "previous",
+      "sha256Prefix": "ead3f77c",
+      "pageCount": 28,
+      "renderDirectory": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/tmp/pdfs/review/问玄东方_视觉设计与交互手册",
+      "contactSheets": [
+        "contact-04.jpg",
+        "contact-05.jpg",
+        "contact-06.jpg",
+        "contact-07.jpg"
+      ],
+      "pagesVisuallyReviewed": [
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28
+      ],
+      "fullPageChecks": [
+        14,
+        18,
+        21,
+        23,
+        24,
+        25,
+        27,
+        28
+      ],
+      "findings": [
+        "图 6 图注与图片分离，独占第 19 页。",
+        "图 9 图注与第 24 页选材图分离，位于第 25 页。"
+      ],
+      "otherReview": {
+        "reviewer": "/root",
+        "pages": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "basis": "parent message: 已目视 1–12 页；未冒充本代理审阅。"
+      }
+    },
+    {
+      "version": "final",
+      "sha256": "3e3d902326873cab2e23dfa32b4860a8fb2b3fa165ca6f961391a4a120086db4",
+      "pageCount": 29,
+      "renderDirectory": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/tmp/pdfs/approved-review/问玄东方_视觉设计与交互手册",
+      "contactSheets": [
+        "contact-06.jpg",
+        "contact-07.jpg",
+        "contact-08.jpg"
+      ],
+      "contactSheetPages": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "fullPageChecks": [
+        5,
+        18,
+        19,
+        24,
+        25
+      ],
+      "pagesVisuallyReviewed": [
+        5,
+        18,
+        19,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "findings": []
+    }
+  ],
+  "fixVerification": [
+    {
+      "issue": "浅色首页底栏模糊",
+      "finalPages": [
+        5
+      ],
+      "result": "PASS",
+      "observation": "首页浅色底栏五个图标与文字清晰；浅深截图和图 1 完整图注位于同页。"
+    },
+    {
+      "issue": "图 6 正式图注孤立",
+      "previousPages": [
+        18,
+        19
+      ],
+      "finalPages": [
+        18,
+        19
+      ],
+      "result": "PASS",
+      "observation": "组件图、图下简述和完整图 6 图注共同位于第 19 页；第 18 页保留完整正文。"
+    },
+    {
+      "issue": "图 9 正式图注跨页",
+      "previousPages": [
+        24,
+        25
+      ],
+      "finalPages": [
+        24,
+        25
+      ],
+      "result": "PASS",
+      "observation": "选材浅深两图、图下简述和完整图 9 图注共同位于第 25 页；下一节标题与首段仍同页。"
+    },
+    {
+      "issue": "修复后的后续页流与图版可读性",
+      "finalPages": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "result": "PASS",
+      "observation": "动效图、DIY 编辑器、选材、订单示意、端差异表和法师登录图均无裁切或重叠，图文顺序正确；图 10/11 与各自图像同页。"
+    }
+  ],
+  "homeLightRecapture": {
+    "source": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/assets/h5-home-light.png",
+    "published": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/docs/assets/handbooks-20260913/h5-home-light.jpg",
+    "sha256": "afce82b93255af8a300a94016887c3f655437a63be2a154c95bded1ebb30132c",
+    "bytes": 45602,
+    "dimensions": [
+      390,
+      844
+    ],
+    "format": "JPEG",
+    "byteIdentical": true,
+    "previousSha256": "6c35bec0a01e34d2155a8abe29e3f89dfaae34044a0eff8fa2c5f35762725007"
+  },
+  "renderEvidence": [
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/tmp/pdfs/approved-review/问玄东方_视觉设计与交互手册/page-05.png",
+      "sha256": "f6ade06e5756023b2bdec69b1cee4d243b4a66834ddddb4bbc2e24c3e81192b1"
+    },
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/tmp/pdfs/approved-review/问玄东方_视觉设计与交互手册/page-18.png",
+      "sha256": "b3d6ee5c5316688887888fe899ff26e90afa43fba03df535c64b695547e30db8"
+    },
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/tmp/pdfs/approved-review/问玄东方_视觉设计与交互手册/page-19.png",
+      "sha256": "ce43c8296acdb068c25060d4674b749d6339e7068eac74eb9d27222f9922afa6"
+    },
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/tmp/pdfs/approved-review/问玄东方_视觉设计与交互手册/page-24.png",
+      "sha256": "b39300befadff4267386d0e76a2c93ddc77fc3963e5474c0ad3ab6a7647e45e5"
+    },
+    {
+      "path": "/Users/gaofeng/develop/DongFang/artifacts/product-handbooks-20260913/docs/tmp/pdfs/approved-review/问玄东方_视觉设计与交互手册/page-25.png",
+      "sha256": "d6925cdadadff7f1a6d115ef78ba009347dd1f32e27d2cb7c44edc2c2267e6d8"
+    }
+  ],
+  "remainingIssues": [],
+  "limitations": [
+    "截图与规范图证明本手册的视觉表达；不替代业务 E2E 或 iOS 真机验收。",
+    "本次未重建图版、修改正文或最终 PDF。"
+  ]
+}

@@ -1,6 +1,8 @@
 # 报告目录与历史口径
 
-当前结论从[2026-09-13 产品与文档核验](2026-09-13-产品与文档核验.md)进入，操作说明见[产品手册](../guides/产品使用手册.md)。旧报告保存当时证据，不覆盖后续实现。根工作区 `artifacts/README.md` 提供可点击的完整本地目录索引；下表路径均相对 `DongFang/`，独立克隆本仓时不要求附带大型发布包。
+本次手册/PDF 更新见[手册更新核验](2026-09-13-产品手册与PDF更新.md)，当前阅读入口为[四册手册目录](../guides/手册目录.md)。
+
+产品实现核对结论从[2026-09-13 产品与文档核验](2026-09-13-产品与文档核验.md)进入，操作说明见[产品手册](../guides/产品使用手册.md)。旧报告保存当时证据，不覆盖后续实现。根工作区 `artifacts/README.md` 提供可点击的完整本地目录索引；下表路径均相对 `DongFang/`，独立克隆本仓时不要求附带大型发布包。
 
 ## 持续维护的产品文档
 
@@ -9,13 +11,14 @@
 | 产品功能、平台差异 | [产品现状与能力边界](../product/产品现状与能力边界.md) · [功能矩阵](../product/功能对齐矩阵.md) |
 | DIY 流程 | [当前能力审计](../product/DIY手串全流程能力审计.md) |
 | 全端一致性旧问题追踪 | [业务逻辑审计及 2026-09-13 校正](../product/业务逻辑对齐审计报告.md) |
-| 视觉/交互 | [UI 蓝图及当前校正](../product/五端UI重绘蓝图.md) · [回归用例](../product/五端视觉回归与业务闭环用例.md) |
+| 视觉/交互 | [视觉设计与交互手册](../guides/视觉设计与交互手册.md) |
 | CI / 部署 | [GitHub Actions 与 ECS](../deployment/GITHUB-ACTIONS.md) · [聊天发布](../deployment/CHAT.md) |
 
 ## 近期证据索引
 
 | 主题/日期 | 本地原始目录 | 当前阅读提示 |
 | --- | --- | --- |
+| 手册/PDF 更新 09-13 | `artifacts/product-handbooks-20260913/` | 7 份旧 PDF 重编为 4 册；当前图版、历史映射和版面核验 |
 | 品牌重绘 09-13 | `artifacts/brand-identity-20260913/verification.md` | 最新 Web/H5 发布；六款标识，109 项资源核验，iOS 无签名构建；CI cancelled 与 receiver deployed 分开 |
 | 本地清理/文档 09-13 | `artifacts/maintenance-20260913/` | 35 目录精确删除、保护项 hash、文档/API/原型检查 |
 | DIY 材料筛选 09-12 | `artifacts/diy-material-sidebar-20260912/` | 竖向分类、五行上移、删除冗余；后续品牌版包含 |
@@ -33,7 +36,7 @@
 | 统一后台 09-10 | `artifacts/unified-admin-20260910/README.md` | 旧商城兼容跳转、平台/商城角色分权 |
 | 积分与活动 09-09～10 | `artifacts/points-rewards-20260910/README.md`、`artifacts/points-live-20260910/`、`artifacts/free-rewards-20260909/` | **当前参与消耗正整数积分**；free-rewards 目录/旧标题是历史命名，不是当前免费承诺 |
 | 体验商城/转盘 09-10 | `artifacts/reward-demo-motion-20260910/README.md`、`artifacts/wheel-focus-20260910/` | 体验商城与普通商城、积分和功德值分别说明 |
-| 演示/研究材料 | `artifacts/askxuan-partner-deck/`、`artifacts/askxuan-strategy-deck/`、`artifacts/tianji-research/` | 保留演示文稿/PDF及可编辑源；定位/规划不是上线验收 |
+| 演示/研究材料 | `artifacts/askxuan-partner-deck/`、`artifacts/askxuan-strategy-deck/`、`artifacts/tianji-research/` | 原文件保留为历史版本；当前阅读改用四册手册，定位/规划不是上线验收 |
 
 其余专题与截图从本地完整索引检索。构建 `dist` 已删除时，可由源码重建；这不影响已保留的 CI 原包、发布回执和截图证据。
 
@@ -45,3 +48,5 @@
 - [2026-09-04 全端业务审计](history/2026-09-04-业务逻辑对齐审计报告.md)：历史结论；仅调整归档后的相对链接。
 
 历史报告不追改原始通过率、不抹去失败记录；当前报告说明后续修正。新报告至少写核对日期、源码提交、测试环境、部署回执和未验收项，避免出现没有证据支撑的“全部完成”。
+
+- [旧产品方案快照与映射](history/product-before-handbooks-20260913/README.md)：保留原技术方案和阶段问题，原链接现指向相应手册。

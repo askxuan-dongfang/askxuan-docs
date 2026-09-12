@@ -24,3 +24,7 @@ _site/
 
 # 日志
 *.log
+
+# 手册排版临时渲染，正式 PDF 位于 output/pdf
+/tmp/
+__pycache__/
