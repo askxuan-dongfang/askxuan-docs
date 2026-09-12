@@ -1,9 +1,11 @@
-# 问玄东方全栈接口文档（面向 5 个端侧客户端）
+# 问玄东方全栈接口文档（H5、iOS 与管理端）
 
-**文档版本**：2026-09-11
-**网关地址**：`http://localhost:8080`（本地开发）/ `https://api.askxuan.com`（生产）
-**网关模型**：自研 net/http + httputil.ReverseProxy，23 条公开业务路由 + 2 条 IM 路由 + 26 条管理台路由 = 51 条 Prefix；最长前缀匹配，动态服务发现优先、静态 Target 回退
-**接口总数**：339 个唯一运行时 HTTP 契约（由 `.api`、Provider、`routes.go` 与本文档机器对比）
+**文档版本**：2026-09-13
+**网关地址**：本地默认 `http://localhost:8080`；当前演示站点使用同源 `/api/v1`。iOS 和部署环境按各自配置，不将示例域名视为已验证生产地址。
+**网关模型**：自研 net/http + httputil.ReverseProxy；最长前缀匹配，动态服务发现优先、静态 Target 回退。前缀配置以 gateway.yaml 为准，见附录 B。
+**接口总数**：19 个业务服务的 383 个唯一 HTTP 契约；使用本文档仓 `scripts/audit-api-contracts.mjs` 扫描显式及数据驱动路由，与本文表格按方法和路径去重对比（后端 6113333）。网关 `/api/v1/health` 与 OpenIM 透传不计入该业务接口总数。这不代表 383 项业务端到端验收。
+
+> 当前端范围、登录过期处理和模拟支付边界见[产品现状与能力边界](docs/product/产品现状与能力边界.md)。下列旧客户端调用列不是 H5 功能缺失清单；备用 Expo 不属于本轮正式体验验收范围。
 
 **文档结构**：
 
@@ -66,7 +68,7 @@
 # 上篇：客户端视角
 
 > 本篇按 6 个端侧客户端分章，回答"每个客户端调用哪些接口"。
-> 两个 iOS C 端（ios-customer + mobile-customer）合并为第一章。
+> 原生信众 iOS 与备用 Expo（mobile-customer）合并为第一章，H5 复用业务契约；法师 H5 参照法师角色章节。
 
 ---
 
@@ -1423,40 +1425,40 @@
 
 ---
 
-## 下篇总结：后端服务接口统计
+## 下篇总结：后端运行时接口统计（2026-09-13）
 
-| 序号 | 服务名 | 端口 | C 端 | 管理台 | 总计 | 鉴权情况 |
-|------|--------|------|-----|-------|------|---------|
-| 6 | auth-service | 8081 | 4 | 8 | 12 | ✅ 管理台 jwt |
-| 7 | user-service | 8082 | 7 | 3 | 10 | ✅ 管理台 jwt |
-| 8 | temple-service | 8083 | 6 | 19 | 25 | ✅ 管理台 jwt |
-| 9 | master-service | 8084 | 2 | 21 | 23 | ✅ 管理台 jwt |
-| 10 | booking-service | 8085 | 11 | 13 | 24 | ✅ 运行时统一 JWT 中间件；聊天校验支付与归属 |
-| 11 | product-service | 8086 | 4 | 12 | 16 | ✅ 管理台 jwt |
-| 12 | diy-service | 8088 | 9 | 13 | 22 | ✅ 管理台 jwt |
-| 13 | order-service | 8089 | 5 | 6 | 11 | ✅ 管理台 jwt |
-| 14 | payment-service | 8090 | 5 | 0 | 5 | ✅ refund jwt |
-| 15 | review-service | 8092 | 3 | 7 | 10 | ⚠️ 通用管理接口未声明 jwt；法师接口有 jwt |
-| 16 | finance-service | 8091 | 0 | 11 | 11 | ⚠️ 管理台未声明 jwt |
-| 17 | audit-service | 8093 | 0 | 10 | 10 | ⚠️ 管理台未声明 jwt |
-| 18 | message-service | 8094 | 9 | 10 | 19 | ⚠️ 部分管理台未声明 jwt |
-| 19 | logistics-service | 8095 | 0 | 8 | 8 | ⚠️ 管理台未声明 jwt |
-| 20 | marketing-service | 8096 | 6 | 11 | 17 | ⚠️ 管理台未声明 jwt |
-| 21 | file-service | 8097 | 2 | 4 | 6 | ✅ 网关限制平台超管 |
-| 22 | ai-service | 8098 | 11 | 0 | 11 | ✅ 会话所有权、附件来源和轨迹查询校验 |
-| 23 | media-service | 8100 | 3 | 7 | 12 | ✅ 所有权/角色/回调令牌 |
-| 24 | community-service | 8099 | 8 | 10 | 18 | ✅ 所有权/角色/审核事务 |
-| **`.api` 合计** | — | — | **95** | **173** | **270** | — |
+按注册路由归属计数，包含公开、用户、管理、回调接口，不按过时的 `.api` 声明推断当前鉴权。授权以 gateway 中间件与具体 handler/logic 为准；服务不得绕过网关对公网暴露。
 
-> `.api`、Provider 回调及服务直接注册路由去重后，完整运行时 HTTP 契约为 318 条。执行 `node scripts/audit-api-reference.mjs` 可复核源码与本文档，统计以机器扫描结果为准。
+| 服务 | 唯一 HTTP 契约 |
+| --- | ---: |
+| ai-service | 21 |
+| audit-service | 10 |
+| auth-service | 13 |
+| booking-service | 48 |
+| community-service | 19 |
+| diy-service | 31 |
+| file-service | 6 |
+| finance-service | 12 |
+| logistics-service | 8 |
+| marketing-service | 35 |
+| master-service | 32 |
+| media-service | 12 |
+| message-service | 21 |
+| order-service | 16 |
+| payment-service | 20 |
+| product-service | 24 |
+| review-service | 10 |
+| temple-service | 35 |
+| user-service | 10 |
+| **合计** | **383** |
 
-> ⚠️ **鉴权缺口**：review / finance / audit / message(部分) / logistics / marketing 共 6 个服务的管理台接口在 .api 文件中未声明 `jwt: Auth`，完全依赖网关鉴权。绕过网关直连服务端口即可无鉴权访问。
+执行文档仓 `node scripts/audit-api-contracts.mjs <后端路径>` 核验。旧后端脚本仅覆盖 routes.go/rewards.go 的 356 条，遗漏 27 条数据驱动/其他文件注册路由，不再用它判断全量覆盖。
 
 ---
 
 ## 补充运行时契约
 
-> 以下为服务在 `routes.go` 中直接注册、但不在早期 `.api` 统计中的正式路由。它们与上文分域契约共同构成 318 条运行时 HTTP 契约。
+> 以下为服务在 `routes.go` 中直接注册、但不在早期 `.api` 统计中的正式路由。它们与上文分域契约共同构成 383 条运行时 HTTP 契约。
 
 | 方法 | 路径 | 归属 | 请求字段 | 鉴权 | 说明 |
 |------|------|------|---------|------|------|
@@ -1515,68 +1517,71 @@
 
 ---
 
-## 附录 B：网关路由表（50 条 Prefix）
+## 附录 B：网关路由表（59 条配置前缀）
 
-### C 端与透传路由（25 条）
+本表来自后端 6113333 的 gateway.yaml；路径前缀数与业务 HTTP 契约数含义不同。鉴权/公开白名单另由 gateway 中间件控制。
 
-| 前缀 | 目标服务 | 端口 |
-|------|---------|------|
-| `/api/v1/auth` | auth-service | 8081 |
-| `/api/v1/users` | user-service | 8082 |
-| `/api/v1/temples` | temple-service | 8083 |
-| `/api/v1/beliefs` | temple-service | 8083 |
-| `/api/v1/masters` | master-service | 8084 |
-| `/api/v1/bookings` | booking-service | 8085 |
-| `/api/v1/products` | product-service | 8086 |
-| `/api/v1/intentions` | product-service | 8086 |
-| `/api/v1/diy` | diy-service | 8088 |
-| `/api/v1/orders` | order-service | 8089 |
-| `/api/v1/payments` | payment-service | 8090 |
-| `/api/v1/reviews` | review-service | 8092 |
-| `/api/v1/audit` | audit-service | 8093 |
-| `/api/v1/finance` | finance-service | 8091 |
-| `/api/v1/marketing` | marketing-service | 8096 |
-| `/api/v1/messages` | message-service | 8094 |
-| `/api/v1/announcements` | message-service | 8094 |
-| `/api/v1/files` | file-service | 8097 |
-| `/api/v1/ai` | ai-service | 8098 |
-| `/api/v1/community` | community-service | 8099 |
-| `/api/v1/media` | media-service | 8100 |
-| `/api/v1/live` | media-service | 8100 |
-| `/api/v1/logistics` | logistics-service | 8095 |
-| `/api/v1/im` | OpenIM | 10002 |
-| `/openim` | message-service | 8094 |
-
-### 管理台路由（26 条，最长前缀匹配）
-
-| 前缀 | 目标服务 | 端口 |
-|------|---------|------|
-| `/api/v1/admin/files` | file-service | 8097 |
-| `/api/v1/admin/platform/beliefs` | temple-service | 8083 |
-| `/api/v1/admin/platform/intentions` | product-service | 8086 |
-| `/api/v1/admin/auth` | auth-service | 8081 |
-| `/api/v1/admin/users` | user-service | 8082 |
-| `/api/v1/admin/temples/masters` | master-service | 8084 |
-| `/api/v1/admin/temples` | temple-service | 8083 |
-| `/api/v1/admin/platform/temples` | temple-service | 8083 |
-| `/api/v1/admin/masters/bookings` | booking-service | 8085 |
-| `/api/v1/admin/masters/community` | community-service | 8099 |
-| `/api/v1/admin/masters` | master-service | 8084 |
-| `/api/v1/admin/platform/masters` | master-service | 8084 |
-| `/api/v1/admin/platform/community` | community-service | 8099 |
-| `/api/v1/admin/bookings` | booking-service | 8085 |
-| `/api/v1/admin/messages` | message-service | 8094 |
-| `/api/v1/admin/announcements` | message-service | 8094 |
-| `/api/v1/admin/products` | product-service | 8086 |
-| `/api/v1/admin/diy` | diy-service | 8088 |
-| `/api/v1/admin/orders` | order-service | 8089 |
-| `/api/v1/admin/finance` | finance-service | 8091 |
-| `/api/v1/admin/platform/reviews` | review-service | 8092 |
-| `/api/v1/admin/reviews` | review-service | 8092 |
-| `/api/v1/admin/masters/reviews` | review-service | 8092 |
-| `/api/v1/admin/audit` | audit-service | 8093 |
-| `/api/v1/admin/logistics` | logistics-service | 8095 |
-| `/api/v1/admin/marketing` | marketing-service | 8096 |
+| 前缀 | 配置目标 |
+| --- | --- |
+| `/api/v1/auth` | `localhost:8081` |
+| `/api/v1/users` | `localhost:8082` |
+| `/api/v1/temples` | `localhost:8083` |
+| `/api/v1/beliefs` | `localhost:8083` |
+| `/api/v1/service-types` | `localhost:8083` |
+| `/api/v1/masters` | `localhost:8084` |
+| `/api/v1/bookings` | `localhost:8085` |
+| `/api/v1/consultations` | `localhost:8085` |
+| `/api/v1/master-bookings` | `localhost:8085` |
+| `/api/v1/chats` | `localhost:8085` |
+| `/api/v1/messages` | `localhost:8094` |
+| `/api/v1/announcements` | `localhost:8094` |
+| `/api/v1/files` | `localhost:8097` |
+| `/api/v1/products` | `localhost:8086` |
+| `/api/v1/intentions` | `localhost:8086` |
+| `/api/v1/diy` | `localhost:8088` |
+| `/api/v1/orders` | `localhost:8089` |
+| `/api/v1/payments` | `localhost:8090` |
+| `/api/v1/points` | `localhost:8090` |
+| `/api/v1/admin/points` | `localhost:8090` |
+| `/api/v1/logistics` | `localhost:8095` |
+| `/api/v1/reviews` | `localhost:8092` |
+| `/api/v1/audit` | `localhost:8093` |
+| `/api/v1/finance` | `localhost:8091` |
+| `/api/v1/marketing` | `localhost:8096` |
+| `/api/v1/ai` | `localhost:8098` |
+| `/api/v1/community` | `localhost:8099` |
+| `/api/v1/media` | `localhost:8100` |
+| `/api/v1/live` | `localhost:8100` |
+| `/api/v1/im` | `localhost:10002` |
+| `/openim` | `localhost:8094` |
+| `/api/v1/favorites/temples` | `localhost:8083` |
+| `/api/v1/favorites/products` | `localhost:8086` |
+| `/api/v1/admin/files` | `localhost:8097` |
+| `/api/v1/admin/platform/beliefs` | `localhost:8083` |
+| `/api/v1/admin/platform/intentions` | `localhost:8086` |
+| `/api/v1/admin/auth` | `localhost:8081` |
+| `/api/v1/admin/users` | `localhost:8082` |
+| `/api/v1/admin/temples/masters` | `localhost:8084` |
+| `/api/v1/admin/temples` | `localhost:8083` |
+| `/api/v1/admin/platform/temples` | `localhost:8083` |
+| `/api/v1/admin/masters/bookings` | `localhost:8085` |
+| `/api/v1/admin/masters/community` | `localhost:8099` |
+| `/api/v1/admin/masters` | `localhost:8084` |
+| `/api/v1/admin/platform/masters` | `localhost:8084` |
+| `/api/v1/admin/platform/community` | `localhost:8099` |
+| `/api/v1/admin/bookings` | `localhost:8085` |
+| `/api/v1/admin/messages` | `localhost:8094` |
+| `/api/v1/admin/announcements` | `localhost:8094` |
+| `/api/v1/admin/products` | `localhost:8086` |
+| `/api/v1/admin/diy` | `localhost:8088` |
+| `/api/v1/admin/orders` | `localhost:8089` |
+| `/api/v1/admin/finance` | `localhost:8091` |
+| `/api/v1/admin/platform/reviews` | `localhost:8092` |
+| `/api/v1/admin/reviews` | `localhost:8092` |
+| `/api/v1/admin/masters/reviews` | `localhost:8092` |
+| `/api/v1/admin/audit` | `localhost:8093` |
+| `/api/v1/admin/logistics` | `localhost:8095` |
+| `/api/v1/admin/marketing` | `localhost:8096` |
 
 ---
 
@@ -1636,7 +1641,7 @@
 
 ---
 
-**文档完成。本接口文档基于 2026-09-02 项目代码状态整理，覆盖 5 个正式客户端、H5、备用 mobile-customer、Provider 回调与显式注册路由涉及的 318 个唯一运行时 HTTP 契约。**
+> 前述章节包含早期实现说明，当前契约总数与更新日期以上文为准；后续增量章节是本文组成部分。
 
 ---
 
@@ -1776,3 +1781,65 @@ DIY `GET /diy/orders`、`GET /diy/orders/:id` 和管理台订单详情新增可�
 - 大师分类统一使用 `daoism`，公开查询兼容旧 `taoism` 参数与历史数据。保留在架 W001–W004 和原有下架 W005；新增 W006 明觉居士（演示，藏传佛教）、W007 守礼先生（演示，民间信仰）。
 
 本次只接通 H5 首页广告；iOS 本次同步大师类别文案。数据库执行记录见规格 023 与发布记录，不能把 CI 契约基线理解为全量 SQL 执行记录。
+
+
+## 2026-09-13：模型、聊天与活动详情契约补齐
+
+本次补入遗漏的 13 条已注册接口，属于文档修正，不代表本日新部署这些能力。聊天接口均验证当前用户为会话成员，发送、上传、开始/接受通话另需有效会话权益。
+
+| 方法 | 路径 | 请求/返回与约束 | 鉴权 |
+| --- | --- | --- | --- |
+| GET | `/api/v1/ai/models` | 返回当前 Provider 模型目录；失败返回 50301；响应 no-store，不返回服务端密钥 | Bearer |
+| GET | `/api/v1/chats/:id` | 返回会话、对方信息、canChat、有效期及双方已读游标 | Bearer + 成员 |
+| GET | `/api/v1/chats/unread` | 当前用户的会话未读汇总；不可用消息列表长度代替 | Bearer |
+| POST | `/api/v1/chats/:id/read` | JSON `throughId`，提交已读到的消息游标 | Bearer + 成员 |
+| POST | `/api/v1/chats/:id/attachments` | multipart `file`、可选 `duration`；单文件最大 20 MiB、每日上传总量 200 MiB；返回私有 attachment 元数据 | Bearer + 有效权益 |
+| GET | `/api/v1/chats/:id/attachments/:attachment` | 私有附件内容；对方只能下载已成功发送消息引用的附件 | Bearer + 成员 |
+| GET | `/api/v1/chats/:id/call-capabilities` | 返回 `enabled` 与临时 `iceServers`；未配置 TURN 时关闭 | Bearer + 成员 |
+| GET | `/api/v1/chats/:id/calls` | 返回该会话当前活动通话及对方信令；`after` 为信令游标，不是通话历史分页 | Bearer + 成员 |
+| GET | `/api/v1/chats/:id/calls/:call` | 返回指定通话及游标后的对方信令 | Bearer + 通话参与者 |
+| POST | `/api/v1/chats/:id/calls` | 开始通话：`action=start`、`kind=audio/video`、`sdp`、UUID `clientId`；依赖服务能力开启 | Bearer + 有效权益 |
+| POST | `/api/v1/chats/:id/calls/:call` | `action=accept/reject/end/heartbeat/candidate`；按动作提交 `sdp/candidate`，核验主被叫与状态 | Bearer + 通话参与者 |
+| GET | `/api/v1/chats/incoming-call` | 当前用户的前台来电查询；不是 APNs 到达证明 | Bearer |
+| GET | `/api/v1/marketing/activities/:id` | 公开可展示活动详情；非可展示活动返回不可用，不能读取草稿 | 公开 GET |
+
+聊天消息发送已支持 `kind=text/image/audio/video/file` 与 `attachmentId`；上传完成不等于发送成功，先上传、再用稳定 `clientMessageId` 发消息。旧章节“仅文字”属于首版范围。未发送附件草稿超过 6 天不能继续发送。
+
+公网音视频按既有决定暂未启用，APNs 和真实 iPhone WebKit 媒体验收仍待完成，详见[聊天部署记录](docs/deployment/CHAT.md)。模型选择与 Provider 管理见[模型目录规格](specs/025-ai-model-selection/README.md)和[AI Provider 管理规格](specs/026-ai-provider-admin/README.md)。
+
+
+### 数据驱动注册补充（27 条）
+
+这些接口之前散见积分、AI 规格或短路径表格；现统一列出完整路径用于机器核验。全部要求登录：AI 设置仅平台超级管理员，积分管理与商城售后管理仅有相应管理权限的角色，用户查询/操作均限定本人。
+
+| 方法 | 路径 | 能力与约束 |
+| --- | --- | --- |
+| GET | `/api/v1/admin/points/orders` | 管理兑换订单列表，按角色与筛选条件读取 |
+| GET | `/api/v1/admin/points/products` | 管理积分商品列表 |
+| GET | `/api/v1/admin/points/report` | 积分商城运营统计，独立于现金与功德值 |
+| GET | `/api/v1/ai/admin/provider` | 读取脱敏 Provider 设置，密钥只返回是否已配置 |
+| GET | `/api/v1/ai/reports` | 当前用户 AI 专题报告列表 |
+| GET | `/api/v1/ai/reports/:id` | 本人报告详情；未解锁不下发全文 |
+| GET | `/api/v1/ai/topics` | AI 专题目录与所需表单、积分解锁规则 |
+| GET | `/api/v1/orders/:id/returns` | 订单本人查看普通商城售后记录；不是 DIY 售后 |
+| GET | `/api/v1/points` | 当前用户积分账户 |
+| GET | `/api/v1/points/ledger` | 当前用户积分流水 |
+| GET | `/api/v1/points/orders` | 当前用户积分兑换订单 |
+| GET | `/api/v1/points/products` | 上架积分商品列表 |
+| POST | `/api/v1/admin/points/orders/:id/cancel` | 管理取消待发货兑换，幂等退积分及库存 |
+| POST | `/api/v1/admin/points/orders/:id/ship` | 积分兑换发货，填写物流 |
+| POST | `/api/v1/admin/points/products` | 创建积分商品 |
+| POST | `/api/v1/ai/admin/provider/test` | 测试候选 Provider 连接，不保存配置 |
+| POST | `/api/v1/ai/reports` | 创建 AI 专题报告；后续按状态展示、重试或解锁 |
+| POST | `/api/v1/ai/reports/:id/conversation` | 有权益的报告创建追问会话 |
+| POST | `/api/v1/ai/reports/:id/retry` | 本人失败报告重试 |
+| POST | `/api/v1/payments/ai-report` | 按服务端报告定价使用积分解锁，非现金支付 |
+| POST | `/api/v1/points/orders` | 按商品当前积分价格、库存和稳定请求键兑换 |
+| POST | `/api/v1/points/orders/:id/cancel` | 本人取消待发货兑换，幂等返还积分和库存 |
+| POST | `/api/v1/points/orders/:id/complete` | 本人积分兑换订单确认收货 |
+| PUT | `/api/v1/admin/orders/returns/:id/receive` | 普通商城售后确认收到退货，退款为另一操作 |
+| PUT | `/api/v1/admin/points/products/:id` | 编辑积分商品，含上下架状态与版本校验 |
+| PUT | `/api/v1/ai/admin/provider` | 保存经校验的 Provider 配置；密钥加密保存，不回显 |
+| PUT | `/api/v1/orders/returns/:id/ship` | 普通商城售后审核通过后提交退货物流 |
+
+字段细节见本文积分章节、[AI 报告规格](specs/005-ai-topic-reports/README.md)及[Provider 设置规格](specs/026-ai-provider-admin/README.md)。该补充修复统计工具覆盖范围，不改变业务代码或开放新的能力。

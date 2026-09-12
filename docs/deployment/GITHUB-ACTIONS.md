@@ -62,3 +62,12 @@ H5 是独立私有仓库且禁止 Deploy Key。管理端不读取私有 H5 源�
 ## 首次接管修正记录
 
 2026-09-11 首次后端接管时，Compose 对复制自容器的 `${BINARY}` 命令进行了提前插值，导致服务启动失败。已恢复原镜像和配置，随后在接收器提交 `679da48` 中对 Compose 字符串统一转义美元符号；真实 ECS Compose 容器往返验证和对应回归测试均通过。不要安装更早版本的服务器接收器。前端固定引用的后端工具提交仅用于构建与 SSH 客户端，不负责安装接收器。
+
+
+## 2026-09-13 品牌发布与清单类型修正记录
+
+Web `ci-web-34706515528-1-8df155727224`、H5 `ci-h5-34706677301-1-9e3a8457144c` 已由既有接收器发布；GitHub 构建和测试通过，自动上传因连接慢被取消。经校验转送的是同次 CI 原始包，实际 deployed 回执不将 workflow 的 cancelled 改写为 success。
+
+发布后发现两角色 webmanifest 的 MIME 不正确，已在独立后端分支提交 `2c3c95c149c1f5c48bcdfcd34e8b498aae9ab0c0`，通过既有 `scripts/ops/refresh-h5-html-cache.sh` 备份、配置测试和 reload 应用；没有重发业务服务。两条精确 manifest location 返回 `application/manifest+json` 并禁止旧缓存。备份为 `/opt/askxuan/backups/20260913-brand-manifests-2c3c95c`。
+
+该次验收时[草稿 PR #1](https://github.com/askxuan-dongfang/askxuan-backend/pull/1)尚未合并；后续重装 Nginx 前必须核对实际合并状态和配置来源，不能假定 backend/main 已含修复。细分验证与限制见[产品与文档核验](../reports/2026-09-13-产品与文档核验.md)。本地清理保留原始发布包/回执，ECS 历史运行源码与本地副本不是互相替代的部署凭据。
