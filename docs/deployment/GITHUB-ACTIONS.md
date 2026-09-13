@@ -5,7 +5,7 @@
 | 仓库 | 自动发布分支 | 构建内容 |
 | --- | --- | --- |
 | askxuan-backend | main | 20 个 Go 服务，按服务源码指纹更新变化的容器 |
-| askxuan-frontend | master | 平台管理台、商家兼容入口、寺院端；仅 Web/共享包/脚本/工作流改动触发 |
+| askxuan-frontend | master | 两个业务 Web 工程：统一平台/商城管理台、寺院端；统一后台构建内含旧 `/shop` 迁移页 |
 | askxuan-h5 | main | H5；同时记录构建使用的前端共享包提交 |
 
 本地提交并推送以上分支即可。后端 develop 和 PR 只检查；iOS 单独改动不部署网站。
@@ -13,6 +13,8 @@
 流程：GitHub checkout 精确提交 → 严格检查 → GitHub Runner 编译 → 带 SHA256 清单的短期 artifact → production 环境 → 受限 SSH 上传 → ECS 全局发布锁 → 校验提交祖先/文件完整性 → 切换容器或静态目录 → 健康检查，失败回滚。
 
 ECS 不执行 git fetch/pull，也不接收开发电脑的未提交源码。Go 二进制和前端 dist 都在 GitHub 编译。ECS 只为二进制添加固定运行镜像层并启动容器；生产配置、数据库和卷维持原位置。当前组件版本以 `/opt/askxuan/ci/state.json` 和相应发布 manifest 为准；服务器运行配置目录不作为源码发布输入。
+
+商城并入后，CI 只安装、检查和构建 `apps/web-platform-admin`、`apps/web-temple-admin`。旧 `/shop` 内容取自前者的 `dist/legacy/shop/index.html`，是自包含迁移页，随 admin 一起发布；不能再安装或构建已删除的 `apps/web-shop-admin`，也不能保留旧商城 bundle 作为新版本来源。站点仍可保留 `/shop` 兼容 URL；URL 数量不等于业务工程数量。
 
 H5 是独立私有仓库且禁止 Deploy Key。管理端不读取私有 H5 源码。H5 自己的工作流读取公开 frontend/master 的共享包，发布清单记录两个仓库的确切 SHA；共享包单独变更后执行：
 
@@ -46,10 +48,12 @@ H5 是独立私有仓库且禁止 Deploy Key。管理端不读取私有 H5 源�
 - 当前组件 Git SHA：`/opt/askxuan/ci/state.json`。
 - 每次发布：`/opt/askxuan/ci/releases/<release>/manifest.json`、`transaction.json`。
 - 后端还保留 `compose.json`、`rollback.json` 和构建日志；这些文件可能含生产环境变量，仅 root 可读，不要贴到公开工单或 Actions 日志。
-- 静态站点：`/var/www/askxuan/public` 原子指向版本目录。发布 H5 保留 admin/shop/temple；管理端发布保留 H5。
+- 静态站点：`/var/www/askxuan/public` 原子指向版本目录。发布 H5 保留 admin、它配套的 shop 迁移页及 temple；管理端发布保留 H5。admin 与 shop 迁移页使用同一前端来源和发布事务。
 - 完成发布后删除冗余上传包和二进制副本，保留镜像/清单/回滚目录；磁盘不足 3 GiB 时拒绝发布，避免挤占运行空间。
 
 新版本健康检查或 HTTP 内容校验失败，会恢复此次变更涉及的旧容器或静态软链接。回滚不会反向执行数据库迁移。
+
+本轮认证升级使缺少身份域的旧 Refresh Token 失效，用户需要重新登录；有效信众会话不能续期为同 ID 管理账号。发布验证需分别检查平台超管、商城人员、寺院人员及法师的入口权限，确认商城账号无法操作平台消息模板、推送或公告，并确认法师只能读取和标记本人消息。权限验证使用受控测试记录，不发送真实推送。回滚认证版本会重新引入旧身份边界，需与安全修复范围一起评估，不能只凭页面恢复判断回滚成功。
 
 需要主动回滚时，先将三仓库 `ECS_DEPLOY_ENABLED` 改成 false，确认没有正在执行的部署，再在 ECS 以 root 执行：
 
@@ -70,3 +74,5 @@ CI build/tests、最终 workflow 状态与实际 receiver 回执分别记录。�
 H5 的 `/manifest.webmanifest` 和 `/master.webmanifest` 应返回 `application/manifest+json`。源配置位于后端 `deploy/nginx/h5-html-cache.conf`，维护脚本为 `scripts/ops/refresh-h5-html-cache.sh`。应用前核对站点 root 和实际 include，备份线上配置；脚本执行 `nginx -t` 后 reload，失败恢复备份。配置变更与业务容器发布分别记录。
 
 发布后同时检查状态码、响应 MIME、内容哈希、图片/字体解码及浏览器实际显示；仅返回 HTTP 200 不算静态资源验收。产品版本 0.0.1 与实际 Git SHA/部署来源见当前发布清单，不能由文档标题推断服务器已经更新。
+
+旧链接验证至少覆盖 `/shop/`、商品或订单详情、查询参数与 hash，以及已登录统一后台的情况；同时复核 `/admin/commerce/*` 和独立 `/temple/`。原 `v0.0.1` 标签不重写，本轮新 SHA、CI 运行、迁移页内容哈希及部署回执单独填入[核验页](../reports/0.0.1-核验.md)。

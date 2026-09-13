@@ -11,7 +11,7 @@
 | 03 运营 | [运营与合作手册](docs/guides/运营与合作手册.md) | [下载](output/pdf/问玄东方_运营与合作手册.pdf) |
 | 04 决策 | [竞品研究与产品决策手册](docs/guides/竞品研究与产品决策手册.md) | [下载](output/pdf/天机阁与佑愿天机_竞品研究与产品决策手册.pdf) |
 
-生成与维护方式见[手册目录](docs/guides/手册目录.md)。
+四册正文与 PDF 对应当前产品 0.0.1，生成与维护方式见[手册目录](docs/guides/手册目录.md)，交付检查结果见[核验页](docs/reports/0.0.1-核验.md)。
 
 ## 按任务阅读
 
@@ -33,9 +33,13 @@
 | 两套原生 iOS | 信众 App 与法师工作台，分别构建和签名 |
 | Web `/admin` | 平台与商城共用统一运营管理台，按权限展示 |
 | Web `/temple` | 寺院管理台 |
-| Web `/shop` | 商城兼容入口，跳转统一管理台对应业务 |
+| Web `/shop` | 统一后台构建内的静态迁移页，跳转对应商城业务 |
 
-正式品牌资源只维护在[前端 packages/brand](https://github.com/askxuan-dongfang/askxuan-frontend/tree/master/packages/brand)。手册必要图版位于 `docs/assets/0.0.1/`；不把普通功能图标或用户头像当作 Logo。
+业务 Web 只维护两个构建工程：`apps/web-platform-admin`（包含商城 `/commerce/*`）和 `apps/web-temple-admin`。旧 `apps/web-shop-admin` 工程移除；`/shop` 由统一后台产物 `dist/legacy/shop/index.html` 接管，随 admin 发布，无独立 npm 工程或组件依赖。寺院管理台继续独立维护。
+
+产品版本为 **0.0.1**，源码按[代码核对索引](docs/guides/manual/代码核对索引.md)中的精确提交定位。构建、发布和验收结果记录在[核验页](docs/reports/0.0.1-核验.md)，产品版本不替代实际交付证据。
+
+正式品牌资源只维护在[前端 packages/brand](https://github.com/askxuan-dongfang/askxuan-frontend/tree/99015d873252207103e175e4d0bafc77c2f44d70/packages/brand)。手册必要图版位于 `docs/assets/0.0.1/`；不把普通功能图标或用户头像当作 Logo。
 
 ## 源码与验证
 

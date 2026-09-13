@@ -3,8 +3,8 @@
   "books": [
     {
       "file": "问玄东方_产品使用手册.pdf",
-      "bytes": 616873,
-      "sha256": "e1cb2a65948fe684fa458bd6a655bf4d93e5ab9071cbe67ff3a8a52409a3f904",
+      "bytes": 631158,
+      "sha256": "ff70d98d948ad0642cd17dbee3e9a8e695c08bd3bf287011909195360648f6b3",
       "source_files": [
         "产品使用手册.md",
         "manual/DIY创作与定制.md",
@@ -16,24 +16,24 @@
     },
     {
       "file": "问玄东方_视觉设计与交互手册.pdf",
-      "bytes": 1846262,
-      "sha256": "2256ac1b0ccfc71edf52a69cebd290f2c73ff1f9c406c95911a78089497b76ee",
+      "bytes": 1847982,
+      "sha256": "dbae16a804397f976ef8845b146f27c258c169b2499a107f30837668bb2ba3c1",
       "source_files": [
         "视觉设计与交互手册.md"
       ]
     },
     {
       "file": "问玄东方_运营与合作手册.pdf",
-      "bytes": 430362,
-      "sha256": "cec25578b9c1dcad3766facb6c1ef1dd281ca6f3ea44613ed4b134629d2875cf",
+      "bytes": 432286,
+      "sha256": "be00b8794fd93db377734f36d0e86a88c2096d76cc0229ad6c1e8e2396577d75",
       "source_files": [
         "运营与合作手册.md"
       ]
     },
     {
       "file": "天机阁与佑愿天机_竞品研究与产品决策手册.pdf",
-      "bytes": 626268,
-      "sha256": "168016e2426e4468874b0c375822d8ff0640c19a202bb2fb2298b4be09aaec9a",
+      "bytes": 626329,
+      "sha256": "4cf961d455baa5f7a6b1180d7747f373782952f1f35a32981d5682d1d9a00047",
       "source_files": [
         "竞品研究与产品决策手册.md"
       ]
