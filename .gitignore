@@ -28,3 +28,6 @@ _site/
 # 手册排版临时渲染，正式 PDF 位于 output/pdf
 /tmp/
 __pycache__/
+
+# 分发包展开副本可重建；正式压缩包与 PDF 单独跟踪
+/output/delivery/*/

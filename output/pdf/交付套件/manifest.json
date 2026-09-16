@@ -1,0 +1,37 @@
+{
+  "edition": "0.0.1",
+  "date": "2026-09-16",
+  "books": [
+    {
+      "file": "问玄东方_产品交付与上手指南.pdf",
+      "pages": 8,
+      "sha256": "298db9aa103658c69e576ff49835404b614cb43d29657207ee49ebfe37c59998",
+      "source": "docs/delivery/产品交付与上手指南.md",
+      "source_sha256": "32d1a8e8f6c3d8c1c64ff2bf0233950320e7ac2d8c8f3ed8893ab9c00d94d2db"
+    },
+    {
+      "file": "问玄东方_全平台测试与验收手册.pdf",
+      "pages": 20,
+      "sha256": "2d300df67511fe4e19108456d2c9cac72a65873e971af0e3a1674056abc5a947",
+      "source": "docs/delivery/全平台测试与验收手册.md",
+      "source_sha256": "67c308aa24dd93366cb61c9659d79a1e67ac16556ab313f57ee989a91910ebf2"
+    },
+    {
+      "file": "问玄东方_需求范围与追踪矩阵.pdf",
+      "pages": 9,
+      "sha256": "324f70f05fe1ccc62c4fb6e4f05db9a483243594e860651db83e1c179406bd34",
+      "source": "docs/delivery/需求范围与追踪矩阵.md",
+      "source_sha256": "56f555d7c23d91da01400a30be4d033095cd0c3217616c3c704ade5183935a6a"
+    },
+    {
+      "file": "问玄东方_投资侧产品与验证说明.pdf",
+      "pages": 6,
+      "sha256": "46a1277c1a3c8907d8e1c60feadc757db09b590dfbe92228fbd57fa7836105af",
+      "source": "docs/delivery/投资侧产品与验证说明.md",
+      "source_sha256": "e76751e7a03d23aba6d4794fd1fb96836ab37468af9d22313799382cb8c07baa"
+    }
+  ],
+  "test_scenarios": 66,
+  "requirements": 22,
+  "execution_status": "not_executed_in_this_delivery"
+}
