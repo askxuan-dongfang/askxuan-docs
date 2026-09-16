@@ -202,7 +202,7 @@ def build(book,outdir):
         if seq:story.append(PageBreak())
         story+=parse(ROOT/'docs/guides'/name,book,seq,links)
         if book['id']=='01' and seq==0 and (ASSETS/'h5-home-light.jpg').exists():
-            story += [PageBreak(),heading('界面速览',2,'productscreens'),*figures([('H5 信众首页 · 浅色 · 2026-09-13 实际页面','h5-home-light.jpg'),('H5 信众首页 · 深色 · 同日实际页面','h5-home-dark.jpg')],ASSETS)]
+            story += [PageBreak(),heading('界面速览',2,'productscreens'),*figures([('H5 信众首页 · 2026-09-16 线上页面','h5-home-20260916.png'),('iOS 信众首页 · 同日模拟器 · 本地对齐版','ios-home-20260916.png')],ASSETS)]
     if links:
         story.extend([PageBreak(),heading('来源链接',1,'sources')])
         story.append(Paragraph('为便于离线阅读后追溯，列出正文直接引用的外部来源。竞品网页可能更新，适用日期和证据层级以对应章节为准。',ST['small']))
@@ -223,4 +223,4 @@ if __name__=='__main__':
         previous=json.loads((args.output/'manifest.json').read_text())['books']
         updated={x['file']:x for x in previous+result}
         result=[updated[b['file']] for b in BOOKS if b['file'] in updated]
-    (args.output/'manifest.json').write_text(json.dumps({'edition':VERSION,'books':result},ensure_ascii=False,indent=2)+'\n');print(json.dumps(result,ensure_ascii=False,indent=2))
+    (args.output/'manifest.json').write_text(json.dumps({'edition':VERSION,'revision_date':'2026-09-16','books':result},ensure_ascii=False,indent=2)+'\n');print(json.dumps(result,ensure_ascii=False,indent=2))

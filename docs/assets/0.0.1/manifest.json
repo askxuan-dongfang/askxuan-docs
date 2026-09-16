@@ -151,5 +151,27 @@
       720
     ],
     "sha256": "a8255647c238606ff820dcac625e26a46cc1a78b4b3e7184f99fd6257ba8e261"
+  },
+  {
+    "file": "h5-home-20260916.png",
+    "format": "PNG",
+    "size": [
+      430,
+      932
+    ],
+    "sha256": "2e688674bb997583159d359b0eb30051d69c30f318d959ad49868f9a16592ffc",
+    "observed": "2026-09-16",
+    "source": "production H5 browser"
+  },
+  {
+    "file": "ios-home-20260916.png",
+    "format": "PNG",
+    "size": [
+      1206,
+      2622
+    ],
+    "sha256": "b246f85fa26c04e724254ee1843a2ddab656370624acefe73185327a67dd943a",
+    "observed": "2026-09-16",
+    "source": "iOS simulator UI test, local ebd931d"
   }
 ]

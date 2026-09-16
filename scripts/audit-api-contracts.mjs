@@ -18,7 +18,7 @@ for (const dir of new Set(files.map(f=>f.split('/internal/handler/')[0]))) {
   const entries=readdirSync(dir).filter(n=>n.endsWith('.go') && !n.endsWith('_test.go')).map(n=>readFileSync(join(dir,n),'utf8')).join('\n');
   if (!/handler\.RegisterHandlers\(/.test(entries)) errors.push(`${relative(backend,dir)}: missing main handler registration`);
 }
-const literal = /Method:\s*(?:http\.Method(Get|Post|Put|Delete|Patch)|"(GET|POST|PUT|DELETE|PATCH)")\s*,\s*Path:\s*"([^"]+)"/g;
+const literal = /Method:\s*(?:http\.Method(Get|Post|Put|Delete|Patch)|"(GET|POST|PUT|DELETE|PATCH)")\s*,\s*Path:\s*"([^"]+)"\s*,/g;
 const tuples = s => [...s.matchAll(/\{\s*"(GET|POST|PUT|DELETE|PATCH)"\s*,\s*"([^"]*)"\s*,\s*"[^"]+"/g)].map(m=>[m[1],m[2]]);
 const add = (method,path,file) => routes.set(`${method.toUpperCase()} ${path}`,relative(backend,file));
 for (const file of files) {
@@ -34,6 +34,35 @@ for (const file of files) {
   for (const block of blocks) {
     const prefix=block.match(/rest\.WithPrefix\("([^"]+)"\)/)?.[1]??'';
     for (const m of block.matchAll(literal)) add(m[1]??m[2],prefix && m[3]==='/' ? prefix : prefix+m[3],file);
+  }
+  const helperFile=relative(backend,file);
+  if (helperFile.endsWith('auth-service/internal/handler/identity.go')) {
+    const actions=source.match(/for _, action := range \[\]string\{([^}]+)\}/);
+    const prefix=source.match(/Path:\s*"([^"]+)"\s*\+\s*action/);
+    if (!actions || !prefix) errors.push(`${helperFile}: unsupported identity registration`);
+    else for (const action of actions[1].matchAll(/"([^"]+)"/g)) add('POST',prefix[1]+action[1],file);
+    dynamic.push(helperFile);
+  }
+  if (helperFile.endsWith('auth-service/internal/handler/onboarding.go')) {
+    const prefix=source.match(/Path:\s*"([^"]+)"\s*\+\s*path/);
+    const operations=[...source.matchAll(/\badd\("(GET|POST|PUT|DELETE|PATCH)",\s*"([^"]+)"\s*,/g)];
+    if (!prefix || !operations.length) errors.push(`${helperFile}: unsupported onboarding registration`);
+    else for (const op of operations) add(op[1],prefix[1]+op[2],file);
+    dynamic.push(helperFile);
+  }
+  if (helperFile.endsWith('booking-service/internal/handler/fulfillment.go')) {
+    const operations=[...source.matchAll(/\broute\(http\.Method(Get|Post|Put|Delete|Patch),\s*"([^"]+)"\s*,/g)];
+    for (const op of operations) add(op[1],op[2],file);
+    const kinds=source.match(/for _, kind := range \[\]string\{([^}]+)\}/);
+    const progress=source.match(/route\(http\.MethodPost,\s*"([^"]+)"\s*\+\s*kind/);
+    const decision=source.match(/route\(http\.MethodPost,\s*"([^"]+)"\s*\+\s*action/);
+    const actions=[...source.matchAll(/\baction\s*(?::=|=)\s*"([^"]+)"/g)];
+    if (!operations.length || !kinds || !progress || !decision || actions.length!==2 || !/range \[\]bool\{true, false\}/.test(source)) errors.push(`${helperFile}: unsupported fulfillment registration`);
+    else {
+      for (const kind of kinds[1].matchAll(/"([^"]+)"/g)) add('POST',progress[1]+kind[1],file);
+      for (const action of actions) add('POST',decision[1]+action[1],file);
+    }
+    dynamic.push(helperFile);
   }
   if (!/Method:\s*op\./.test(source)) continue;
   const rel=relative(backend,file); dynamic.push(rel);

@@ -1,9 +1,11 @@
 # 问玄东方全栈接口文档（H5、iOS 与管理端）
 
+2026-09-16 同步认证、双轨入驻及服务进度 / 回执。末尾增量表以当前注册路由为准；原 `.api` 生成契约中的旧认证字段已修正。接口存在、静态覆盖和真实执行分别验证。
+
 **产品版本**：0.0.1
 **网关地址**：本地默认 `http://localhost:8080`；当前演示站点使用同源 `/api/v1`。iOS 和部署环境按各自配置，不将示例域名视为已验证生产地址。
 **网关模型**：自研 net/http + httputil.ReverseProxy；最长前缀匹配，动态服务发现优先、静态 Target 回退。前缀配置以 gateway.yaml 为准，见附录 B。
-**接口总数**：19 个业务服务的 383 个唯一 HTTP 契约；使用本文档仓 `scripts/audit-api-contracts.mjs` 扫描显式及数据驱动路由，与本文表格按方法和路径去重对比。网关 `/api/v1/health` 与 OpenIM 透传不计入该业务接口总数。这不代表 383 项业务端到端验收。
+**接口总数**：19 个业务服务的 412 个唯一 HTTP 契约；使用本文档仓 `scripts/audit-api-contracts.mjs` 扫描显式及数据驱动路由，与本文表格按方法和路径去重对比。网关 `/api/v1/health` 与 OpenIM 透传不计入该业务接口总数。这不代表 412 项业务端到端验收。
 
 > 当前端范围、登录过期处理和模拟支付边界见[产品现状与能力边界](docs/product/产品现状与能力边界.md)。上篇按业务角色组织契约，不用客户端勾选表推断功能覆盖或验收状态。
 
@@ -87,7 +89,7 @@
 
 | 方法 | 路径 | 请求字段 | 鉴权 | 说明 |
 |------|------|---------|------|------|
-| POST | `/api/v1/auth/login` | `phone`, `code`(opt), `account`(opt), `password`(opt) | 无 | 手机号验证码 或 账号密码登录 |
+| POST | `/api/v1/auth/login` | `account`, `password`, `captchaId`, `captchaCode` | 无 | 用户名 / 邮箱、密码及图片验证码登录 |
 | POST | `/api/v1/auth/refresh` | `refreshToken` | 无 | Token 续期 |
 | POST | `/api/v1/auth/logout` | `accessToken`(opt) | 无 | 登出 |
 | POST | `/api/v1/users/register` | `mobile`, `nickname`(opt), `code`(opt, 兼容字段且不校验) | 无 | 演示手机号注册；不发送真实短信，注册后客户端自动登录 |
@@ -314,7 +316,7 @@
 
 | 方法 | 路径 | 请求字段 | 鉴权 | 说明 |
 |------|------|---------|------|------|
-| POST | `/api/v1/auth/admin/login` | `account`, `password` | 无 | 管理台登录（role=master） |
+| POST | `/api/v1/auth/admin/login` | `account`, `password`, `captchaId`, `captchaCode` | 无 | 管理台登录（role=master） |
 | POST | `/api/v1/auth/refresh` | `refreshToken` | 无 | 刷新 token |
 
 ### 2.2 法师预约（booking-service @ 8085）
@@ -325,7 +327,7 @@
 | GET | `/api/v1/admin/masters/bookings/:id` | — | Bearer | 预约详情（校验归属本法师） |
 | PUT | `/api/v1/admin/masters/bookings/:id/confirm` | `remark`(opt) | Bearer | 确认预约（pending → confirmed） |
 | PUT | `/api/v1/admin/masters/bookings/:id/start` | `remark`(opt) | Bearer | 开始服务（confirmed → in_progress） |
-| PUT | `/api/v1/admin/masters/bookings/:id/complete` | `remark`(opt) | Bearer | 完成预约（in_progress → completed） |
+| PUT | `/api/v1/admin/masters/bookings/:id/complete` | `remark`(opt) | Bearer | 兼容完成入口；禁止绕过最终回执和信众确认 |
 
 > **注**：法师端 detail/confirm/start/complete 端点已补齐，均校验预约必须归属当前 JWT 法师。
 
@@ -420,7 +422,7 @@
 
 | 方法 | 路径 | 请求字段 | 鉴权 | 说明 |
 |------|------|---------|------|------|
-| POST | `/api/v1/auth/admin/login` | `account`, `password` | 无 | 寺院管理员登录 |
+| POST | `/api/v1/auth/admin/login` | `account`, `password`, `captchaId`, `captchaCode` | 无 | 寺院管理员登录 |
 | POST | `/api/v1/auth/refresh` | `refreshToken` | 无 | 刷新 token |
 
 ### 3.2 寺院信息（temple-service @ 8083）
@@ -499,7 +501,7 @@
 
 | 方法 | 路径 | 请求字段 | 鉴权 | 说明 |
 |------|------|---------|------|------|
-| POST | `/api/v1/auth/admin/login` | `account`, `password` | 无 | 商城管理员登录 |
+| POST | `/api/v1/auth/admin/login` | `account`, `password`, `captchaId`, `captchaCode` | 无 | 商城管理员登录 |
 | POST | `/api/v1/auth/refresh` | `refreshToken` | 无 | 刷新 token |
 
 ### 4.2 商品管理（product-service @ 8086）
@@ -601,7 +603,7 @@
 
 | 方法 | 路径 | 请求字段 | 鉴权 | 说明 |
 |------|------|---------|------|------|
-| POST | `/api/v1/auth/admin/login` | `account`, `password` | 无 | 平台管理员登录 |
+| POST | `/api/v1/auth/admin/login` | `account`, `password`, `captchaId`, `captchaCode` | 无 | 平台管理员登录 |
 | POST | `/api/v1/auth/refresh` | `refreshToken` | 无 | 刷新 token |
 | GET | `/api/v1/admin/auth/accounts` | `keyword`(opt), `status`(opt), `page`, `size` | Bearer | 管理账号列表 |
 | POST | `/api/v1/admin/auth/accounts` | `account`, `password`, `name`, `roleId`, `templeId`(opt), `masterId`(opt), `shopId`(opt) | Bearer | 创建管理账号并事务同步主体绑定；待审核寺院账号默认停用 |
@@ -749,10 +751,10 @@
 
 | 方法 | 路径 | Handler | 请求字段 | 鉴权 | 说明 |
 |------|------|---------|---------|------|------|
-| POST | `/api/v1/auth/login` | login | `phone`, `code`(opt), `account`(opt), `password`(opt) | 无 | 手机号验证码 或 账号密码登录 |
+| POST | `/api/v1/auth/login` | login | `account`, `password`, `captchaId`, `captchaCode` | 无 | 用户名 / 邮箱、密码及图片验证码登录 |
 | POST | `/api/v1/auth/refresh` | refresh | `refreshToken` | 无 | Token 续期 |
 | POST | `/api/v1/auth/logout` | logout | `accessToken`(opt) | 无 | 登出 |
-| POST | `/api/v1/auth/admin/login` | adminLogin | `account`, `password` | 无 | 管理台登录入口 |
+| POST | `/api/v1/auth/admin/login` | adminLogin | `account`, `password`, `captchaId`, `captchaCode` | 无 | 管理台登录入口 |
 
 ### 6.2 管理台接口（8 个，jwt:Auth）
 
@@ -957,7 +959,7 @@
 | GET | `/api/v1/admin/masters/bookings/:id` | masterBookingDetail | — | jwt:Auth | 预约详情（校验归属本法师） |
 | PUT | `/api/v1/admin/masters/bookings/:id/confirm` | masterBookingConfirm | `remark`(opt) | jwt:Auth | 确认预约（pending → confirmed） |
 | PUT | `/api/v1/admin/masters/bookings/:id/start` | masterBookingStart | `remark`(opt) | jwt:Auth | 开始服务（confirmed → in_progress） |
-| PUT | `/api/v1/admin/masters/bookings/:id/complete` | masterBookingComplete | `remark`(opt) | jwt:Auth | 完成预约（in_progress → completed） |
+| PUT | `/api/v1/admin/masters/bookings/:id/complete` | masterBookingComplete | `remark`(opt) | jwt:Auth | 兼容完成入口；禁止绕过最终回执和信众确认 |
 
 > 法师预约详情、确认、开始和完成操作均校验预约与当前 JWT 法师的归属。
 
@@ -1358,8 +1360,8 @@
 | --- | ---: |
 | ai-service | 21 |
 | audit-service | 10 |
-| auth-service | 13 |
-| booking-service | 48 |
+| auth-service | 32 |
+| booking-service | 58 |
 | community-service | 19 |
 | diy-service | 31 |
 | file-service | 6 |
@@ -1375,7 +1377,7 @@
 | review-service | 10 |
 | temple-service | 35 |
 | user-service | 10 |
-| **合计** | **383** |
+| **合计** | **412** |
 
 在文档仓执行 `node scripts/audit-api-contracts.mjs ../askXuan-backend` 核验显式与数据驱动注册。该检查对比接口方法和路径，不代替字段、权限及真实请求测试。
 
@@ -1383,7 +1385,7 @@
 
 ## 补充运行时契约
 
-> 以下为显式注册的业务路由，与分域契约及数据驱动注册接口共同构成 383 条唯一 HTTP 契约。
+> 以下为显式注册的业务路由，与分域契约及数据驱动注册接口共同构成 412 条唯一 HTTP 契约。
 
 | 方法 | 路径 | 归属 | 请求字段 | 鉴权 | 说明 |
 |------|------|------|---------|------|------|
@@ -1526,7 +1528,7 @@
 
 ## 附录 D：统计口径
 
-接口总量按服务运行时注册的 HTTP 方法和完整路径去重，为 **383 条**，服务分项见“下篇总结”。同一接口可被多个角色使用；不以客户端数量或 `.api` 声明条数推算运行时接口量。
+接口总量按服务运行时注册的 HTTP 方法和完整路径去重，为 **412 条**，服务分项见“下篇总结”。同一接口可被多个角色使用；不以客户端数量或 `.api` 声明条数推算运行时接口量。
 
 ---
 
@@ -1728,3 +1730,39 @@ H5 首页使用上述广告投放契约；具体端展示范围见产品手册�
 | PUT | `/api/v1/orders/returns/:id/ship` | 普通商城售后审核通过后提交退货物流 |
 
 字段细节见本文积分章节、[AI 问事服务](docs/architecture/services/AI问事服务.md)及[咨询与交流](docs/guides/manual/咨询与交流.md)。
+
+## 2026-09-16 认证、入驻与履约增量
+
+所有路径包含 `/api/v1`。字段细节以同版本 handler / identity / journey 类型为准；申请、材料和订单访问均二次检查对象归属。
+
+| 方法 | 路径 | 用途 / 关键参数 | 身份边界 |
+| --- | --- | --- | --- |
+| GET | `/api/v1/auth/captcha` | 图片验证码 id、PNG data URL 与有效期；不返回答案 | 公开；验证验证码与限流 |
+| GET | `/api/v1/auth/onboarding/application` | 读取本人申请 / 保存草稿或提交，含版本校验 | 认证会话；服务端核对角色与对象归属 |
+| GET | `/api/v1/auth/onboarding/evidence` | 上传或读取私有申请证明材料 | 认证会话；服务端核对角色与对象归属 |
+| GET | `/api/v1/auth/onboarding/history` | 申请及审核历史 | 认证会话；服务端核对角色与对象归属 |
+| GET | `/api/v1/auth/onboarding/managed` | 读取 / 分配本寺纳管账号 | 认证会话；服务端核对角色与对象归属 |
+| GET | `/api/v1/auth/onboarding/managed/candidates` | 本寺可分配账号的大师档案 | 认证会话；服务端核对角色与对象归属 |
+| GET | `/api/v1/auth/onboarding/reviews` | 平台审核列表 | 认证会话；服务端核对角色与对象归属 |
+| GET | `/api/v1/auth/options` | 认证能力开关与协议版本 | 公开；验证验证码与限流 |
+| GET | `/api/v1/bookings/:id/fulfillment` | 状态日志、心愿与过程记录、各版本回执 | 认证会话；服务端核对角色与对象归属 |
+| GET | `/api/v1/bookings/:id/receipt-files/:file` | 授权读取私有文件并校验完整性 | 认证会话；服务端核对角色与对象归属 |
+| GET | `/api/v1/bookings/journeys` | 集中服务列表，page / filter / q / from / to | 认证会话；服务端核对角色与对象归属 |
+| POST | `/api/v1/auth/email/code` | 发邮件验证码，区分用途及身份域 | 公开；验证验证码与限流 |
+| POST | `/api/v1/auth/email/register` | 信众邮箱验证注册 | 公开；验证验证码与限流 |
+| POST | `/api/v1/auth/onboarding/application` | 读取本人申请 / 保存草稿或提交，含版本校验 | 认证会话；服务端核对角色与对象归属 |
+| POST | `/api/v1/auth/onboarding/evidence` | 上传或读取私有申请证明材料 | 认证会话；服务端核对角色与对象归属 |
+| POST | `/api/v1/auth/onboarding/managed` | 读取 / 分配本寺纳管账号 | 认证会话；服务端核对角色与对象归属 |
+| POST | `/api/v1/auth/onboarding/managed/restore` | 恢复本寺纳管账号 | 认证会话；服务端核对角色与对象归属 |
+| POST | `/api/v1/auth/onboarding/managed/revoke` | 停用本寺纳管账号 | 认证会话；服务端核对角色与对象归属 |
+| POST | `/api/v1/auth/onboarding/review` | 平台审核决定，校验申请版本 | 认证会话；服务端核对角色与对象归属 |
+| POST | `/api/v1/auth/password/reset` | 邮箱验证重置密码并撤销旧会话 | 公开；验证验证码与限流 |
+| POST | `/api/v1/auth/work/activate` | 寺院分配大师账号的本人邮箱激活 | 公开；验证验证码与限流 |
+| POST | `/api/v1/auth/work/register` | 独立大师 / 寺院经办人申请账号注册 | 公开；验证验证码与限流 |
+| POST | `/api/v1/bookings/:id/accept-receipt` | 订单信众核对确认完成 | 认证会话；服务端核对角色与对象归属 |
+| POST | `/api/v1/bookings/:id/progress/update` | 执行方阶段说明、文件及 requestId | 认证会话；服务端核对角色与对象归属 |
+| POST | `/api/v1/bookings/:id/progress/wish` | 心愿 content / requestId，待确认或待执行时可提交 | 认证会话；服务端核对角色与对象归属 |
+| POST | `/api/v1/bookings/:id/receipt-files` | multipart file 上传，最多20MB/文件 | 认证会话；服务端核对角色与对象归属 |
+| POST | `/api/v1/bookings/:id/receipts` | 最终回执 summary / fileIds，进入待确认回执 | 认证会话；服务端核对角色与对象归属 |
+| POST | `/api/v1/bookings/:id/request-revision` | 订单信众要求补充 remark | 认证会话；服务端核对角色与对象归属 |
+| PUT | `/api/v1/admin/bookings/:id/start` | 寺院执行开始，沿用预约 action 格式 | 认证会话；服务端核对角色与对象归属 |

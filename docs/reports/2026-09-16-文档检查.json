@@ -1,0 +1,69 @@
+{
+  "revision_date": "2026-09-16",
+  "pdf_pages": 90,
+  "render_review": "All final pages visually inspected; changed design pages 20 and 30 rechecked.",
+  "pdf_checks": [
+    {
+      "name": "天机阁与佑愿天机_竞品研究与产品决策手册.pdf",
+      "pages": 18,
+      "sha256": "fcf2f05b72d788cfc2e619954da8cf16fc2c2e7d6d02449b61e5c4809b65615d",
+      "outline_entries": 10,
+      "annotations": 75,
+      "out_of_bounds": [],
+      "font_errors": []
+    },
+    {
+      "name": "问玄东方_产品使用手册.pdf",
+      "pages": 27,
+      "sha256": "6cadccd64de6437b9a83d59d5b2ee804c5a949ab56c37fed74b2f3a1ce200538",
+      "outline_entries": 39,
+      "annotations": 174,
+      "out_of_bounds": [],
+      "font_errors": []
+    },
+    {
+      "name": "问玄东方_视觉设计与交互手册.pdf",
+      "pages": 31,
+      "sha256": "ae44980687c36252e7dc79fd18de73bd67e48390e946a1b397fb42fced508a93",
+      "outline_entries": 13,
+      "annotations": 26,
+      "out_of_bounds": [],
+      "font_errors": []
+    },
+    {
+      "name": "问玄东方_运营与合作手册.pdf",
+      "pages": 14,
+      "sha256": "95c3392507db3ed979b443378c1d9f30e275a8c612632613567edc2beb8d91ef",
+      "outline_entries": 16,
+      "annotations": 32,
+      "out_of_bounds": [],
+      "font_errors": []
+    }
+  ],
+  "source_sha256": {
+    "manual/DIY创作与定制.md": "2121a013b19102fc42e5ac02a4ef3962a22e5d49f494a912381cc4de0d4b5496",
+    "manual/代码核对索引.md": "0dcae6030fe288da82bb34db9b70aa9642d30a3958f9033c22f63d28e7f419a1",
+    "manual/咨询与交流.md": "560daf656a84dfccfd8d3ae1ce394148edb301e7a3e1d86d4e9b2e64f2b21aa4",
+    "manual/法师与后台操作.md": "97ff5b8558512e3a10995bd01488afe55c692bf4cf5e5dbe5b5129e87ca03a20",
+    "manual/订单积分与活动.md": "77ca47b6df4700e9109fbd96639a1acab442716a9e6986007f705e3b96e73374",
+    "产品使用手册.md": "8614d3d27717b0c19f7ddf9e3128a95910ca21379a898401010bf27fadbacd36",
+    "竞品研究与产品决策手册.md": "a544783faef64d8f722f12a9720172cdcb983487a2bf059cf448bbdcd1e9f54d",
+    "视觉设计与交互手册.md": "4ebae7c6a63ac133414fe38af28a0957074940df8d66d436f34d2bde56869d60",
+    "运营与合作手册.md": "a11f3bafa7e42df243b03892e5a5c9aadcac3a7e87dc279db44cf9eea2a2cee9"
+  },
+  "markdown_links": {
+    "files": 61,
+    "relative_links": 299,
+    "missing": 0
+  },
+  "api_contracts": {
+    "runtime": 412,
+    "documented": 412,
+    "missing": 0,
+    "stale": 0,
+    "errors": 0
+  },
+  "audit_regression_tests": {
+    "passed": 5
+  }
+}
