@@ -34,6 +34,7 @@
 
 | 任务 | 入口 |
 | --- | --- |
+| 钱包使用与测试 | [钱包使用与验收](docs/guides/钱包使用与验收.md) |
 | 产品能力、端差异与未验收项 | [当前能力与限制](docs/product/产品现状与能力边界.md) |
 | 需求与版本工作 | [需求入口](specs/README.md) |
 | API 接入 | [API Reference](API-REFERENCE.md) · [API 规范](docs/architecture/API规范.md) |
