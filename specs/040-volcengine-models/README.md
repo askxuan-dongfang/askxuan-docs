@@ -50,4 +50,10 @@ completed: '2026-10-14'
 
 工作区：`artifacts/volcengine-models-20261014/{backend,frontend,docs}`；基于后端 `5fc3101`、前端 `fa3675c`、文档 `bc61ad1` 的独立分支。上线和真实账号模型验收另行记录，不能用本地模拟测试代替。
 
+2026-10-14 发布验收：后端 main `91589859f8ad`、前端 master `38a2f13ea553` 已推送。ECS 发布为 `ci-backend-38503098108-1-91589859f8ad` 与 `ci-web-38502435506-1-38a2f13ea553`。发布前合入线上已有历史以保留现有功能，数据库/运行配置契约保持不变。后端构建、测试、静态检查及三组数据库回归全部通过；自动上传因速度过慢取消后，用同一次 CI 原包经 GitHub SHA256 和包内文件校验，通过原 receiver 发布成功，工作流最终状态仍记录为 cancelled。前端 CI 与自动发布全部成功。
+
+20 个后端服务 healthy，AI/payment 实际二进制与 CI 清单一致，admin 216 个与 temple 124 个线上文件匹配清单。Ego Lite 验证供应商选项、地址预填、模型 ID 表单与空模型保护后撤销草稿；生产配置仍为 DeepSeek / deepseek-flash / v2，密钥不回显。此次没有实际方舟账号调用，真实模型聊天、流式输出和工具能力仍待账号验收。
+
+CI 顺带修复了已有现金钱包 MySQL 测试的咨询表夹具，并验证无有效咨询不能付款且余额不变；付款生产源码未改。发布器的源码指纹包含测试文件，因此重建 ai、payment 两个容器，其他 18 个后端服务保持原容器。
+
 官方依据：[兼容 OpenAI SDK](https://docs.volcengine.com/docs/ark/compatible-with-openai-sdk?lang=zh)、[Chat API](https://docs.volcengine.com/docs/ark/chat-api?lang=zh)。
