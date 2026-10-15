@@ -2,6 +2,10 @@
 
 ## Project: askXuan-docs
 
+## Workspace artifact archival
+
+Follow [本地项目目录与维护](docs/guides/本地项目目录与维护.md) when adding or moving local artifacts. Keep only `history`, `releases`, `native`, and `maintenance` as directories at the workspace `artifacts/` root. Date/task directories belong inside these categories. Run `node scripts/audit-artifacts-layout.mjs` before finishing artifact work; do not commit private recovery archives or recreate source worktrees under artifacts.
+
 ## 🚨 CRITICAL: Before ANY Task
 
 **STOP and check these first:**
