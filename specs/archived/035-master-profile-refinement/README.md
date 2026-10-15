@@ -1,24 +1,26 @@
 ---
-status: complete
+status: archived
 created: '2026-10-13'
 tags: []
 priority: medium
 created_at: '2026-10-13T10:55:50.748Z'
 depends_on:
   - 034-region-tags
-updated_at: '2026-10-13T11:10:08.875Z'
+updated_at: '2026-10-15T02:40:11.294Z'
 transitions:
   - status: in-progress
     at: '2026-10-13T10:55:50.987Z'
   - status: complete
     at: '2026-10-13T11:10:08.875Z'
+  - status: archived
+    at: '2026-10-15T02:40:11.294Z'
 completed_at: '2026-10-13T11:10:08.875Z'
 completed: '2026-10-13'
 ---
 
 # 师傅个人详情重整
 
-> **Status**: ✅ Complete · **Priority**: Medium · **Created**: 2026-10-13
+> **Status**: 📦 Archived · **Priority**: Medium · **Created**: 2026-10-13
 
 
 ## 目标

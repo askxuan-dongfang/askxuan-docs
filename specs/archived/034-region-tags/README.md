@@ -1,22 +1,24 @@
 ---
-status: complete
+status: archived
 created: '2026-10-13'
 tags: []
 priority: medium
 created_at: '2026-10-13T08:41:18.012Z'
-updated_at: '2026-10-13T10:35:30.548Z'
+updated_at: '2026-10-15T02:40:08.760Z'
 transitions:
   - status: in-progress
     at: '2026-10-13T08:42:09.072Z'
   - status: complete
     at: '2026-10-13T10:35:30.548Z'
+  - status: archived
+    at: '2026-10-15T02:40:08.760Z'
 completed_at: '2026-10-13T10:35:30.548Z'
 completed: '2026-10-13'
 ---
 
 # 地区标签与预约入口一致性
 
-> **Status**: ✅ Complete · **Priority**: Medium · **Created**: 2026-10-13
+> **Status**: 📦 Archived · **Priority**: Medium · **Created**: 2026-10-13
 
 
 ## 用户要求

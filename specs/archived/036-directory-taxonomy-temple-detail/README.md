@@ -1,5 +1,5 @@
 ---
-status: complete
+status: archived
 created: '2026-10-13'
 tags: []
 priority: medium
@@ -7,19 +7,21 @@ created_at: '2026-10-13T15:26:54.285Z'
 depends_on:
   - 034-region-tags
   - 035-master-profile-refinement
-updated_at: '2026-10-13T18:19:09.087Z'
+updated_at: '2026-10-15T02:40:12.586Z'
 transitions:
   - status: in-progress
     at: '2026-10-13T15:26:54.524Z'
   - status: complete
     at: '2026-10-13T18:19:09.087Z'
+  - status: archived
+    at: '2026-10-15T02:40:12.586Z'
 completed_at: '2026-10-13T18:19:09.087Z'
 completed: '2026-10-13'
 ---
 
 # 固定筛选字典与地区示例、寺院详情重整
 
-> **Status**: ✅ Complete · **Priority**: Medium · **Created**: 2026-10-13
+> **Status**: 📦 Archived · **Priority**: Medium · **Created**: 2026-10-13
 
 ## Overview
 

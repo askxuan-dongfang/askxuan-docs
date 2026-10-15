@@ -1,24 +1,26 @@
 ---
-status: complete
+status: archived
 created: '2026-10-14'
 tags: []
 priority: medium
 created_at: '2026-10-14T02:03:58.242Z'
 depends_on:
   - 036-directory-taxonomy-temple-detail
-updated_at: '2026-10-14T05:14:09.192Z'
+updated_at: '2026-10-15T02:40:13.852Z'
 transitions:
   - status: in-progress
     at: '2026-10-14T02:04:33.783Z'
   - status: complete
     at: '2026-10-14T05:14:09.192Z'
+  - status: archived
+    at: '2026-10-15T02:40:13.852Z'
 completed_at: '2026-10-14T05:14:09.192Z'
 completed: '2026-10-14'
 ---
 
 # 演示媒体、服务心愿继承与分页闭环
 
-> **Status**: ✅ Complete · **Priority**: Medium · **Created**: 2026-10-14
+> **Status**: 📦 Archived · **Priority**: Medium · **Created**: 2026-10-14
 
 ## Overview
 

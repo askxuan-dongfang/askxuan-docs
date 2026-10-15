@@ -42,6 +42,12 @@
 
 [WeKnora 管理与 Harness 接入](docs/guides/WeKnora知识库管理与Harness接入.md)说明上传、审核、启停和发布；[十二专题首批资料库](docs/guides/AI问事首批资料库与使用说明.md)包含 159 份文档的范围、问答示例、[逐文档出处](docs/guides/AI问事首批资料来源目录.md)与[可重建归档](docs/resources/AI问事首批资料-20260930.zip)。本增量以正文和归档为准，旧 PDF 保留原日期。
 
+## 2026-10-13 至 14 日目录与心愿验收记录
+
+已恢复旧工作分支中的四份完成记录：[地域与预约一致性](specs/archived/034-region-tags/README.md)、[师傅资料整理](specs/archived/035-master-profile-refinement/README.md)、[目录分类与寺院详情](specs/archived/036-directory-taxonomy-temple-detail/README.md)、[演示媒体与服务心愿继承](specs/archived/037-directory-media-wish-completeness/README.md)。
+
+这些是保留原日期、提交版本和验收范围的历史记录。其旧编号与当前规格重复，已通过 LeanSpec 归档；当前规格编号及状态不变。文中本地 `artifacts` 路径用于追溯当时证据，不表示历史源码工作区或发布包会永久保留。
+
 ## 按任务阅读
 
 | 任务 | 入口 |
