@@ -1,6 +1,8 @@
 # 问玄东方 0.0.1
 
-2026-10-19 增量：[目录筛选与 DIY 编辑器标准原型方案](docs/product/目录筛选与DIY编辑器产品原型方案.md)、[可交互原型](docs/product/prototypes/directory-diy-v1/index.html)及[实现与验收记录](docs/reports/2026-10-19-目录筛选与DIY编辑器.md)。
+2026-10-20 增量：[无框 DIY 与轻量导航标准产品原型](docs/product/无框DIY与轻量导航产品原型方案.md)、[可交互原型](docs/product/prototypes/diy-open-canvas-v2/index.html)及[实现与验收记录](docs/reports/2026-10-20-无框DIY与轻量导航.md)。包括工具避让、长度反馈、配件模型、悬浮宗派、商城顶栏与成长值入口。
+
+前版：[目录筛选与 DIY 编辑器方案](docs/product/目录筛选与DIY编辑器产品原型方案.md)及[2026-10-19 验收记录](docs/reports/2026-10-19-目录筛选与DIY编辑器.md)。
 
 四册基础手册修订：**2026-09-16**；AI Harness 增量正文与专项 PDF：**2026-09-29**。覆盖邮箱认证、双轨入驻、服务执行与回执、集中进度和 iOS 对齐；竞品旧观察与历史截图保留原日期。
 
