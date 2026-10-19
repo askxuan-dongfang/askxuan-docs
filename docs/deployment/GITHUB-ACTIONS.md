@@ -76,3 +76,11 @@ H5 的 `/manifest.webmanifest` 和 `/master.webmanifest` 应返回 `application/
 发布后同时检查状态码、响应 MIME、内容哈希、图片/字体解码及浏览器实际显示；仅返回 HTTP 200 不算静态资源验收。产品版本 0.0.1 与实际 Git SHA/部署来源见当前发布清单，不能由文档标题推断服务器已经更新。
 
 旧链接验证至少覆盖 `/shop/`、商品或订单详情、查询参数与 hash，以及已登录统一后台的情况；同时复核 `/admin/commerce/*` 和独立 `/temple/`。原 `v0.0.1` 标签不重写，本轮新 SHA、CI 运行、迁移页内容哈希及部署回执单独填入[核验页](../reports/0.0.1-核验.md)。
+
+## H5 配额与 SSH 低速同时发生时
+
+H5 的 `release-recovery.yml` 保留默认 SSH 模式。若 GitHub artifact 配额不足且 runner 到 ECS 上传无法在时限内完成，可手动选择 `transport=draft-asset`。该模式仅允许私有仓库、main 分支、production 环境；同一个 job 仍先执行完整构建与浏览器回归，然后将原包和 SHA256 保存在 `ci-h5-relay-<run>-<attempt>` 私有草稿 Release。受保护手动 job 为上传草稿资产使用短期 `contents:write` 令牌，令牌不得打包或交给 ECS。
+
+操作人下载这一运行/attempt 的 `release.tgz` 和 `release.sha256`，核对草稿目标 SHA、manifest scope/source/history、每个 payload 哈希；先确认旧上传已结束、没有未完成发布事务，再通过现有 ECS 接收器发布。可以使用只传送该原包的 rsync 续传，服务器整体摘要复核通过后，让接收器从完整文件读取。不能把下载成功当成部署成功，也不能从本地源码重新编译替代 CI 包。
+
+发布后分别记录 CI 检查、草稿中转与接收器 `complete` 状态、目标环境页面验收；删除本次创建的临时草稿/传输副本前，保留必要的清单、摘要、正式回执和回滚版本。不要删除其他任务的产物。

@@ -55,7 +55,7 @@
 | 钱包使用与测试 | [钱包使用与验收](docs/guides/钱包使用与验收.md) |
 | 产品能力、端差异与未验收项 | [当前能力与限制](docs/product/产品现状与能力边界.md) |
 | 需求与版本工作 | [需求入口](specs/README.md) |
-| 五级成长体系设计 | [标准产品原型](docs/product/成长体系产品原型方案.md) · [业务规则](docs/product/五级成长体系方案.md)，全端实现进行中；尚未上线 |
+| 五级成长体系设计 | [标准产品原型](docs/product/成长体系产品原型方案.md) · [业务规则](docs/product/五级成长体系方案.md) · [补齐验收](docs/reports/成长体系补齐验收-20261019.md)，首期已上线，本轮已实现详情价、同步与规则版本 |
 | API 接入 | [API Reference](API-REFERENCE.md) · [API 规范](docs/architecture/API规范.md) |
 | 架构与数据 | [技术架构](docs/architecture/技术架构.md) · [业务流程](docs/architecture/业务流程.md) · [状态机](docs/architecture/状态机.md) · [字段字典](docs/standards/字段字典.md) · [统一字典](docs/standards/统一数据字典.md) |
 | 本地研发 | [目录与维护](docs/guides/本地项目目录与维护.md) · [Go](docs/guides/Go后端指南.md) · [iOS](docs/guides/iOS入门指南.md) |
