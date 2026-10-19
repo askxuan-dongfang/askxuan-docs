@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: complete
 created: '2026-10-19'
 tags:
   - product
@@ -7,13 +7,20 @@ tags:
   - cross-platform
 priority: medium
 created_at: '2026-10-19T14:32:11.699Z'
-updated_at: '2026-10-19T14:32:14.283Z'
+updated_at: '2026-10-19T17:30:14.143Z'
 transitions:
   - status: in-progress
     at: '2026-10-19T14:32:14.283Z'
+  - status: complete
+    at: '2026-10-19T17:30:14.143Z'
+completed_at: '2026-10-19T17:30:14.143Z'
+completed: '2026-10-19'
 ---
 
 # 寺院与师傅两级信仰筛选
+
+> **Status**: ✅ Complete · **Priority**: Medium · **Created**: 2026-10-19 · **Tags**: product, directory, cross-platform
+
 
 ## Overview
 
@@ -33,8 +40,8 @@ transitions:
 - [x] H5 / iOS 目录联动与后台归属字段
 - [x] 数据迁移、输入验证及旧客户端更名兼容
 - [x] MySQL 集成与 H5 回归
-- [ ] 原生交互验收与 Git / ECS 发布
-- [ ] 发布版本和在线验收归档
+- [x] 原生交互验收与 Git / ECS 发布
+- [x] 发布版本和在线验收归档
 
 ## Test
 
