@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>大画布与直接拖拽 · 产品原型 v3</title>
+  <link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+  <main class="prototype-layout">
+    <div class="app" id="app" data-screen="editor">
+      <header class="app-header"><button id="back" class="quiet icon" aria-label="返回 DIY 广场">‹</button><span id="page-title">东方珠作</span><button id="mine-entry" class="quiet small">我的设计</button></header>
+
+      <section id="editor-screen" class="screen editor-screen" aria-label="DIY 编辑器">
+        <div class="stage">
+          <div class="design-meta"><span id="design-name">我的手串 <small id="count"></small></span><button id="wrist" class="quiet small">手围 16.0 cm ›</button></div>
+          <p id="fit" class="fit"></p>
+          <div id="scene" class="scene">
+            <svg id="canvas" aria-label="手串预览，可直接拖动珠子换位或拖出删除" role="group" tabindex="0">
+              <defs>
+                <filter id="bead-shadow" x="-60%" y="-60%" width="220%" height="220%"><feDropShadow dx="0" dy="3" stdDeviation="2" flood-opacity=".15"/></filter>
+                <radialGradient id="shine" cx="30%" cy="25%" r="75%"><stop offset="0" stop-color="#fff" stop-opacity=".4"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></radialGradient>
+              </defs>
+              <ellipse id="cord" fill="none" stroke="var(--cord)" stroke-width="1.5"/>
+              <path id="hull" class="debug-hull" fill="none"/>
+              <circle id="drop-target" class="drop-target hidden" r="22"/>
+              <g id="beads"></g>
+            </svg>
+            <p id="empty" class="empty hidden">从下方选一颗，开始你的手串</p>
+          </div>
+          <div class="stage-tools"><span id="gesture-hint" role="status" aria-live="polite"></span><button id="expand" class="quiet small" aria-pressed="false">扩大预览</button><button id="undo" class="quiet small" aria-label="撤销上次操作">↶ 撤销</button><button id="redo" class="quiet small" aria-label="重做上次操作">↷ 重做</button></div>
+        </div>
+        <section class="material-panel" aria-label="选择材料">
+          <div class="search-row"><input id="search" type="search" placeholder="搜索材质或规格" aria-label="搜索材料"><select id="element" aria-label="五行筛选"><option value="">全部五行</option><option>木</option><option>土</option><option>金</option><option>水</option></select></div>
+          <div class="material-browser"><nav id="categories" class="categories" aria-label="材料分类"></nav><div id="materials" class="materials"></div></div>
+        </section>
+        <footer class="checkout"><div><small>材料预估</small><strong id="price"></strong></div><button id="save" class="quiet">保存设计</button><button id="customize" class="primary">去定制 →</button></footer>
+      </section>
+
+      <section id="plaza-screen" class="screen hidden" aria-label="DIY 广场">
+        <div class="compact-toolbar"><input id="work-search" type="search" placeholder="寻找喜欢的作品" aria-label="搜索作品"><button id="new-design" class="quiet">开始设计</button></div>
+        <div id="plaza-list" class="work-list"></div>
+      </section>
+
+      <section id="detail-screen" class="screen hidden" aria-label="作品详情">
+        <div class="detail-content"><div id="detail-preview" class="work-preview"></div><div class="work-summary"><h1 id="detail-name"></h1><p id="detail-author"></p></div><section class="used-materials"><h2>作品用料</h2><div id="detail-materials"></div></section></div>
+        <footer class="detail-actions"><button id="copy-design" class="primary">复制并编辑</button></footer>
+      </section>
+
+      <section id="mine-screen" class="screen hidden" aria-label="我的设计">
+        <div class="compact-toolbar"><span>我的作品</span><button id="mine-new" class="quiet">新建设计 ＋</button></div>
+        <div id="mine-list" class="mine-list"></div>
+      </section>
+    </div>
+
+    <aside class="review-panel">
+      <p class="eyebrow">产品原型 v3 · 本地示例</p>
+      <h1>让手串成为主角</h1>
+      <p>直接抓住珠子换位，拖出手串后松手删除；拖回取消，撤销可恢复。</p>
+      <nav class="prototype-nav" aria-label="原型页面"><button data-page="editor" aria-pressed="true">编辑器</button><button data-page="plaza">DIY 广场</button><button data-page="detail">作品详情</button><button data-page="mine">我的设计</button></nav>
+      <div class="demo-tools"><button id="theme">切换深浅色</button><button id="reset">重置示例</button><button id="clear">空设计示例</button><button id="accessories">配件示例</button></div>
+      <label class="debug-toggle"><input id="show-boundary" type="checkbox"> 显示冻结边界（仅评审）</label>
+      <dl class="measurements"><div><dt>实际预览区</dt><dd id="measurement">—</dd></div><div><dt>当前手势</dt><dd id="gesture-state">未开始</dd></div><div><dt>边界外距</dt><dd id="outside-distance">—</dd></div></dl>
+      <p class="review-note">6px 起拖；完整绳圈、珠子与配件外沿形成安全范围，外距严格大于 24px 才待删。手串内孔不会删除。</p>
+      <p class="review-note">支持方向键选择、Alt + 方向键换位、Delete 删除、撤销 / 重做。Escape、失焦、第二指及指针取消均放弃当前拖动。</p>
+      <p class="review-note">SVG 为结构示意，不代表实际 3D 材质。数据只保留在当前页面内存；保存、定制及发布入口均不提交业务请求。</p>
+      <p class="links"><a href="../../DIY大画布与直接拖拽产品原型方案.md">完整产品方案</a><a href="../diy-open-canvas-v2/index.html">目录 / 商城 / 个人页五态（v2）</a><a href="../../../reports/2026-10-20-DIY大画布与直接拖拽.md">实现与验收状态</a></p>
+    </aside>
+  </main>
+  <dialog id="dialog"><h2 id="dialog-title"></h2><div id="dialog-body"></div><div class="dialog-actions"><button id="dialog-close" class="quiet">关闭</button></div></dialog>
+  <div id="announcement" class="sr-only" role="status" aria-live="polite"></div>
+  <script type="module" src="prototype.mjs"></script>
+</body>
+</html>

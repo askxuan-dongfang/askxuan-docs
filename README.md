@@ -1,6 +1,8 @@
 # 问玄东方 0.0.1
 
-2026-10-20 增量：[无框 DIY 与轻量导航标准产品原型](docs/product/无框DIY与轻量导航产品原型方案.md)、[可交互原型](docs/product/prototypes/diy-open-canvas-v2/index.html)及[实现与验收记录](docs/reports/2026-10-20-无框DIY与轻量导航.md)。包括工具避让、长度反馈、配件模型、悬浮宗派、商城顶栏与成长值入口。
+2026-10-20 最新增量：[DIY 大画布与直接拖拽 v3 标准方案](docs/product/DIY大画布与直接拖拽产品原型方案.md)、[可操作原型](docs/product/prototypes/diy-direct-drag-v3/index.html)及[本轮验收状态](docs/reports/2026-10-20-DIY大画布与直接拖拽.md)。扩大默认渲染区，直接拖珠换位 / 拖出删除；精简广场与我的设计，公开详情只读，二次编辑与发布统一在我的设计。
+
+前轮：[无框 DIY 与轻量导航 v2](docs/product/无框DIY与轻量导航产品原型方案.md)、[可交互原型](docs/product/prototypes/diy-open-canvas-v2/index.html)及[已发布验收记录](docs/reports/2026-10-20-无框DIY与轻量导航.md)。包括工具避让、长度反馈、配件模型、悬浮宗派、商城顶栏与成长值入口；v2 原型保留目录、商城和个人页五态。
 
 前版：[目录筛选与 DIY 编辑器方案](docs/product/目录筛选与DIY编辑器产品原型方案.md)及[2026-10-19 验收记录](docs/reports/2026-10-19-目录筛选与DIY编辑器.md)。
 
