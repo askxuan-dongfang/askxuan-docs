@@ -1,4 +1,6 @@
 import { convexHull, dragFeedback, finishGesture, reorder } from './model.mjs';
+import { setupDirectory } from './directory.mjs';
+import { setupSiteSearch } from './site-search.mjs';
 
 const $ = id => document.getElementById(id);
 const SVG = 'http://www.w3.org/2000/svg';
@@ -309,9 +311,13 @@ function renderMine() {
 function show(page) {
   cancelGesture(); currentPage = page;
   $('app').dataset.screen = page;
-  for (const name of ['editor', 'plaza', 'detail', 'mine']) $(`${name}-screen`).classList.toggle('hidden', page !== name);
-  $('page-title').textContent = { editor: '东方珠作', plaza: 'DIY 广场', detail: '作品详情', mine: '我的设计' }[page];
-  $('mine-entry').classList.toggle('hidden', page === 'detail' || page === 'mine');
+  const directoryPage = page === 'temple' || page === 'master';
+  for (const name of ['home', 'editor', 'plaza', 'detail', 'mine', 'directory']) $(`${name}-screen`).classList.toggle('hidden', directoryPage ? name !== 'directory' : page !== name);
+  $('page-title').textContent = { home: '问玄东方', editor: '东方珠作', plaza: 'DIY 广场', detail: '作品详情', mine: '我的设计', temple: '找寺院', master: '找师傅' }[page];
+  $('mine-entry').classList.toggle('hidden', ['home', 'detail', 'mine'].includes(page) || directoryPage);
+  $('back').style.visibility = page === 'home' ? 'hidden' : '';
+  $('back').setAttribute('aria-label', directoryPage ? '返回首页' : '返回 DIY 广场');
+  directory.close(); if (directoryPage) directory.show(page);
   document.querySelectorAll('[data-page]').forEach(element => element.setAttribute('aria-pressed', String(element.dataset.page === page)));
   if (page === 'editor') requestAnimationFrame(renderDiy);
   if (page === 'plaza') renderPlaza();
@@ -388,9 +394,11 @@ $('wrist').onclick = () => {
 $('dialog-close').onclick = () => $('dialog').close();
 $('save').onclick = saveDesign;
 $('customize').onclick = () => modal('去定制', '正式产品校验设计、库存和收货信息后进入定制。此原型不创建订单。');
-$('back').onclick = () => show('plaza'); $('mine-entry').onclick = () => show('mine');
+$('back').onclick = () => show(['temple', 'master'].includes(currentPage) ? 'home' : 'plaza'); $('mine-entry').onclick = () => show('mine');
 $('new-design').onclick = newDesign; $('mine-new').onclick = newDesign;
 $('work-search').oninput = renderPlaza;
 $('copy-design').onclick = () => loadDesign(works.find(work => work.id === selectedWork), true);
 document.querySelectorAll('[data-page]').forEach(element => element.onclick = () => show(element.dataset.page));
+const directory = setupDirectory({ modal });
+setupSiteSearch({ show, modal, openWork: id => { selectedWork = id; show('detail'); } });
 renderDiy(); renderPlaza(); renderDetail(); renderMine();

@@ -4,11 +4,15 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { convexHull, distanceOutsideHull, dragFeedback, finishGesture, reorder } from '../docs/product/prototypes/diy-direct-drag-v3/model.mjs';
+import { matchDirectoryExamples } from '../docs/product/prototypes/diy-direct-drag-v3/directory.mjs';
+import { searchSiteExamples } from '../docs/product/prototypes/diy-direct-drag-v3/site-search.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const folder = resolve(root, 'docs/product/prototypes/diy-direct-drag-v3');
 const html = readFileSync(resolve(folder, 'index.html'), 'utf8');
 const script = readFileSync(resolve(folder, 'prototype.mjs'), 'utf8');
+const directoryScript = readFileSync(resolve(folder, 'directory.mjs'), 'utf8');
+const searchScript = readFileSync(resolve(folder, 'site-search.mjs'), 'utf8');
 const css = readFileSync(resolve(folder, 'prototype.css'), 'utf8');
 const cases = [];
 function check(name, run) { run(); cases.push(name); }
@@ -62,16 +66,17 @@ check('最后一颗可删除，点选不提交', () => {
 check('HTML 标识唯一且脚本静态引用存在', () => {
   const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
   assert.equal(new Set(ids).size, ids.length);
-  for (const [, id] of script.matchAll(/\$\('([^']+)'\)/g)) assert.ok(ids.includes(id), `missing id: ${id}`);
+  for (const [, id] of (script + directoryScript + searchScript).matchAll(/\$\('([^']+)'\)/g)) assert.ok(ids.includes(id), `missing id: ${id}`);
 });
 check('本地资源与关联页面存在', () => {
   for (const [, target] of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
     assert.ok(!/^(https?:)?\/\//.test(target), `external resource: ${target}`);
     assert.ok(existsSync(resolve(folder, target)), `missing resource: ${target}`);
   }
+  for (const [, target] of css.matchAll(/url\("([^"]+)"\)/g)) assert.ok(existsSync(resolve(folder, target)), `missing pattern: ${target}`);
 });
 check('原型不调用业务网络或用户存储', () => {
-  assert.doesNotMatch(script, /\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|localStorage|sessionStorage|indexedDB)\b/);
+  assert.doesNotMatch(script + directoryScript + searchScript, /\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|localStorage|sessionStorage|indexedDB|geolocation)\b/);
   assert.doesNotMatch(html, /<form\b|https?:\/\//);
 });
 check('大画布与直接手势实现已连接', () => {
@@ -85,6 +90,40 @@ check('公开详情与我的设计的导航边界', () => {
   assert.doesNotMatch(detail, /继续编辑|再次编辑|确认发布|确认下架/);
   assert.match(script, /const open = button\('', \(\) => loadDesign\(work\), 'mine-open'\)/);
   assert.match(script, /work\.items = beads\.map\(item => item\.material\); work\.published = false/);
+});
+check('目录同行入口与互斥浮层静态结构', () => {
+  assert.match(html, /directory-filter-bar[\s\S]*?directory-types[\s\S]*?directory-region/);
+  assert.doesNotMatch(html, /class="directory-regions"/);
+  assert.match(css, /\.directory-region\{flex:none/);
+  assert.match(css, /\.directory-popover\{position:absolute;[\s\S]*?animation:none;transition:none/);
+  assert.match(css, /\.directory-services h2,\.directory-services button\{font-size:var\(--directory-label-size\)/);
+  assert.match(directoryScript, /let panel = ''/);
+  assert.match(directoryScript, /panel !== 'region'/); assert.match(directoryScript, /panel !== 'tradition'/);
+  assert.match(directoryScript, /event\.key !== 'Escape'/);
+});
+check('首页固定四卡与四套独立底纹资源', () => {
+  const home = html.slice(html.indexOf('<section id="home-screen"'), html.indexOf('<section id="editor-screen"'));
+  assert.equal([...home.matchAll(/<button (?:class="home-(?:temple|master|diy)"|id="home-points")/g)].length, 4);
+  assert.match(css, /\.home-core\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  const patterns = [...css.matchAll(/mask-image:url\("(patterns\/[^"]+)"\)/g)].map(match => match[1]);
+  assert.equal(new Set(patterns).size, 4);
+  assert.equal(new Set(patterns.map(path => readFileSync(resolve(folder, path), 'utf8'))).size, 4);
+});
+check('目录四字段匹配且对象类型隔离', () => {
+  for (const query of ['灵隐', '静心', '供灯', '大陆']) assert.ok(matchDirectoryExamples({ kind: 'temple', query }).some(item => item.id === 'temple-1'), query);
+  assert.deepEqual(matchDirectoryExamples({ kind: 'temple', query: '法师' }), []);
+  assert.deepEqual(matchDirectoryExamples({ kind: 'master', query: '灵隐' }), []);
+});
+check('目录搜索与筛选取交集并保留空查询筛选', () => {
+  assert.deepEqual(matchDirectoryExamples({ kind: 'temple', query: '祈福', belief: '汉传佛教', region: '香港' }).map(item => item.id), ['temple-2']);
+  assert.deepEqual(matchDirectoryExamples({ kind: 'temple', query: '香港', service: '供灯' }), []);
+  assert.deepEqual(matchDirectoryExamples({ kind: 'master', query: '', tradition: '净土宗' }).map(item => item.id), ['master-3']);
+});
+check('全站示例搜索独立返回功能与多类型公开内容', () => {
+  assert.deepEqual(searchSiteExamples('积分').functions.map(item => item.id), ['points']);
+  assert.deepEqual(new Set(searchSiteExamples('禅修').content.map(item => item.type)), new Set(['寺院', '师傅', 'DIY 作品', '公开内容']));
+  assert.ok(searchSiteExamples('白玉').content.some(item => item.type === '商品'));
+  assert.deepEqual(searchSiteExamples('不存在的关键词'), { functions: [], content: [] });
 });
 
 console.log(JSON.stringify({ status: 'passed', count: cases.length, cases, boundary: 'Static structure and prototype geometry only; no browser, product API, native or ECS acceptance.' }, null, 2));

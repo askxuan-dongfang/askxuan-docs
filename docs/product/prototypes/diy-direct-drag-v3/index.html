@@ -11,6 +11,17 @@
     <div class="app" id="app" data-screen="editor">
       <header class="app-header"><button id="back" class="quiet icon" aria-label="返回 DIY 广场">‹</button><span id="page-title">东方珠作</span><button id="mine-entry" class="quiet small">我的设计</button></header>
 
+      <section id="home-screen" class="screen hidden" aria-label="首页">
+        <div class="compact-toolbar"><input id="site-search" type="search" placeholder="搜索功能、内容" aria-label="搜索全站功能与内容"><button id="site-search-submit" class="quiet">搜索</button></div>
+        <nav class="home-core" aria-label="首页核心入口">
+          <button class="home-temple" data-home-page="temple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 10 12 4l9 6M5 10h14v11H5zM3 21h18M10 14h4v7M3 10h18"/></svg><span>找寺院</span></button>
+          <button class="home-master" data-home-page="master"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="7" r="4"/><path d="M4 22v-4c0-5 16-5 16 0v4"/></svg><span>找师傅</span></button>
+          <button class="home-diy" data-home-page="plaza"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="4" r="2"/><circle cx="18.5" cy="7" r="2"/><circle cx="20" cy="14" r="2"/><circle cx="15" cy="20" r="2"/><circle cx="7" cy="20" r="2"/><circle cx="3" cy="13" r="2"/><circle cx="5" cy="6" r="2"/></svg><span>DIY 手串</span></button>
+          <button id="home-points" class="home-points"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m12 5 2.1 4.3 4.9.7-3.5 3.4.8 4.8-4.3-2.3-4.3 2.3.8-4.8L5 10l4.9-.7Z"/></svg><span>积分中心</span></button>
+        </nav>
+        <div id="site-search-results" class="site-search-results" aria-live="polite"><p class="review-note">搜索站内功能与内容，或从上方入口开始。</p></div>
+      </section>
+
       <section id="editor-screen" class="screen editor-screen" aria-label="DIY 编辑器">
         <div class="stage">
           <div class="design-meta"><span id="design-name">我的手串 <small id="count"></small></span><button id="wrist" class="quiet small">手围 16.0 cm ›</button></div>
@@ -51,20 +62,33 @@
         <div class="compact-toolbar"><span>我的作品</span><button id="mine-new" class="quiet">新建设计 ＋</button></div>
         <div id="mine-list" class="mine-list"></div>
       </section>
+
+      <section id="directory-screen" class="screen hidden" aria-label="目录筛选示例">
+        <div class="directory-search-row"><input id="directory-search" type="search" placeholder="搜索寺院名称、标签、服务或地区" aria-label="搜索寺院名称、标签、服务或地区"></div>
+        <div id="directory-anchor" class="directory-anchor">
+          <div class="directory-filter-bar"><nav id="directory-types" class="directory-types" aria-label="宗教与信俗类型"></nav><button id="directory-region" class="directory-region" aria-haspopup="true" aria-expanded="false" aria-controls="directory-region-panel"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span id="directory-region-label">地区</span><span aria-hidden="true">⌄</span></button></div>
+          <div id="directory-tradition-panel" class="directory-popover hidden" role="group" aria-label="宗派与信俗"></div>
+          <div id="directory-region-panel" class="directory-popover directory-region-panel hidden" role="group" aria-label="地区选择"></div>
+        </div>
+        <div id="directory-content" class="directory-content"><aside class="directory-services"><h2>服务</h2><div id="directory-services"></div></aside><div id="directory-results" class="directory-results"></div></div>
+      </section>
     </div>
 
     <aside class="review-panel">
       <p class="eyebrow">产品原型 v3 · 本地示例</p>
       <h1>让手串成为主角</h1>
       <p>直接抓住珠子换位，拖出手串后松手删除；拖回取消，撤销可恢复。</p>
-      <nav class="prototype-nav" aria-label="原型页面"><button data-page="editor" aria-pressed="true">编辑器</button><button data-page="plaza">DIY 广场</button><button data-page="detail">作品详情</button><button data-page="mine">我的设计</button></nav>
+      <nav class="prototype-nav" aria-label="原型页面"><button data-page="home">首页 / 搜索</button><button data-page="editor" aria-pressed="true">编辑器</button><button data-page="plaza">DIY 广场</button><button data-page="detail">作品详情</button><button data-page="mine">我的设计</button><button data-page="temple">找寺院</button><button data-page="master">找师傅</button></nav>
       <div class="demo-tools"><button id="theme">切换深浅色</button><button id="reset">重置示例</button><button id="clear">空设计示例</button><button id="accessories">配件示例</button></div>
       <label class="debug-toggle"><input id="show-boundary" type="checkbox"> 显示冻结边界（仅评审）</label>
+      <label class="debug-toggle"><input id="large-text" type="checkbox"> 首页大字体示例（保持 2 × 2）</label>
       <dl class="measurements"><div><dt>实际预览区</dt><dd id="measurement">—</dd></div><div><dt>当前手势</dt><dd id="gesture-state">未开始</dd></div><div><dt>边界外距</dt><dd id="outside-distance">—</dd></div></dl>
       <p class="review-note">6px 起拖；完整绳圈、珠子与配件外沿形成安全范围，外距严格大于 24px 才待删。手串内孔不会删除。</p>
       <p class="review-note">支持方向键选择、Alt + 方向键换位、Delete 删除、撤销 / 重做。Escape、失焦、第二指及指针取消均放弃当前拖动。</p>
+      <p class="review-note">目录的地区按钮固定在类型行右侧；地区和宗派浮层互斥，没有展开动画，点击外部或 Escape 关闭。定位图标仅代表筛选入口，不请求设备定位。服务标题和标签采用同一字号。</p>
+      <p class="review-note">首页固定 2 × 2，四卡等大，低对比纹样保持文字清楚；大字体仍为两列。可试搜“积分”“禅修”“香港”；首页跨功能与示例内容，目录只查自身名称、标签、服务及地区，并与筛选组合。这里只演示少量合成数据，不代表完整站内索引。</p>
       <p class="review-note">SVG 为结构示意，不代表实际 3D 材质。数据只保留在当前页面内存；保存、定制及发布入口均不提交业务请求。</p>
-      <p class="links"><a href="../../DIY大画布与直接拖拽产品原型方案.md">完整产品方案</a><a href="../diy-open-canvas-v2/index.html">目录 / 商城 / 个人页五态（v2）</a><a href="../../../reports/2026-10-20-DIY大画布与直接拖拽.md">实现与验收状态</a></p>
+      <p class="links"><a href="../../DIY大画布与直接拖拽产品原型方案.md">完整产品方案</a><a href="../diy-open-canvas-v2/index.html">商城 / 个人页五态与目录历史（v2）</a><a href="../../../reports/2026-10-20-DIY大画布与直接拖拽.md">实现与验收状态</a></p>
     </aside>
   </main>
   <dialog id="dialog"><h2 id="dialog-title"></h2><div id="dialog-body"></div><div class="dialog-actions"><button id="dialog-close" class="quiet">关闭</button></div></dialog>
