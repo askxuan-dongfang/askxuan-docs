@@ -1,7 +1,7 @@
 import { materials, createState, amount, eligibility, publicVersion, draftChanged, publish, unpublish, copyPublished, confirmExampleOrder } from './model.mjs';
 const $ = id => document.getElementById(id);
 let state = createState(), page = 'home', growthTab = 'benefits', rulesOpen = false, historyMore = false, historyError = false, historyRetried = false, directoryPanel = '', belief = '全部', region = '地区', directoryQuery = '', identity = '全部', priceBand = '全部', workQuery = '';
-let toastTimer, dialogAction;
+let toastTimer, dialogAction, widePreview = false;
 const money = cents => '¥' + (cents / 100).toFixed(2);
 const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const icons = {
@@ -12,6 +12,16 @@ const icons = {
   wish: '<path d="M12 3 4 7v5c0 4 4 7 8 9 4-2 8-5 8-9V7Z"/><path d="m8 12 3 3 5-6"/>',
 };
 const icon = kind => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">${icons[kind] || icons.wish}</svg>`;
+// Same local linework as the H5 IntentionIcon; labels convey each destination.
+const wishDrawings = {
+  peace: '<path d="M8 3h8l3 4v14H5V7Z"/><circle cx="12" cy="7" r="1"/><path d="m8.5 13 2.5 2.5 4.5-5"/>',
+  wealth: '<ellipse cx="12" cy="9" rx="4" ry="3"/><path d="M3 10c3 1 4 4 9 4s6-3 9-4l-3 9H6Z"/><path d="M10 9h4"/>',
+  love: '<path d="M12 8c-1-4-7-4-8 0-1 4 4 7 8 10 4-3 9-6 8-10-1-4-7-4-8 0Z"/><path d="m8 16-2 5m10-5 2 5"/>',
+  career: '<path d="M5 21h14M8 21v-6h8v6M10 15V9h4v6M12 9V3"/><path d="M12 3h7l-2 2 2 2h-7"/>',
+  study: '<path d="M12 6C9 4 6 4 3 5v14c3-1 6-1 9 1 3-2 6-2 9-1V5c-3-1-6-1-9 1Zm0 0v14"/><path d="M6 9h3m-3 4h3m6-4h3m-3 4h3"/>',
+  taisui: '<path d="M12 2 4 5v6c0 5 4 9 8 11 4-2 8-6 8-11V5Z"/><path d="m12 6 1.5 3.5L17 11l-3.5 1.5L12 16l-1.5-3.5L7 11l3.5-1.5Z"/>',
+};
+const wishIcon = kind => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${wishDrawings[kind]}</svg>`;
 function ornament() {
   return `<div class="ornament" aria-label="绿金手串装饰，一珠一心意"><div class="center">一珠<small>一心意</small></div>${Array.from({ length: 15 }, (_, i) => `<i class="bead ${i % 4 === 0 ? 'gold' : ''}" style="left:${56 + 47 * Math.cos(i * Math.PI * 2 / 15)}px;top:${56 + 47 * Math.sin(i * Math.PI * 2 / 15)}px"></i>`).join('')}</div>`;
 }
@@ -25,7 +35,7 @@ function tabs() { return `<nav class="section-tabs" aria-label="DIY 内容"><but
 function stateLabel() { return state.publication?.active ? (publicVersion(state) ? draftChanged(state) ? '已发布 · 草稿已修改' : '已发布' : '暂不可公开') : '未发布'; }
 function home() {
   const faiths = [['汉传佛教', '慈悲与智慧并行', '汉'], ['藏传佛教', '传承、修持与慈悲', '藏'], ['南传佛教', '戒、定、慧与日常修习', '南'], ['道教', '道法自然，清静修持', '道'], ['民间信仰', '乡土传统与民俗传承', '民']];
-  return `<div class="home page-pad"><div class="home-banner"><small>手作日常</small><h1>一珠一念，<br>让心意慢慢成形。</h1></div><nav class="home-core" aria-label="首页四个核心入口">${[['temple', '找寺院', 'temple'], ['master', '找师傅', 'directory'], ['diy', 'DIY手串', 'plaza'], ['points', '积分中心', 'points']].map(([kind, text, target]) => `<button class="home-${kind}" data-page="${target}" data-kind="${kind}">${icon(kind)}<span>${text}</span></button>`).join('')}</nav><h2>信仰类别</h2><div class="faith-grid">${faiths.map(([name, note, glyph]) => `<button data-faith="${name}"><span><strong>${name}</strong><small>${note}</small></span><span class="faith-glyph" aria-hidden="true">${glyph}</span></button>`).join('')}</div><h2>按心愿办</h2><div class="wish-grid">${['求平安', '求财运', '求姻缘', '求事业', '求学业', '化太岁'].map(name => `<button data-wish="${name}">${icon('wish')}<span>${name}</span></button>`).join('')}</div></div>`;
+  return `<div class="home page-pad"><div class="home-banner"><small>手作日常</small><h1>一珠一念，<br>让心意慢慢成形。</h1></div><nav class="home-core" aria-label="首页四个核心入口">${[['temple', '找寺院', 'temple'], ['master', '找师傅', 'directory'], ['diy', 'DIY手串', 'plaza'], ['points', '积分中心', 'points']].map(([kind, text, target]) => `<button class="home-${kind}" data-page="${target}" data-kind="${kind}">${icon(kind)}<span>${text}</span></button>`).join('')}</nav><section class="home-section" aria-labelledby="home-faith-heading"><h2 id="home-faith-heading">信仰类别</h2><div class="faith-grid">${faiths.map(([name, note, glyph]) => `<button data-faith="${name}"><span><strong>${name}</strong><small>${note}</small></span><span class="faith-glyph" aria-hidden="true">${glyph}</span></button>`).join('')}</div></section><section class="home-section" aria-labelledby="home-wish-heading"><h2 id="home-wish-heading">按心愿办</h2><div class="wish-grid">${[['peace', '求平安'], ['wealth', '求财运'], ['love', '求姻缘'], ['career', '求事业'], ['study', '求学业'], ['taisui', '化太岁']].map(([kind, name]) => `<button data-wish="${name}">${wishIcon(kind)}<span>${name}</span></button>`).join('')}</div></section></div>`;
 }
 function mine() {
   return hero() + tabs() + `<div class="search"><input id="work-search" type="search" aria-label="搜索我的设计" placeholder="搜索作品名称" value="${escapeHtml(workQuery)}"><button data-action="work-search">搜索</button></div>` + (state.draft.title.includes(workQuery) ? `<article class="mine-card"><button data-page="editor" class="mine-open" aria-label="编辑 ${escapeHtml(state.draft.title)}">${preview(state.draft)}<div><h3>${escapeHtml(state.draft.title)}</h3><small>${state.draft.beads.length} 颗 · 手围 ${state.draft.wrist} cm</small><span class="tag">${stateLabel()}</span><small>材料预估 ${money(amount(state.draft))}</small></div></button><div class="mine-actions"><button data-action="manage">${state.publication?.active ? '发布管理' : '发布作品'}</button>${state.publication?.active ? '<button data-action="unpublish">下架</button>' : ''}</div></article>` : '<p class="empty-list">没有匹配的设计</p>');
@@ -73,6 +83,9 @@ function orderInfo() { modal('定制进度', `<p>${eligibility(state).reason}</p
 function showRules() { page = 'growth'; growthTab = 'benefits'; rulesOpen = true; render(); $('growth-rules').scrollIntoView({ block: 'start' }); }
 function render() {
   const pages = { home, mine, plaza, detail, editor, growth, directory, temple: directory, points: () => '<div class="blank"><h2>积分中心</h2><p>核心入口平级展示，不在首页显示虚构账户余额。</p><button data-page="home" class="quiet">回到首页</button></div>' };
+  document.body.classList.toggle('wide-home-preview', widePreview && page === 'home');
+  $('wide-preview').setAttribute('aria-pressed', String(widePreview));
+  $('wide-preview').textContent = widePreview ? '标准首页宽度' : '宽屏首页';
   $('screen').innerHTML = (pages[page] || home)();
   $('page-title').textContent = ({ home: '问玄东方', mine: '东方珠作', plaza: '东方珠作', detail: '作品详情', editor: '东方珠作', growth: '我的成长', directory: '找师傅', temple: '找寺院', points: '积分中心' })[page];
   $('header-action').textContent = page === 'home' ? '搜索' : page === 'growth' ? '规则' : page === 'detail' ? '分享' : '';
@@ -118,6 +131,7 @@ $('scenario').addEventListener('change', event => { const value = event.target.v
 $('reset').addEventListener('click', () => { state = createState(); $('scenario').value = 'published'; historyMore = false; historyError = false; historyRetried = false; rulesOpen = false; workQuery = ''; go('home'); });
 $('theme').addEventListener('click', () => { const dark = document.body.classList.toggle('dark'); $('theme').setAttribute('aria-pressed', dark); $('theme').textContent = dark ? '浅色' : '深色'; });
 $('large-text').addEventListener('click', () => { const large = document.body.classList.toggle('large-text'); $('large-text').setAttribute('aria-pressed', large); });
+$('wide-preview').addEventListener('click', () => { widePreview = !widePreview; go('home'); document.querySelector('.app').scrollIntoView({ block: 'start' }); });
 $('old-rules').addEventListener('click', showRules);
 document.addEventListener('keydown', event => { if (event.key === 'Escape' && directoryPanel) { directoryPanel = ''; render(); } if (event.key === 'Enter' && event.target.id === 'directory-search') { directoryQuery = event.target.value; render(); } if (event.key === 'Enter' && event.target.id === 'work-search') { workQuery = event.target.value; render(); } });
 if (new URLSearchParams(location.search).get('tab') === 'rules') { page = 'growth'; growthTab = 'benefits'; rulesOpen = true; }
