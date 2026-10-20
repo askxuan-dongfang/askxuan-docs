@@ -62,4 +62,4 @@ transitions:
 
 ## Notes
 
-实施状态在实际功能、测试与发布完成后才使用 LeanSpec CLI 改为 complete。生产只读，不改用户 design=23 或既有作品；原型模拟发布不代表真实产品发布验收。
+最终来源 SHA、CI、ECS、原生及归档证据按验收记录 W / N / R / A 编号填表；当前未上线。实施状态在实际功能、测试与发布完成后才使用 LeanSpec CLI 改为 complete。生产只读，不改用户 design=23 或既有作品；原型模拟发布不代表真实产品发布验收。

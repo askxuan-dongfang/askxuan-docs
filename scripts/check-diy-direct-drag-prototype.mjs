@@ -127,7 +127,7 @@ check('全站示例搜索独立返回功能与多类型公开内容', () => {
   assert.deepEqual(new Set(searchSiteExamples('禅修').content.map(item => item.type)), new Set(['寺院', '师傅', '手串作品', '动态']));
   assert.ok(searchSiteExamples('白玉').content.some(item => item.type === '商品'));
   assert.ok(searchSiteExamples('求平安').content.some(item => item.type === '服务与心愿'));
-  assert.ok(searchSiteExamples('秋日').content.some(item => item.type === '活动与专题'));
+  assert.ok(searchSiteExamples('秋日').content.some(item => item.type === '推荐活动与专题'));
   assert.deepEqual(searchSiteExamples('禅修 大陆').content.map(item => item.id), ['temple-1', 'master-1']);
   assert.deepEqual(searchSiteExamples('私聊').content, []);
   assert.deepEqual(searchSiteExamples('不存在的关键词'), { functions: [], content: [] });

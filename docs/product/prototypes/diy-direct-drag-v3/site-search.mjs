@@ -26,7 +26,7 @@ const content = [
   { id: 'public-other', name: '山间月色', type: '手串作品', keywords: '白玉 星月菩提 手串 禅修', workId: 'public-other' },
   { id: 'story-1', name: '一颗珠子的日常（示例）', type: '动态', keywords: '禅修 手串 静心' },
   { id: 'service-1', name: '祈福（服务示例）', type: '服务与心愿', keywords: '祈福 求平安 心愿' },
-  { id: 'activity-1', name: '秋日静心专题（当前推荐示例）', type: '活动与专题', keywords: '' },
+  { id: 'activity-1', name: '秋日静心专题（当前推荐示例）', type: '推荐活动与专题', keywords: '' },
 ];
 export function searchSiteExamples(query) {
   const words = query.normalize('NFKC').trim().toLocaleLowerCase().split(/\s+/u).filter(Boolean);
