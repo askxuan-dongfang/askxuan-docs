@@ -8,10 +8,10 @@ export const directoryExamples = [
   { id: 'master-3', kind: 'master', name: '南音居士（示例）', belief: '汉传佛教', tradition: '净土宗', region: '台湾', tags: ['共修', '净心'], services: ['诵经'] },
 ];
 export function matchDirectoryExamples({ kind, query = '', belief = '', tradition = '', region = '', service = '' }) {
-  const word = query.normalize('NFKC').trim().toLocaleLowerCase();
+  const words = query.normalize('NFKC').trim().toLocaleLowerCase().split(/\s+/u).filter(Boolean);
   return directoryExamples.filter(item => item.kind === kind && (!belief || item.belief === belief) && (!tradition || item.tradition === tradition)
     && (!region || item.region === region) && (!service || item.services.includes(service))
-    && (!word || [item.name, ...item.tags, ...item.services, item.region, item.belief, item.tradition].join(' ').normalize('NFKC').toLocaleLowerCase().includes(word)));
+    && words.every(word => [item.name, ...item.tags, ...item.services, item.region, item.belief, item.tradition].some(field => field.normalize('NFKC').toLocaleLowerCase().includes(word))));
 }
 export function setupDirectory({ modal }) {
   const $ = id => document.getElementById(id);

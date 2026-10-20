@@ -118,11 +118,18 @@ check('目录搜索与筛选取交集并保留空查询筛选', () => {
   assert.deepEqual(matchDirectoryExamples({ kind: 'temple', query: '祈福', belief: '汉传佛教', region: '香港' }).map(item => item.id), ['temple-2']);
   assert.deepEqual(matchDirectoryExamples({ kind: 'temple', query: '香港', service: '供灯' }), []);
   assert.deepEqual(matchDirectoryExamples({ kind: 'master', query: '', tradition: '净土宗' }).map(item => item.id), ['master-3']);
+  assert.deepEqual(matchDirectoryExamples({ kind: 'temple', query: '祈福 香港' }).map(item => item.id), ['temple-2']);
+  assert.deepEqual(matchDirectoryExamples({ kind: 'temple', query: '静心 香港' }), []);
 });
 check('全站示例搜索独立返回功能与多类型公开内容', () => {
+  assert.equal(searchSiteExamples('').functions.length, 17);
   assert.deepEqual(searchSiteExamples('积分').functions.map(item => item.id), ['points']);
-  assert.deepEqual(new Set(searchSiteExamples('禅修').content.map(item => item.type)), new Set(['寺院', '师傅', 'DIY 作品', '公开内容']));
+  assert.deepEqual(new Set(searchSiteExamples('禅修').content.map(item => item.type)), new Set(['寺院', '师傅', '手串作品', '动态']));
   assert.ok(searchSiteExamples('白玉').content.some(item => item.type === '商品'));
+  assert.ok(searchSiteExamples('求平安').content.some(item => item.type === '服务与心愿'));
+  assert.ok(searchSiteExamples('秋日').content.some(item => item.type === '活动与专题'));
+  assert.deepEqual(searchSiteExamples('禅修 大陆').content.map(item => item.id), ['temple-1', 'master-1']);
+  assert.deepEqual(searchSiteExamples('私聊').content, []);
   assert.deepEqual(searchSiteExamples('不存在的关键词'), { functions: [], content: [] });
 });
 
