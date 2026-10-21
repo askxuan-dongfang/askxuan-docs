@@ -1,5 +1,7 @@
 # 问玄东方 0.0.1
 
+2026-10-21 管理平台设计：[产品架构与原型方案](docs/product/管理平台产品架构与原型方案.md)、[业务模型与迁移约定](docs/product/管理平台业务模型与迁移约定.md)、[可操作原型](docs/product/prototypes/admin-workbench-v1/index.html)。按九个工作分区规划导航、提供者资料、标准、审核与交易入口；本轮为设计原型交付，待业务评审与实施，未修改生产权限、业务或数据。
+
 2026-10-21 师傅卡片真实服务均分与评价数已在 H5 部署 ECS，线上15项及390px明暗截图复核通过；iOS源码同步，编译与6项数据回归通过，设备UI未验。方案、原型及分层验收见[评分增量记录](docs/reports/2026-10-21-师傅卡片真实评分.md)。
 
 2026-10-21 当前更正：找师傅侧栏为“提供服务＋价格区间”，服务默认展开，价格默认折叠，按平台标准服务编码与已启用标签筛选；移除身份筛选及旧 `position` 链接的隐藏过滤。身份仍是资料字段，不新增自行编辑权限。H5 已部署 ECS，生产 DOM 14/14、390px 简浅/繁深截图复核通过；原生编译通过，Unit/UI 实际执行与视觉仍待验。已同步 [v4 方案](docs/product/DIY定稿发布与首页统一产品原型方案.md)与[原型](docs/product/prototypes/diy-publication-v4/index.html)，实际实现、上线及验收进度见[服务筛选更正记录](docs/reports/2026-10-21-找师傅服务筛选更正.md)；前轮报告保留历史口径。
@@ -69,6 +71,7 @@
 | 钱包使用与测试 | [钱包使用与验收](docs/guides/钱包使用与验收.md) |
 | 产品能力、端差异与未验收项 | [当前能力与限制](docs/product/产品现状与能力边界.md) |
 | 需求与版本工作 | [需求入口](specs/README.md) |
+| 管理平台整体设计 | [产品架构](docs/product/管理平台产品架构与原型方案.md) · [业务模型与迁移](docs/product/管理平台业务模型与迁移约定.md) · [交互原型](docs/product/prototypes/admin-workbench-v1/index.html)，设计评审稿，尚未实施 |
 | 五级成长体系设计 | [标准产品原型](docs/product/成长体系产品原型方案.md) · [业务规则](docs/product/五级成长体系方案.md) · [补齐验收](docs/reports/成长体系补齐验收-20261019.md)，首期已上线，本轮已实现详情价、同步与规则版本 |
 | API 接入 | [API Reference](API-REFERENCE.md) · [API 规范](docs/architecture/API规范.md) |
 | 架构与数据 | [技术架构](docs/architecture/技术架构.md) · [业务流程](docs/architecture/业务流程.md) · [状态机](docs/architecture/状态机.md) · [字段字典](docs/standards/字段字典.md) · [统一字典](docs/standards/统一数据字典.md) |
