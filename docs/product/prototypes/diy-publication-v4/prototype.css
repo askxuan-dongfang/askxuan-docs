@@ -20,3 +20,5 @@ body.dark{color-scheme:dark;--bg:#1c1210;--surface:#2a1e1a;--ink:#f0e6da;--brand
 @container app-viewport (min-width:1024px){.faith-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.faith-grid button{border-bottom:0}.faith-grid button:last-child{grid-column:auto}.wish-grid,.large-text .wish-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.wish-grid button,.large-text .wish-grid button{border-bottom:0}}
 
 .directory-sidebar button[aria-pressed=true]{color:var(--accent);background:var(--soft)}.master-card .services span{min-width:0;overflow-wrap:anywhere}.master-card .services strong{flex:none}
+
+.master-card .master-rating{display:flex;align-items:center;gap:4px;margin-top:5px;font-size:12px;line-height:1.5;overflow-wrap:anywhere}.master-rating>span{color:var(--accent);flex:none}
