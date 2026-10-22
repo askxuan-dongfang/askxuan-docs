@@ -18,7 +18,7 @@ export const wishNames = wishes.map(x=>x[1]);
 export const label = (items, code) => items.find(x=>x[0]===code)?.[1] || code || '未设置';
 const copy = x => structuredClone(x);
 export const lenses = {
-  platform: {name:'平台管理视角', scope:'全平台 · 原型示意', pages:['home','providers','services','commerce','reviews','finance','content','standards','permissions']},
+  platform: {name:'平台管理视角', scope:'全平台 · 原型示意', pages:['home','providers','services','commerce','reviews','finance','operations','ai','standards','permissions']},
   temple: {name:'寺院管理视角', scope:'仅示例寺院与所属师傅', pages:['home','providers','services','reviews','finance','permissions']},
   master: {name:'师傅本人视角', scope:'仅本人资料与履约任务', pages:['home','providers','services','finance','permissions']},
   shop: {name:'商城运营视角', scope:'仅商城经营与订单', pages:['home','commerce','permissions']},
@@ -37,8 +37,8 @@ export function createState() {
     ],
     catalog:traditions.map(([code,name,parent])=>({code,name,parent,enabled:true})),
     review:[{id:'DEMO-A01',name:'澄和宫',type:'寺院资料审核',state:'初审待处理',note:''},{id:'DEMO-A02',name:'明觉居士',type:'师傅资质审核',state:'待审核',note:''},{id:'DEMO-A03',name:'守礼先生',type:'认证与入驻',state:'submitted',note:''}],
-    orders:[{id:'DEMO-O01',type:'商城订单',state:'待发货',amount:268,provider:'商城',payment:'已付款'}, {id:'DEMO-D01',type:'DIY 订单',state:'待确认定稿',amount:429,provider:'东方珠作',payment:'已付款'}, {id:'DEMO-B01',type:'预约服务',state:'待执行',amount:200,provider:'澄和宫',payment:'已付款'}, {id:'DEMO-P01',type:'积分兑换',state:'待履约',amount:500,provider:'积分商城',payment:'已扣积分'}],
-    homeTitle:'找寺院', homeDraft:'找寺院', logs:[], failServices:false, saveReceipt:null, notice:'',
+    orders:[{id:'DEMO-O01',type:'商城订单',state:'待发货',amount:268,provider:'商城',payment:'已付款'}, {id:'DEMO-D01',type:'DIY 订单',state:'待确认定稿',amount:429,provider:'东方珠作',payment:'已付款'}, {id:'DEMO-B01',type:'预约服务',state:'待执行',amount:200,provider:'澄和宫',payment:'已付款'}, {id:'DEMO-C01',type:'即时咨询',state:'咨询中',amount:36,provider:'明觉居士',payment:'已付款'}, {id:'DEMO-P01',type:'积分兑换',state:'待履约',amount:500,provider:'积分商城',payment:'已扣积分'}],
+    homeTitle:'汉传佛教', homeDraft:'汉传佛教', homeBeliefCode:'han_buddhism', beliefNames:Object.fromEntries(beliefs), serviceKind:'bookings', logs:[], failServices:false, saveReceipt:null, notice:'',
   };
 }
 export function visibleProviders(s) {
