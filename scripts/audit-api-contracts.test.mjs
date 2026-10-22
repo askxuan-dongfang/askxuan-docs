@@ -140,3 +140,37 @@ test('dropping one points role fails instead of inventing its routes', () => {
   assert.equal(result.status, 1);
   assert.ok(result.errors.includes(`${pointsFile}: unsupported points prefix/iteration shape`));
 });
+
+
+test('method-list routes follow the declared verbs and path', () => {
+  const source = `package handler
+func RegisterHandlers(server *rest.Server, svcCtx *svc.ServiceContext) {
+ for _, method := range []string{"GET", "POST", "PUT"} {
+  server.AddRoute(rest.Route{Method: method, Path: "/api/v1/auth/temple/team", Handler: handler})
+ }
+}`;
+  const result=runAudit({[`backend/${routesFile}`]:source+"\nfunc called() { registerPoints(server, svcCtx) }"});
+  assert.deepEqual(result.missing, ['GET','POST','PUT'].map(m=>m+' /api/v1/auth/temple/team'));
+  assert.deepEqual(result.errors, []);
+  const unknown=runAudit({[`backend/${routesFile}`]:source.replace('[]string{"GET", "POST", "PUT"}', 'verbs')+"\nfunc called() { registerPoints(server, svcCtx) }"});
+  assert.ok(unknown.errors.some(e=>e.includes('unsupported method-list registration')));
+});
+
+
+test('exception prefixes retain separate temple and platform read routes', () => {
+ const owner='services/content/booking-service';
+ const source=`func RegisterHandlers(server *rest.Server, svcCtx *svc.ServiceContext) {
+ for _, platform := range []bool{false, true} {
+  prefix := "/api/v1/admin/temples/exceptions"
+  if platform { prefix = "/api/v1/admin/platform/temple-exceptions" }
+  server.AddRoute(rest.Route{Method: "GET", Path: prefix, Handler: handler})
+  server.AddRoute(rest.Route{Method: "GET", Path: prefix + "/:id", Handler: handler})
+ }
+}`;
+ const fixture={[`backend/${owner}/booking.go`]:'func main() { handler.RegisterHandlers(server, svcCtx) }',[`backend/${owner}/internal/handler/temple_exceptions.go`]:source};
+ const result=runAudit(fixture);
+ assert.deepEqual(result.errors,[]);
+ assert.deepEqual(result.missing,['/api/v1/admin/platform/temple-exceptions','/api/v1/admin/temples/exceptions'].flatMap(p=>['GET '+p,'GET '+p+'/:id']).sort());
+ const malformed=runAudit({...fixture,[`backend/${owner}/internal/handler/temple_exceptions.go`]:source.replace('[]bool{false, true}','[]bool{false}')});
+ assert.ok(malformed.errors.some(e=>e.includes('unsupported exception registration')));
+});
