@@ -1766,3 +1766,28 @@ H5 首页使用上述广告投放契约；具体端展示范围见产品手册�
 | POST | `/api/v1/bookings/:id/receipts` | 最终回执 summary / fileIds，进入待确认回执 | 认证会话；服务端核对角色与对象归属 |
 | POST | `/api/v1/bookings/:id/request-revision` | 订单信众要求补充 remark | 认证会话；服务端核对角色与对象归属 |
 | PUT | `/api/v1/admin/bookings/:id/start` | 寺院执行开始，沿用预约 action 格式 | 认证会话；服务端核对角色与对象归属 |
+
+
+## 2026-10-22 寺院跨端运营增量契约
+
+| 方法 | 路径 | 约束与用途 |
+| --- | --- | --- |
+| GET | `/api/v1/auth/temple/team` | 本寺管理员查看本寺有限岗位账号；有限岗位不能使用此接口 |
+| POST | `/api/v1/auth/temple/team` | 创建接待、运营、财务只读账号，寺院由签名身份确定 |
+| PUT | `/api/v1/auth/temple/team` | 同寺账号角色、状态及密码维护；必传 revision，变更撤销旧会话 |
+| GET | `/api/v1/admin/temples/schedules` | masterCode、date；只读取本寺纳管法师的共享日程 |
+| PUT | `/api/v1/admin/temples/schedules` | masterCode、date、status、timeSlots、revision；管理员或运营写入 |
+| GET | `/api/v1/admin/temples/exceptions` | 本寺异常分页，接待及运营可读；不改变原单状态 |
+| GET | `/api/v1/admin/temples/exceptions/:id` | 原单跟进记录；id 为 booking:原单号 或 blessing:任务数字 ID |
+| POST | `/api/v1/admin/temples/exceptions/:id/notes` | requestId、action（following/escalated）、content；相同请求重复提交幂等 |
+| GET | `/api/v1/admin/platform/temple-exceptions` | 平台超管只读，可按 templeCode 过滤 |
+| GET | `/api/v1/admin/platform/temple-exceptions/:id` | 平台超管只读跟进记录，不读私聊 |
+| GET | `/api/v1/finance/wallet/temple/report` | 当前签名寺院，startTime/endTime 日期闭区间、mode=accounting_only/demo；按来源和状态分组整数分 |
+
+`GET /api/v1/auth/access` 增加服务端 templeCode、templeName；寺院设置不接受本地手填归属。`GET /api/v1/bookings/availability` 增加可选 masterId；H5 与 iOS 指定法师预约均需传入。实际创建在事务中再次校验排班和重叠预约。未设置日期排班时沿用寺院服务时段；设置后以 available 时段为准，off 禁止新预约。调整排班保留已有订单，并进入排班冲突跟进。
+
+法师本人更新日程也传 revision：无记录为 0，现有记录用读取值；成功后递增，冲突返回 40921，法师时段不可预约返回 40922。旧客户端无版本不能覆盖已有记录。
+
+预约合同统计增加 contractCents、templeCents、masterCents，分列合同总额、寺院服务费及随喜、法师执行费。统计已支付且未取消订单，包含演示支付；不代表优惠后的实际支付、净收入或银行到账。结算统计沿用原账本、佣金及净额，mode 隔离，不执行真实提现。
+
+本节只记录本轮新增/变更契约。全库历史文档缺口由 audit-api-contracts 输出另行列示，静态覆盖不代表接口或跨端验收通过。

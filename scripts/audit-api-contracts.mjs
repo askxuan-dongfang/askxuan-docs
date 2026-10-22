@@ -36,6 +36,20 @@ for (const file of files) {
     for (const m of block.matchAll(literal)) add(m[1]??m[2],prefix && m[3]==='/' ? prefix : prefix+m[3],file);
   }
   const helperFile=relative(backend,file);
+  if (/for _, method := range /.test(source)) {
+    const methods=source.match(/for _, method := range \[\]string\{([^}]+)\}/);
+    const path=source.match(/Method:\s*method\s*,\s*Path:\s*"([^"]+)"/);
+    if (!methods || !path) errors.push(`${helperFile}: unsupported method-list registration`);
+    else for (const method of methods[1].matchAll(/"(GET|POST|PUT|DELETE|PATCH)"/g)) add(method[1],path[1],file);
+    dynamic.push(helperFile);
+  }
+  if (helperFile.endsWith('booking-service/internal/handler/temple_exceptions.go')) {
+    const prefixes=[...source.matchAll(/prefix\s*(?::=|=)\s*"([^"]+)"/g)];
+    const operations=[...source.matchAll(/Method:\s*"(GET|POST|PUT|DELETE|PATCH)"\s*,\s*Path:\s*prefix(?:\s*\+\s*"([^"]+)")?\s*,/g)];
+    if (prefixes.length!==2 || operations.length!==2 || !/range \[\]bool\{false, true\}/.test(source)) errors.push(`${helperFile}: unsupported exception registration`);
+    else for (const prefix of prefixes) for (const op of operations) add(op[1],prefix[1]+(op[2]??''),file);
+    dynamic.push(helperFile);
+  }
   if (helperFile.endsWith('auth-service/internal/handler/identity.go')) {
     const actions=source.match(/for _, action := range \[\]string\{([^}]+)\}/);
     const prefix=source.match(/Path:\s*"([^"]+)"\s*\+\s*action/);
