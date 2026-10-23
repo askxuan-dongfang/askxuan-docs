@@ -1772,12 +1772,9 @@ H5 首页使用上述广告投放契约；具体端展示范围见产品手册�
 
 | 方法 | 路径 | 约束与用途 |
 | --- | --- | --- |
-| GET | `/api/v1/auth/temple/team` | 本寺管理员查看本寺有限岗位账号；有限岗位不能使用此接口 |
-| POST | `/api/v1/auth/temple/team` | 创建接待、运营、财务只读账号，寺院由签名身份确定 |
-| PUT | `/api/v1/auth/temple/team` | 同寺账号角色、状态及密码维护；必传 revision，变更撤销旧会话 |
 | GET | `/api/v1/admin/temples/schedules` | masterCode、date；只读取本寺纳管法师的共享日程 |
-| PUT | `/api/v1/admin/temples/schedules` | masterCode、date、status、timeSlots、revision；管理员或运营写入 |
-| GET | `/api/v1/admin/temples/exceptions` | 本寺异常分页，接待及运营可读；不改变原单状态 |
+| PUT | `/api/v1/admin/temples/schedules` | masterCode、date、status、timeSlots、revision；寺院管理员写入 |
+| GET | `/api/v1/admin/temples/exceptions` | 本寺异常分页，寺院管理员可读；不改变原单状态 |
 | GET | `/api/v1/admin/temples/exceptions/:id` | 原单跟进记录；id 为 booking:原单号 或 blessing:任务数字 ID |
 | POST | `/api/v1/admin/temples/exceptions/:id/notes` | requestId、action（following/escalated）、content；相同请求重复提交幂等 |
 | GET | `/api/v1/admin/platform/temple-exceptions` | 平台超管只读，可按 templeCode 过滤 |
@@ -1791,3 +1788,5 @@ H5 首页使用上述广告投放契约；具体端展示范围见产品手册�
 预约合同统计增加 contractCents、templeCents、masterCents，分列合同总额、寺院服务费及随喜、法师执行费。统计已支付且未取消订单，包含演示支付；不代表优惠后的实际支付、净收入或银行到账。结算统计沿用原账本、佣金及净额，mode 隔离，不执行真实提现。
 
 本节只记录本轮新增/变更契约。全库历史文档缺口由 audit-api-contracts 输出另行列示，静态覆盖不代表接口或跨端验收通过。
+
+2026-10-23：寺院接待、运营、财务岗位已退役，`/api/v1/auth/temple/team` 的 GET/POST/PUT 不再注册。历史账号记录保留，不能据旧角色获取管理权限；寺院管理员和师傅原接口继续使用。
